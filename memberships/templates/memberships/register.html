@@ -1,0 +1,220 @@
+{% extends 'tenancy/base.html' %}
+{% block title %}Join {{ tenant.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #8b949e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .toggle-password-btn:hover {
+    color: #fff;
+  }
+  .field-error-msg {
+    color: #ff9b9b;
+    font-size: 0.75rem;
+    margin-top: 0.35rem;
+    display: none;
+  }
+  .input-invalid {
+    border-color: #ff9b9b !important;
+  }
+
+  /* Browser autofill background override */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-surface, #111620) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 480px; margin: 4rem auto;">
+  <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 8px;">
+    <h2 style="font-size: 1.6rem; text-align: center; margin-bottom: 0.5rem;">Join {{ tenant.name }}</h2>
+    <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 1.5rem;">
+      Lock in your founding membership rate.
+    </p>
+
+    {% if error %}
+      <div style="background: #4a1919; color: #ff9b9b; padding: 0.75rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem;">
+        {{ error }}
+      </div>
+    {% endif %}
+
+    <!-- Form with autofill protection -->
+    <form method="POST" id="register-form" autocomplete="off" onsubmit="return validateRegistrationForm(event)">
+      {% csrf_token %}
+
+      <!-- Decoy inputs to catch browser autofill -->
+      <input type="text" name="fake_username_autofill" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+      <input type="password" name="fake_password_autofill" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Select Membership Pass</label>
+        <select name="plan_id" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          {% for p in plans %}
+            <option value="{{ p.id }}" {% if p.id|stringformat:"s" == selected_plan_id %}selected{% endif %}>
+              {{ p.name }} - ${{ p.rate_monthly|floatformat:0 }}/mo ({{ p.credits_per_period }} credits)
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Username</label>
+        <input type="text" id="reg-username" name="username" value="" autocomplete="chrome-off" placeholder="Choose a username" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+        <div id="username-error" class="field-error-msg">Username must be at least 3 characters (letters, numbers, underscore only).</div>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Email Address</label>
+        <input type="email" id="reg-email" name="email" value="" autocomplete="off" placeholder="name@example.com" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+        <div id="email-error" class="field-error-msg">Please enter a valid email address.</div>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="reg-password" name="password" value="" autocomplete="new-password" placeholder="Minimum 8 characters" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reg-password', this)" aria-label="Toggle password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+        <div id="password-error" class="field-error-msg">Password must be at least 8 characters long.</div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Confirm Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="reg-confirm-password" name="confirm_password" value="" autocomplete="new-password" placeholder="Re-enter password" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reg-confirm-password', this)" aria-label="Toggle confirm password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+        <div id="confirm-error" class="field-error-msg">Passwords do not match.</div>
+      </div>
+
+      <button type="submit" class="btn-tier-cta" style="width: 100%; padding: 0.85rem; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
+        Complete Signup ($100 Deposit Waived in Dev Mode)
+      </button>
+    </form>
+
+    <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+      Already have an account? 
+      <a href="/login/?org={{ tenant.slug }}" style="color: var(--accent-gold, #38bdf8); text-decoration: none; font-weight: bold; margin-left: 0.3rem;">
+        Sign In &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Force reset autofill on load
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const u = document.getElementById('reg-username');
+      const e = document.getElementById('reg-email');
+      const p = document.getElementById('reg-password');
+      const cp = document.getElementById('reg-confirm-password');
+      if (u) u.value = '';
+      if (e) e.value = '';
+      if (p) p.value = '';
+      if (cp) cp.value = '';
+    }, 50);
+  });
+
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+    if (input.type === 'password') {
+      input.type = 'text';
+      eyeOpen.style.display = 'none';
+      eyeClosed.style.display = 'inline-block';
+    } else {
+      input.type = 'password';
+      eyeOpen.style.display = 'inline-block';
+      eyeClosed.style.display = 'none';
+    }
+  }
+
+  function validateRegistrationForm(e) {
+    let isValid = true;
+    const uInput = document.getElementById('reg-username');
+    const eInput = document.getElementById('reg-email');
+    const pInput = document.getElementById('reg-password');
+    const cpInput = document.getElementById('reg-confirm-password');
+
+    const uErr = document.getElementById('username-error');
+    const eErr = document.getElementById('email-error');
+    const pErr = document.getElementById('password-error');
+    const cpErr = document.getElementById('confirm-error');
+
+    const uVal = uInput.value.trim();
+    if (!/^[a-zA-Z0-9_]{3,}$/.test(uVal)) {
+      uErr.style.display = 'block';
+      uInput.classList.add('input-invalid');
+      isValid = false;
+    } else {
+      uErr.style.display = 'none';
+      uInput.classList.remove('input-invalid');
+    }
+
+    const eVal = eInput.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(eVal)) {
+      eErr.style.display = 'block';
+      eInput.classList.add('input-invalid');
+      isValid = false;
+    } else {
+      eErr.style.display = 'none';
+      eInput.classList.remove('input-invalid');
+    }
+
+    const pVal = pInput.value;
+    if (!pVal || pVal.length < 8) {
+      pErr.style.display = 'block';
+      pInput.classList.add('input-invalid');
+      isValid = false;
+    } else {
+      pErr.style.display = 'none';
+      pInput.classList.remove('input-invalid');
+    }
+
+    const cpVal = cpInput.value;
+    if (pVal !== cpVal || !cpVal) {
+      cpErr.style.display = 'block';
+      cpInput.classList.add('input-invalid');
+      isValid = false;
+    } else {
+      cpErr.style.display = 'none';
+      cpInput.classList.remove('input-invalid');
+    }
+
+    if (!isValid && e) {
+      e.preventDefault();
+      return false;
+    }
+    return isValid;
+  }
+</script>
+{% endblock %}

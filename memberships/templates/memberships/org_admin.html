@@ -1,0 +1,1072 @@
+{% extends 'tenancy/base.html' %}
+{% load static %}
+{% block title %}Club Console | {{ tenant.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --oa-bg: #07090e;
+    --oa-sidebar-bg: #0d1117;
+    --oa-surface: #111620;
+    --oa-card: #161c26;
+    --oa-border: #212936;
+    --oa-border-light: rgba(255, 255, 255, 0.07);
+    --oa-accent: #60a5fa;
+    --oa-accent-hover: #3b82f6;
+    --oa-text: #f0f6fc;
+    --oa-muted: #8b949e;
+    --oa-success: #7bf199;
+    --oa-danger: #ff9b9b;
+    --oa-warning: #fbbf24;
+    --sidebar-w: 260px;
+  }
+
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    background-color: var(--oa-bg);
+  }
+
+  .oa-app-layout {
+    display: flex;
+    min-height: calc(100vh - 70px);
+    position: relative;
+    width: 100%;
+  }
+
+  .oa-sidebar {
+    width: var(--sidebar-w);
+    background: var(--oa-sidebar-bg);
+    border-right: 1px solid var(--oa-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem 1rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+  }
+
+  .oa-sidebar-brand {
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--oa-border);
+    margin-bottom: 1.25rem;
+  }
+
+  .oa-sidebar-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--oa-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .oa-sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--oa-text);
+    margin: 0.2rem 0 0;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .oa-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .oa-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 0.95rem;
+    background: transparent;
+    color: var(--oa-muted);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+
+  .oa-nav-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+  }
+
+  .oa-nav-item.active {
+    background: var(--oa-card);
+    border-color: var(--oa-border);
+    color: var(--oa-accent);
+    font-weight: 700;
+  }
+
+  .oa-nav-badge {
+    font-size: 0.72rem;
+    background: rgba(96, 165, 250, 0.15);
+    color: var(--oa-accent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+
+  .oa-nav-badge.warning {
+    background: rgba(251, 191, 36, 0.18);
+    color: var(--oa-warning);
+  }
+
+  .oa-nav-badge.danger {
+    background: rgba(239, 68, 68, 0.18);
+    color: var(--oa-danger);
+  }
+
+  .oa-stage {
+    flex-grow: 1;
+    min-width: 0;
+    padding: clamp(1rem, 2.5vw, 2.5rem);
+    box-sizing: border-box;
+  }
+
+  .oa-mobile-topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--oa-sidebar-bg);
+    border-bottom: 1px solid var(--oa-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .oa-hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--oa-surface);
+    border: 1px solid var(--oa-border);
+    color: var(--oa-text);
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .oa-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 1040;
+  }
+
+  .oa-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .oa-stat-card {
+    background: var(--oa-card);
+    border: 1px solid var(--oa-border);
+    border-radius: 8px;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .oa-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--oa-muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .oa-stat-val {
+    font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0.35rem 0 0.15rem;
+  }
+
+  .oa-subtext {
+    font-size: 0.75rem;
+    color: var(--oa-muted);
+  }
+
+  .oa-panel {
+    background: var(--oa-card);
+    border: 1px solid var(--oa-border);
+    border-radius: 8px;
+    padding: clamp(1rem, 2vw, 1.75rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .oa-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .oa-panel-title {
+    font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+
+  .oa-table-box {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid var(--oa-border);
+  }
+
+  .oa-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+  }
+
+  .oa-table th, .oa-table td {
+    padding: 0.8rem;
+  }
+
+  .oa-table thead tr {
+    border-bottom: 1px solid var(--oa-border);
+    color: var(--oa-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .oa-table tbody tr {
+    border-bottom: 1px solid var(--oa-border-light);
+  }
+
+  .oa-mobile-cards-list {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .oa-mobile-card {
+    background: var(--oa-surface);
+    border: 1px solid var(--oa-border);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .oa-card-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  .oa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    box-sizing: border-box;
+    transition: opacity 0.2s;
+  }
+
+  .oa-btn-primary { background: var(--oa-accent); color: #000; }
+  .oa-btn-success { background: var(--oa-success); color: #000; }
+  .oa-btn-outline { background: transparent; border: 1px solid var(--oa-accent); color: var(--oa-accent); }
+  .oa-btn-danger  { background: transparent; border: 1px solid rgba(255, 155, 155, 0.4); color: var(--oa-danger); }
+
+  .oa-form-group { margin-bottom: 1.15rem; }
+  .oa-form-label { display: block; font-size: 0.8rem; color: var(--oa-muted); margin-bottom: 0.35rem; font-weight: 600; }
+
+  .oa-input {
+    width: 100%;
+    background: var(--oa-surface);
+    border: 1px solid var(--oa-border);
+    color: #fff;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    min-height: 44px;
+    outline: none;
+  }
+  .oa-input:focus { border-color: var(--oa-accent); }
+
+  .oa-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  .oa-modal-sheet {
+    background: var(--oa-card);
+    border: 1px solid var(--oa-border);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 580px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    box-sizing: border-box;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  }
+
+  .oa-tab-content { display: none; }
+  .oa-tab-content.active { display: block; }
+
+  /* Notification Row Styles */
+  .notif-row {
+    background: var(--oa-surface);
+    border: 1px solid var(--oa-border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .notif-row.unread {
+    border-left: 4px solid var(--oa-accent);
+    background: rgba(96, 165, 250, 0.05);
+  }
+  .notif-row:hover {
+    border-color: var(--oa-accent);
+    transform: translateX(2px);
+  }
+
+  @media (max-width: 1024px) {
+    .oa-mobile-topbar { display: flex; }
+    .oa-sidebar {
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      transform: translateX(-100%);
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .oa-sidebar.open { transform: translateX(0); }
+    .oa-sidebar-backdrop.open { display: block; }
+  }
+
+  @media (max-width: 768px) {
+    .oa-table-box { display: none; }
+    .oa-mobile-cards-list { display: flex; }
+    .notif-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="oa-mobile-topbar">
+  <button type="button" class="oa-hamburger-btn" onclick="toggleSidebar()">
+    <span>&#9776;</span>
+    <span>Menu</span>
+  </button>
+  <div style="text-align: right;">
+    <strong style="font-size: 0.95rem; color: #fff;">{{ tenant.name }}</strong>
+  </div>
+</div>
+
+<div id="sidebar-backdrop" class="oa-sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+<div class="oa-app-layout">
+  <!-- Sidebar Navigation -->
+  <aside id="app-sidebar" class="oa-sidebar">
+    <div>
+      <div class="oa-sidebar-brand">
+        <div class="oa-sidebar-badge">Management Console</div>
+        <h2 class="oa-sidebar-title">{{ tenant.name }}</h2>
+      </div>
+
+      <nav>
+        <ul class="oa-nav-list">
+          <li>
+            <button type="button" class="oa-nav-item active" onclick="activateSection('tab-overview')">
+              <span>Overview</span>
+            </button>
+          </li>
+
+          <!-- 1. NOTIFICATIONS TAB IN SIDEBAR -->
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-notifications')">
+              <span>&#128276; Notifications</span>
+              {% if unread_notifications_count > 0 %}
+                <span class="oa-nav-badge danger">{{ unread_notifications_count }}</span>
+              {% endif %}
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-approvals')">
+              <span>Plan Approvals</span>
+              <span class="oa-nav-badge warning">{{ pending_plan_memberships.count }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-members')">
+              <span>Active Members</span>
+              <span class="oa-nav-badge">{{ memberships.count }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-bookings')">
+              <span>Appointments</span>
+              <span class="oa-nav-badge">{{ bookings.count }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-services')">
+              <span>Modalities</span>
+              <span class="oa-nav-badge">{{ resources.count }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-plans')">
+              <span>Membership Tiers</span>
+              <span class="oa-nav-badge">{{ plans.count }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-settings')">
+              <span>Club Settings</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div style="padding-top: 1.5rem; border-top: 1px solid var(--oa-border);">
+      <a href="/logout/" class="oa-btn oa-btn-danger" style="width: 100%;">Sign Out</a>
+    </div>
+  </aside>
+
+  <!-- Main Stage -->
+  <main class="oa-stage">
+    
+    <!-- 1. TAB: OVERVIEW -->
+    <div id="tab-overview" class="oa-tab-content active">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Club Financial Run-Rate</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Live performance, recurring subscriptions, and escrow pool.</p>
+          </div>
+        </div>
+
+        <div class="oa-metrics-row">
+          <div class="oa-stat-card">
+            <span class="oa-stat-label">Total Revenue</span>
+            <div class="oa-stat-val" style="color: var(--oa-success);">${{ total_earnings|floatformat:2 }}</div>
+            <span class="oa-subtext">Deposits + Subscriptions</span>
+          </div>
+
+          <div class="oa-stat-card">
+            <span class="oa-stat-label">Monthly Run-Rate</span>
+            <div class="oa-stat-val" style="color: var(--oa-accent);">${{ total_monthly_recurring|floatformat:2 }}/mo</div>
+            <span class="oa-subtext">Active Pass Allotments</span>
+          </div>
+
+          <div class="oa-stat-card">
+            <span class="oa-stat-label">Pending Plan Approvals</span>
+            <div class="oa-stat-val" style="color: var(--oa-warning);">{{ pending_plan_memberships.count }}</div>
+            <span class="oa-subtext">Awaiting payment release</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 2. TAB: NOTIFICATIONS CENTER -->
+    <div id="tab-notifications" class="oa-tab-content">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Activity Notifications ({{ unread_notifications_count }} Unread)</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Click on any alert to open its specific dashboard module.</p>
+          </div>
+          {% if unread_notifications_count > 0 %}
+          <form method="POST" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="mark_all_notifications_read">
+            <button type="submit" class="oa-btn oa-btn-outline" style="min-height: 34px; font-size: 0.78rem;">
+              Mark All Read &#10003;
+            </button>
+          </form>
+          {% endif %}
+        </div>
+
+        <div>
+          {% for notif in notifications %}
+          <!-- Interactive Notification Form Row -->
+          <form method="POST" action="" class="notif-form-row">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="mark_notification_read">
+            <input type="hidden" name="notification_id" value="{{ notif.id }}">
+            <input type="hidden" name="target_tab" value="{{ notif.target_tab }}">
+
+            <div class="notif-row {% if not notif.is_read %}unread{% endif %}" onclick="this.closest('form').submit();">
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                  <strong style="color: #fff; font-size: 0.95rem;">{{ notif.title }}</strong>
+                  {% if not notif.is_read %}
+                    <span style="font-size: 0.68rem; background: rgba(96, 165, 250, 0.2); color: var(--oa-accent); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">
+                      NEW
+                    </span>
+                  {% endif %}
+                </div>
+                <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0 0 0.35rem 0;">{{ notif.message }}</p>
+                <span class="oa-subtext">{{ notif.created_at|date:"M d, Y &bull; H:i" }}</span>
+              </div>
+
+              <div style="white-space: nowrap;">
+                <span style="font-size: 0.75rem; color: var(--oa-accent); font-weight: 700;">
+                  Open Module &rarr;
+                </span>
+              </div>
+            </div>
+          </form>
+          {% empty %}
+          <div style="text-align: center; color: var(--oa-muted); padding: 3rem 1rem;">
+            <p>No notifications yet.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <!-- 3. TAB: PENDING PLAN APPROVALS -->
+    <div id="tab-approvals" class="oa-tab-content">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Pending Payment Approvals ({{ pending_plan_memberships.count }})</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Jab aap payment confirm karenge, tab member ko credits milenge.</p>
+          </div>
+        </div>
+
+        <div class="oa-table-box">
+          <table class="oa-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Purchased Tier</th>
+                <th>Price</th>
+                <th>Credits to Add</th>
+                <th>Payment State</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pmem in pending_plan_memberships %}
+              <tr>
+                <td style="font-weight: 700; color: #fff;">
+                  {{ pmem.user.username }}
+                  <div class="oa-subtext">{{ pmem.user.email }}</div>
+                </td>
+                <td style="color: var(--oa-accent); font-weight: 700;">{{ pmem.plan.name }}</td>
+                <td>${{ pmem.plan.rate_monthly|floatformat:0 }}/mo</td>
+                <td style="font-weight: 700; color: #6ee7b7;">+{{ pmem.plan.credits_per_period }} cr</td>
+                <td>
+                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
+                    &#9679; Payment Received / Pending Confirmation
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Confirm payment & activate credits for {{ pmem.user.username }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="confirm_member_plan">
+                    <input type="hidden" name="membership_id" value="{{ pmem.id }}">
+                    <button type="submit" class="oa-btn oa-btn-success" style="min-height: 32px; font-size: 0.78rem;">
+                      Confirm Payment &amp; Release Credits &#10003;
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No pending plan purchases requiring approval.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 4. TAB: ACTIVE ENROLLED MEMBERS -->
+    <div id="tab-members" class="oa-tab-content">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Active Members ({{ memberships.count }})</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Live plan allocations, credit ledger transactions, and member removals.</p>
+          </div>
+        </div>
+
+        <div class="oa-table-box">
+          <table class="oa-table">
+            <thead>
+              <tr>
+                <th>Member Account</th>
+                <th>Plan Tier</th>
+                <th>Monthly Credits</th>
+                <th>Remaining Balance</th>
+                <th>Audit Trail</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in memberships %}
+              <tr>
+                <td style="font-weight: 700; color: #fff;">
+                  {{ m.user.username }}
+                  <div class="oa-subtext">{{ m.user.email|default:"no email" }}</div>
+                </td>
+                <td style="color: var(--oa-accent);">{{ m.plan.name }}</td>
+                <td>{{ m.plan.credits_per_period }} cr/mo</td>
+                <td style="font-weight: 700; color: {% if m.credit_balance > 0 %}var(--oa-success){% else %}var(--oa-danger){% endif %};">
+                  {{ m.credit_balance }} cr
+                </td>
+                <td>
+                  <button type="button" onclick="openLedgerModal('ledger-{{ m.id }}')" class="oa-btn oa-btn-outline" style="min-height: 34px; font-size: 0.78rem;">
+                    Audit Log ({{ m.ledger.count }}) &rarr;
+                  </button>
+                </td>
+                <td style="text-align: right;">
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Permanently remove {{ m.user.username }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="delete_member">
+                    <input type="hidden" name="membership_id" value="{{ m.id }}">
+                    <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 34px;">Remove</button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No active members enrolled yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 5. TAB: APPOINTMENTS ROSTER -->
+    <div id="tab-bookings" class="oa-tab-content">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Appointments Roster ({{ bookings.count }})</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Review bookings, verify time slots, mark completed, or cancel and refund.</p>
+          </div>
+        </div>
+
+        <div class="oa-table-box">
+          <table class="oa-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Modality</th>
+                <th>Scheduled Window</th>
+                <th>Credits</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for b in bookings %}
+            <tr>
+              <td style="font-weight: 700; color: #fff;">{{ b.membership.user.username }}</td>
+              <td style="color: var(--oa-accent); font-weight: 700;">{{ b.resource.name }}</td>
+              <td style="color: #cbd5e1;">{{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|date:"H:i" }}</td>
+              <td style="font-weight: 700; color: #38bdf8;">{{ b.credits_used }} cr</td>
+              <td>
+                {% if b.status == 'pending' %}
+                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
+                    &#9679; Pending Service
+                  </span>
+                {% elif b.status == 'completed' %}
+                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4);">
+                    &#10003; Service Completed
+                  </span>
+                {% else %}
+                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">
+                    Canceled
+                  </span>
+                {% endif %}
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                {% if b.status == 'pending' %}
+                  <form method="POST" style="display:inline; margin-right: 0.35rem;" onsubmit="return confirm('Confirm service provided to {{ b.membership.user.username }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="complete_service">
+                    <input type="hidden" name="booking_id" value="{{ b.id }}">
+                    <button type="submit" class="oa-btn oa-btn-primary" style="min-height: 32px; font-size: 0.75rem; padding: 0.3rem 0.65rem;">
+                      Mark Completed &#10003;
+                    </button>
+                  </form>
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Cancel appointment and refund credits?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="admin_cancel_booking">
+                    <input type="hidden" name="booking_id" value="{{ b.id }}">
+                    <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 32px; font-size: 0.75rem; padding: 0.3rem 0.65rem;">
+                      Cancel
+                    </button>
+                  </form>
+                {% elif b.status == 'completed' %}
+                  <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">Fulfilled</span>
+                {% else %}
+                  <span class="oa-subtext">Canceled</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No appointments found.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 6. TAB: SERVICES / MODALITIES -->
+    <div id="tab-services" class="oa-tab-content">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Club Modalities ({{ resources.count }})</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Define bookable services, session durations, and credit costs.</p>
+          </div>
+          <button type="button" onclick="document.getElementById('service-modal').style.display='flex'" class="oa-btn oa-btn-primary">
+            + Add Service
+          </button>
+        </div>
+
+        <div class="oa-table-box">
+          <table class="oa-table">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Duration</th>
+                <th>Credit Cost</th>
+                <th>Capacity</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in resources %}
+              <tr>
+                <td style="font-weight: 700; color: #fff;">{{ r.name }}</td>
+                <td>{{ r.duration_minutes }}m</td>
+                <td style="color: var(--oa-accent); font-weight: 700;">{{ r.credit_cost }} cr</td>
+                <td>Cap: {{ r.capacity }}</td>
+                <td style="text-align: right;">
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Delete modality service?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="delete_service">
+                    <input type="hidden" name="service_id" value="{{ r.id }}">
+                    <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 34px;">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 7. TAB: MEMBERSHIP TIERS -->
+    <div id="tab-plans" class="oa-tab-content">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Membership Tiers ({{ plans.count }})</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Configure public commercial passes and monthly credit allotments.</p>
+          </div>
+          <button type="button" onclick="document.getElementById('plan-modal').style.display='flex'" class="oa-btn oa-btn-primary">
+            + Add Tier Plan
+          </button>
+        </div>
+
+        <div class="oa-table-box">
+          <table class="oa-table">
+            <thead>
+              <tr>
+                <th>Tier &amp; Name</th>
+                <th>Monthly Rate</th>
+                <th>Credits</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in plans %}
+              <tr>
+                <td style="font-weight: 700; color: var(--oa-accent);">{{ p.tier_label }} &mdash; {{ p.name }}</td>
+                <td>${{ p.rate_monthly }}/mo</td>
+                <td>{{ p.credits_per_period }} cr</td>
+                <td style="text-align: right;">
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Delete plan?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="delete_plan">
+                    <input type="hidden" name="plan_id" value="{{ p.id }}">
+                    <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 34px;">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 8. TAB: CLUB SETTINGS -->
+    <div id="tab-settings" class="oa-tab-content">
+      <section class="oa-panel" style="max-width: 600px;">
+        <h2 class="oa-panel-title" style="margin-bottom: 0.25rem;">Club Configuration</h2>
+        <p class="oa-subtext" style="margin-bottom: 1.5rem;">Update founding capacity limits and branding.</p>
+
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action_type" value="update_settings">
+
+          <div class="oa-form-group">
+            <label class="oa-form-label">Total Founding Slots Cap Limit</label>
+            <input type="number" name="founding_cap" value="{{ tenant.founding_cap|default:100 }}" class="oa-input" required>
+          </div>
+
+          <div class="oa-form-group">
+            <label class="oa-form-label">Accent Brand Color</label>
+            <input type="color" name="accent_color" value="{{ tenant.branding.accent_color|default:'#60a5fa' }}" style="width: 100%; height: 44px; background: transparent; border: 1px solid var(--oa-border); border-radius: 6px; cursor: pointer;">
+          </div>
+
+          <div class="oa-form-group">
+            <label class="oa-form-label">Header Tagline / Location</label>
+            <input type="text" name="tagline" value="{{ tenant.branding.tagline|default:'' }}" class="oa-input">
+          </div>
+
+          <button type="submit" class="oa-btn oa-btn-primary" style="width: 100%;">Save Configuration</button>
+        </form>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modals for Ledger, Services, Plans -->
+{% for m in memberships %}
+<div id="ledger-{{ m.id }}" class="oa-modal-overlay">
+  <div class="oa-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--oa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <div>
+        <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Ledger: {{ m.user.username }}</h3>
+        <span class="oa-subtext">Current Balance: <strong style="color: var(--oa-success);">{{ m.credit_balance }} cr</strong></span>
+      </div>
+      <span onclick="closeLedgerModal('ledger-{{ m.id }}')" style="cursor: pointer; font-size: 1.6rem; color: var(--oa-muted); line-height: 1;">&times;</span>
+    </div>
+
+    <div style="max-height: 52vh; overflow-y: auto;">
+      {% for entry in m.ledger.all %}
+      <div style="background: var(--oa-surface); border: 1px solid var(--oa-border); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; font-size: 0.82rem;">
+        <div class="oa-card-line">
+          <span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 3px; font-weight: bold; background: {% if entry.amount > 0 %}#134e4a; color:#2dd4bf;{% else %}#7f1d1d; color:#fca5a5;{% endif %}">
+            {{ entry.transaction_type|upper }}
+          </span>
+          <strong style="color: {% if entry.amount > 0 %}var(--oa-success){% else %}var(--oa-danger){% endif %};">
+            {% if entry.amount > 0 %}+{% endif %}{{ entry.amount }} credits
+          </strong>
+        </div>
+        <div style="color: #cbd5e1; margin-top: 0.35rem;">{{ entry.reason }}</div>
+        <div class="oa-subtext" style="margin-top: 0.2rem;">{{ entry.created_at|date:"M d, Y H:i" }}</div>
+      </div>
+      {% empty %}
+      <p style="color: var(--oa-muted); text-align: center; padding: 1rem;">No transactions recorded.</p>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top: 1rem; text-align: right;">
+      <button type="button" onclick="closeLedgerModal('ledger-{{ m.id }}')" class="oa-btn oa-btn-primary" style="width: 100%;">Close</button>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Modal: Add Service -->
+<div id="service-modal" class="oa-modal-overlay">
+  <div class="oa-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--oa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Add Modality Service</h3>
+      <span onclick="document.getElementById('service-modal').style.display='none'" style="cursor: pointer; font-size: 1.6rem; color: var(--oa-muted); line-height: 1;">&times;</span>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="save_service">
+      <div class="oa-form-group">
+        <label class="oa-form-label">Service Name</label>
+        <input type="text" name="name" placeholder="Whole-Body Cryotherapy" class="oa-input" required>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 0.65rem; margin-bottom: 1.25rem;">
+        <div>
+          <label class="oa-form-label">Duration (m)</label>
+          <input type="number" name="duration_minutes" value="30" class="oa-input" required>
+        </div>
+        <div>
+          <label class="oa-form-label">Credits</label>
+          <input type="number" name="credit_cost" value="1" class="oa-input" required>
+        </div>
+        <div>
+          <label class="oa-form-label">Capacity</label>
+          <input type="number" name="capacity" value="1" class="oa-input" required>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.65rem;">
+        <button type="button" onclick="document.getElementById('service-modal').style.display='none'" class="oa-btn oa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="oa-btn oa-btn-primary" style="flex: 1;">Save Service</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Add Plan -->
+<div id="plan-modal" class="oa-modal-overlay">
+  <div class="oa-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--oa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Configure Membership Tier</h3>
+      <span onclick="document.getElementById('plan-modal').style.display='none'" style="cursor: pointer; font-size: 1.6rem; color: var(--oa-muted); line-height: 1;">&times;</span>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="save_plan">
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.65rem; margin-bottom: 0.75rem;">
+        <div>
+          <label class="oa-form-label">Tier Tag</label>
+          <input type="text" name="tier_label" placeholder="TIER 1" value="TIER 1" class="oa-input" required>
+        </div>
+        <div>
+          <label class="oa-form-label">Plan Name</label>
+          <input type="text" name="name" placeholder="The Core Pass" class="oa-input" required>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 0.65rem; margin-bottom: 0.75rem;">
+        <div>
+          <label class="oa-form-label">Std Price ($)</label>
+          <input type="number" step="0.01" name="standard_rate" value="199.00" class="oa-input" required>
+        </div>
+        <div>
+          <label class="oa-form-label">Founding ($)</label>
+          <input type="number" step="0.01" name="rate_monthly" value="179.00" class="oa-input" required>
+        </div>
+        <div>
+          <label class="oa-form-label">Credits</label>
+          <input type="number" name="credits_per_period" value="8" class="oa-input" required>
+        </div>
+      </div>
+      <div class="oa-form-group">
+        <label class="oa-form-label">Inclusions (One perk per line)</label>
+        <textarea name="inclusions" rows="3" class="oa-input" style="font-family: inherit; resize: vertical; min-height: 70px;"></textarea>
+      </div>
+      <div style="display: flex; gap: 0.65rem;">
+        <button type="button" onclick="document.getElementById('plan-modal').style.display='none'" class="oa-btn oa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="oa-btn oa-btn-primary" style="flex: 1;">Save Tier Plan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  sidebar.classList.toggle('open');
+  backdrop.classList.toggle('open');
+}
+
+function activateSection(targetId) {
+  // Update nav buttons
+  document.querySelectorAll('.oa-nav-item').forEach(btn => btn.classList.remove('active'));
+  
+  // Find matching button or use event target
+  const clickedBtn = document.querySelector(`button[onclick*="'${targetId}'"]`);
+  if (clickedBtn) {
+    clickedBtn.classList.add('active');
+  }
+
+  // Switch panels
+  document.querySelectorAll('.oa-tab-content').forEach(section => section.classList.remove('active'));
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.classList.add('active');
+  }
+
+  // Update URL hash for direct bookmarking/navigation
+  window.location.hash = targetId;
+
+  if (window.innerWidth <= 1024) {
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('open');
+    }
+  }
+}
+
+// Auto-navigate to hash tab if present in URL (e.g. redirected from notification)
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && document.getElementById(hash)) {
+    activateSection(hash);
+  }
+});
+
+function openLedgerModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.style.display = 'flex';
+}
+
+function closeLedgerModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.style.display = 'none';
+}
+</script>
+{% endblock %}

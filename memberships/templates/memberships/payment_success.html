@@ -1,0 +1,19 @@
+{% extends 'tenancy/base.html' %}
+
+{% block title %}Payment Confirmed | {{ tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; margin: 4.5rem auto; text-align: center;">
+  <div style="background: var(--app-surface, #0d1117); border: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2rem; border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);">
+    <div style="font-size: 3.5rem; color: #6ee7b7; margin-bottom: 1rem;">&#10003;</div>
+    <h1 style="color: #fff; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Payment Successful!</h1>
+    <p style="color: #8b949e; font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5;">
+      Your membership has been activated and your initial biohacking credits have been deposited to your account ledger.
+    </p>
+
+    <a href="/dashboard/member/?org={{ tenant.slug|default:'longevity-haus' }}" class="card-cta-btn gradient-cta" style="display: inline-flex; width: 100%; text-decoration: none; justify-content: center; align-items: center; min-height: 44px; font-weight: 800;">
+      Go to Member Portal &rarr;
+    </a>
+  </div>
+</div>
+{% endblock %}

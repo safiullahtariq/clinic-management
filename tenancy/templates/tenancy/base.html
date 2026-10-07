@@ -1,0 +1,271 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{% block title %}{{ request.tenant.name|default:"HBOT Booking Portal" }}{% endblock %}</title>
+
+  <!-- Google Web Fonts for Live Typography Engine -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Cinzel:wght@700;800;900&family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=Outfit:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'tenancy/css/base.css' %}">
+
+  <!-- Dynamic Theme & Font Custom Properties from Organization Database -->
+  <style id="dynamic-tenant-branding">
+    :root {
+      --app-bg: {{ request.tenant.branding.bg_color|default:"#07090e" }};
+      --app-surface: {{ request.tenant.branding.card_bg|default:"#0d1117" }};
+      --app-accent: {{ request.tenant.branding.accent_color|default:"#38bdf8" }};
+      --app-text: {{ request.tenant.branding.text_color|default:"#f0f6fc" }};
+
+      /* Dynamic Fonts with Safe CSS Quoting */
+      --font-family-h1: "{{ request.tenant.branding.font_h1|default:'Inter' }}", sans-serif;
+      --font-family-h2: "{{ request.tenant.branding.font_h2|default:'Inter' }}", sans-serif;
+      --font-family-h3: "{{ request.tenant.branding.font_h3|default:'Inter' }}", sans-serif;
+      --font-family-p: "{{ request.tenant.branding.font_p|default:'Inter' }}", sans-serif;
+      --font-family-price: "{{ request.tenant.branding.font_price|default:'Inter' }}", monospace, sans-serif;
+    }
+
+
+    /* Enforce Theme Universally */
+    body {
+      background-color: var(--app-bg) !important;
+      color: var(--app-text) !important;
+      font-family: var(--font-family-p), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+    h1, .hero-main-title, .hero-title {
+      font-family: var(--font-family-h1), sans-serif !important;
+    }
+
+    h2, .oa-panel-title, .sa-panel-title {
+      font-family: var(--font-family-h2), sans-serif !important;
+    }
+
+    h3, .card-tier-name, .tier-heading, .modal-tier-title {
+      font-family: var(--font-family-h3), sans-serif !important;
+    }
+
+    p, span, li, label, .hero-description, .card-inclusions-list li {
+      font-family: var(--font-family-p), sans-serif !important;
+    }
+
+    .card-main-rate, .tier-main-price, .modal-tier-price, .oa-stat-val, .sa-stat-val {
+      font-family: var(--font-family-price), monospace, sans-serif !important;
+    }
+
+    /* Top Founding Slots Banner */
+    .founding-banner {
+      background: linear-gradient(90deg, #6366f1 0%, #a855f7 50%, #d946ef 100%) !important;
+      color: #ffffff !important;
+      padding: 0.55rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      width: 100%;
+      position: sticky;
+      top: 0;
+      z-index: 2000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .banner-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .banner-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+    .status-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background-color: #facc15;
+      box-shadow: 0 0 8px #facc15;
+      animation: pulse-dot 1.5s infinite;
+      flex-shrink: 0;
+    }
+    .status-dot.red {
+      background-color: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+      animation: none;
+    }
+    @keyframes pulse-dot {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .progress-bar-container {
+      width: 110px;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 10px;
+      overflow: hidden;
+      display: inline-block;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #ffffff;
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+    .claimed-badge {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.15rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      color: #f1f5f9;
+      white-space: nowrap;
+    }
+    .claim-cta-btn {
+      background: transparent;
+      border: 1px solid #facc15;
+      color: #facc15;
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .claim-cta-btn:hover {
+      background: #facc15;
+      color: #000;
+    }
+
+    .site-header {
+      background: rgba(13, 17, 23, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.85rem 1rem;
+    }
+    .header-dash-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff !important;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+    .header-dash-btn:hover {
+      background: #fff;
+      color: #000 !important;
+    }
+
+    @media (max-width: 580px) {
+      .founding-banner { padding: 0.5rem 0.75rem; }
+      .banner-inner { flex-direction: row; gap: 0.5rem; }
+      .progress-bar-container, .claimed-badge { display: none !important; }
+      .banner-left { font-size: 0.78rem; gap: 0.4rem; }
+      .claim-cta-btn { padding: 0.25rem 0.55rem; font-size: 0.72rem; }
+      .hide-mobile { display: none !important; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Real-time Dynamic Founding Slots Banner -->
+  <div class="founding-banner" id="top-founding-banner">
+    <div class="banner-inner">
+      <div class="banner-left">
+        {% if is_slots_full %}
+          <span class="status-dot red"></span>
+          <span>FOUNDING SLOTS FULL</span>
+        {% else %}
+          <span class="status-dot"></span>
+          <span>SLOTS REMAINING</span>
+          <span style="font-size: 1.05rem; font-weight: 800; letter-spacing: 0.02em;">
+            {{ remaining_founding_slots|default:"12" }} <span style="font-size: 0.75rem; opacity: 0.85;">/ {{ total_founding_slots|default:"100" }}</span>
+          </span>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: {{ slots_progress_percent|default:'88' }}%;"></div>
+          </div>
+          <span class="claimed-badge">{{ claimed_founding_slots|default:"88" }} claimed</span>
+        {% endif %}
+      </div>
+
+      <div>
+        {% if is_slots_full %}
+          <span style="color: #f1f5f9; font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.3rem 0.6rem; border-radius: 4px;">
+            SOLD OUT
+          </span>
+        {% else %}
+          <button type="button" onclick="openTierPopup()" class="claim-cta-btn">
+            CLAIM YOURS &rarr;
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="header-wrapper" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <a href="/?org={{ request.tenant.slug|default:'longevity-haus' }}" class="brand-logo" style="color: #fff; font-weight: 800; text-decoration: none; font-size: 1.05rem; letter-spacing: 0.08em;">
+          {{ request.tenant.name|default:"HBOT Booking Portal"|upper }}
+        </a>
+        <span id="tenant-accent-badge" class="hide-mobile" style="color: var(--app-accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em;">
+          {{ request.tenant.branding.tagline|default:"" }}
+        </span>
+      </div>
+
+     <!-- Smart Role-Based Portal Routing -->
+      <div>
+        {% if request.user.is_authenticated %}
+          {% if portal_url %}
+            <!-- Recommended: Loaded via Context Processor -->
+            <a href="{{ portal_url }}" class="header-dash-btn">
+              {{ portal_label }} &rarr;
+            </a>
+          {% else %}
+            <!-- Template Fallback -->
+            {% if request.user.is_superuser %}
+              <a href="/dashboard/super-admin/" class="header-dash-btn">
+                Master Console &rarr;
+              </a>
+            {% elif request.user.profile.role == 'org_admin' or request.user.userprofile.role == 'org_admin' %}
+              <a href="/dashboard/org-admin/?org={{ request.tenant.slug|default:'longevity-haus' }}" class="header-dash-btn">
+                Club Console &rarr;
+              </a>
+            {% else %}
+              <a href="/dashboard/member/?org={{ request.tenant.slug|default:'longevity-haus' }}" class="header-dash-btn">
+                My Portal &rarr;
+              </a>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          <a href="/login/" class="header-dash-btn">Sign In</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

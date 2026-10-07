@@ -1,0 +1,82 @@
+.scheduler-card {
+  max-width: 680px;
+  margin: 3rem auto 5rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 2.25rem;
+}
+
+.scheduler-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: var(--accent-gold);
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.slot-item {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.65rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.slot-item:hover:not(:disabled) {
+  border-color: var(--accent-gold);
+}
+
+.slot-item.selected {
+  background-color: var(--accent-gold);
+  color: #000;
+  font-weight: bold;
+}
+
+.slot-item:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.feedback-banner {
+  padding: 0.85rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-top: 1.25rem;
+  display: none;
+}

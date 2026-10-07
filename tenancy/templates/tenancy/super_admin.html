@@ -1,0 +1,1435 @@
+{% extends 'tenancy/base.html' %}
+{% load static %}
+{% block title %}Super Admin | Platform Governance{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --sa-bg: #07090e;
+    --sa-sidebar-bg: #0d1117;
+    --sa-surface: #111620;
+    --sa-card: #161c26;
+    --sa-border: #212936;
+    --sa-border-light: rgba(255, 255, 255, 0.07);
+    --sa-accent: #38bdf8;
+    --sa-accent-hover: #0284c7;
+    --sa-text: #f0f6fc;
+    --sa-muted: #8b949e;
+    --sa-success: #7bf199;
+    --sa-danger: #ff9b9b;
+    --sidebar-w: 260px;
+  }
+
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    background-color: var(--sa-bg);
+  }
+
+  .sa-app-layout {
+    display: flex;
+    min-height: calc(100vh - 70px);
+    position: relative;
+    width: 100%;
+  }
+
+  /* Left Sliding Sidebar */
+  .sa-sidebar {
+    width: var(--sidebar-w);
+    background: var(--sa-sidebar-bg);
+    border-right: 1px solid var(--sa-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem 1rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+  }
+
+  .sa-sidebar-brand {
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--sa-border);
+    margin-bottom: 1.25rem;
+  }
+
+  .sa-sidebar-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--sa-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .sa-sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--sa-text);
+    margin: 0.2rem 0 0;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .sa-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sa-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 0.95rem;
+    background: transparent;
+    color: var(--sa-muted);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+
+  .sa-nav-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+  }
+
+  .sa-nav-item.active {
+    background: var(--sa-card);
+    border-color: var(--sa-border);
+    color: var(--sa-accent);
+    font-weight: 700;
+  }
+
+  .sa-nav-badge {
+    font-size: 0.72rem;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--sa-accent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+
+  /* Right Stage */
+  .sa-stage {
+    flex-grow: 1;
+    min-width: 0;
+    padding: clamp(1rem, 2.5vw, 2.5rem);
+    box-sizing: border-box;
+  }
+
+  /* Mobile Top Sticky Bar */
+  .sa-mobile-topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--sa-sidebar-bg);
+    border-bottom: 1px solid var(--sa-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .sa-hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--sa-surface);
+    border: 1px solid var(--sa-border);
+    color: var(--sa-text);
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .sa-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 1040;
+  }
+
+  /* Metrics Grid */
+  .sa-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .sa-stat-card {
+    background: var(--sa-card);
+    border: 1px solid var(--sa-border);
+    border-radius: 8px;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .sa-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--sa-muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .sa-stat-val {
+    font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0.35rem 0 0.15rem;
+  }
+
+  .sa-subtext {
+    font-size: 0.75rem;
+    color: var(--sa-muted);
+  }
+
+  /* Panels */
+  .sa-panel {
+    background: var(--sa-card);
+    border: 1px solid var(--sa-border);
+    border-radius: 8px;
+    padding: clamp(1rem, 2vw, 1.75rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .sa-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .sa-panel-title {
+    font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+
+  /* Tables vs. Mobile Cards */
+  .sa-table-box {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid var(--sa-border);
+  }
+
+  .sa-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+  }
+
+  .sa-table th, .sa-table td {
+    padding: 0.8rem;
+  }
+
+  .sa-table thead tr {
+    border-bottom: 1px solid var(--sa-border);
+    color: var(--sa-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .sa-table tbody tr {
+    border-bottom: 1px solid var(--sa-border-light);
+  }
+
+  .sa-mobile-cards-list {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sa-mobile-card {
+    background: var(--sa-surface);
+    border: 1px solid var(--sa-border);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .sa-card-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  /* Buttons & Form Controls */
+  .sa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0.5rem 1rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    box-sizing: border-box;
+    transition: opacity 0.2s;
+  }
+
+  .sa-btn-primary {
+    background: var(--sa-accent);
+    color: #000;
+  }
+
+  .sa-btn-outline {
+    background: transparent;
+    border: 1px solid var(--sa-accent);
+    color: var(--sa-accent);
+  }
+
+  .sa-btn-danger {
+    background: transparent;
+    border: 1px solid rgba(255, 155, 155, 0.4);
+    color: var(--sa-danger);
+  }
+
+  .sa-form-group {
+    margin-bottom: 1.15rem;
+  }
+
+  .sa-form-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--sa-muted);
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+  }
+
+  .password-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .sa-input {
+    width: 100%;
+    background: var(--sa-surface);
+    border: 1px solid var(--sa-border);
+    color: #fff;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    min-height: 44px;
+    outline: none;
+  }
+
+  .sa-input:focus {
+    border-color: var(--sa-accent);
+  }
+
+  .toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--sa-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .toggle-password-btn:hover {
+    color: #fff;
+  }
+
+  /* Universal Popups */
+  .sa-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  .sa-modal-sheet {
+    background: var(--sa-card);
+    border: 1px solid var(--sa-border);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    box-sizing: border-box;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Tab View Visibility */
+  .sa-tab-content {
+    display: none;
+  }
+
+  .sa-tab-content.active {
+    display: block;
+  }
+
+  /* ========================================================
+     BREAKPOINTS: RESPONSIVE BEHAVIOR
+     ======================================================== */
+  @media (max-width: 1024px) {
+    .sa-mobile-topbar {
+      display: flex;
+    }
+
+    .sa-sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sa-sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sa-sidebar-backdrop.open {
+      display: block;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .sa-table-box {
+      display: none;
+    }
+
+    .sa-mobile-cards-list {
+      display: flex;
+    }
+
+    .sa-modal-overlay {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    .sa-modal-sheet {
+      border-radius: 16px 16px 0 0;
+      max-height: 90vh;
+      padding: 1.5rem 1.15rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Mobile Top Navigation Bar -->
+<div class="sa-mobile-topbar">
+  <button type="button" class="sa-hamburger-btn" onclick="toggleSidebar()">
+    <span>&#9776;</span>
+    <span>Menu</span>
+  </button>
+  <div style="text-align: right;">
+    <strong style="font-size: 0.95rem; color: #fff;">Super Admin</strong>
+  </div>
+</div>
+
+<!-- Backdrop Overlay for Mobile -->
+<div id="sidebar-backdrop" class="sa-sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+<div class="sa-app-layout">
+  <!-- Interactive Sidebar Navigation -->
+  <aside id="app-sidebar" class="sa-sidebar">
+    <div>
+      <div class="sa-sidebar-brand">
+        <div class="sa-sidebar-badge">Platform Governance</div>
+        <h2 class="sa-sidebar-title">Master Console</h2>
+      </div>
+
+      <nav>
+        <ul class="sa-nav-list">
+          <li>
+            <button type="button" class="sa-nav-item active" onclick="activateSection('tab-overview')">
+              <span>Overview</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="sa-nav-item" onclick="activateSection('tab-clubs')">
+              <span>Clubs</span>
+              <span class="sa-nav-badge">{{ total_clubs }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="sa-nav-item" onclick="activateSection('tab-members')">
+              <span>Members</span>
+              <span class="sa-nav-badge">{{ total_members }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="sa-nav-item" onclick="activateSection('tab-admins')">
+              <span>Center's Admins</span>
+              <span class="sa-nav-badge">{{ org_admins.count }}</span>
+            </button>
+          </li>
+          <!-- Super Admins Tab Button -->
+          <li>
+            <button type="button" class="sa-nav-item" onclick="activateSection('tab-super-admins')">
+              <span>Super Admins</span>
+              <span class="sa-nav-badge" style="background: rgba(168, 85, 247, 0.2); color: #d8b4fe;">{{ total_super_admins }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="sa-nav-item" onclick="activateSection('tab-provision')">
+              <span>Launch New Wellness Center</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.5rem; border-top: 1px solid var(--sa-border);">
+      <!-- Naya Super Admin Banane Ka Button -->
+      <button type="button" onclick="openCreateSuperAdminModal()" class="sa-btn sa-btn-primary" style="width: 100%; font-size: 0.82rem;">
+        + Add Super Admin
+      </button>
+
+      <!-- Apni Credentials Edit Karne Ka Button -->
+      <button type="button" onclick="openSuperCredentialsModal()" class="sa-btn sa-btn-outline" style="width: 100%;">
+        Edit Login
+      </button>
+
+      <a href="/logout/" class="sa-btn sa-btn-danger" style="width: 100%;">Sign Out</a>
+    </div>
+  </aside>
+
+  <!-- Main Stage -->
+  <main class="sa-stage">
+    
+    <!-- 1. TAB: OVERVIEW -->
+    <div id="tab-overview" class="sa-tab-content active">
+      <section class="sa-panel">
+        <div class="sa-panel-header">
+          <div>
+            <h2 class="sa-panel-title">Platform-wide Metrics</h2>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">Live Wellness Centers, total subscribers, and system activity across all organizations.</p>
+          </div>
+        </div>
+
+        <div class="sa-metrics-row">
+          <div class="sa-stat-card">
+            <span class="sa-stat-label">Wellness Centers</span>
+            <div class="sa-stat-val" style="color: var(--sa-accent);">{{ total_clubs }}</div>
+            <span class="sa-subtext">Multi-tenant wellness organizations</span>
+          </div>
+
+          <div class="sa-stat-card">
+            <span class="sa-stat-label">Platform Members</span>
+            <div class="sa-stat-val" style="color: #fff;">{{ total_members }}</div>
+            <span class="sa-subtext">Total active Center subscribers</span>
+          </div>
+
+          <div class="sa-stat-card">
+            <span class="sa-stat-label">Appointments</span>
+            <div class="sa-stat-val" style="color: var(--sa-success);">{{ total_bookings }}</div>
+            <span class="sa-subtext">Total modality reservations processed</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 2. TAB: CLUBS & DEDICATED MEMBERS -->
+    <div id="tab-clubs" class="sa-tab-content">
+      <section class="sa-panel">
+        <div class="sa-panel-header">
+          <div>
+            <h2 class="sa-panel-title">Wellness Centers &amp; Dedicated Member Breakdown</h2>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">Filter members or preview the live storefront for any center.</p>
+          </div>
+          {% if selected_club_slug %}
+            <a href="/dashboard/super-admin/" class="sa-btn sa-btn-outline" style="min-height: 36px; font-size: 0.78rem;">
+              &times; Reset: Show All Clubs
+            </a>
+          {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+          {% for item in club_stats %}
+            <div style="background: {% if item.is_selected %}#1e293b{% else %}var(--sa-surface){% endif %}; border: 1px solid {% if item.is_selected %}var(--sa-accent){% else %}var(--sa-border){% endif %}; padding: 1.15rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem;">
+              <div>
+                <div style="font-size: 0.72rem; color: var(--sa-muted); font-weight: 700; text-transform: uppercase;">{{ item.org.slug }}</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0.25rem 0;">{{ item.org.name }}</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--sa-accent);">
+                  {{ item.member_count }} <span style="font-size: 0.75rem; color: var(--sa-muted); font-weight: 400;">members</span>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                <a href="/dashboard/super-admin/?club={{ item.org.slug }}" class="sa-btn sa-btn-outline" style="flex: 1; min-height: 34px; font-size: 0.75rem; padding: 0.35rem 0.6rem; text-align: center;">
+                  Filter Roster
+                </a>
+                <a href="/?org={{ item.org.slug }}" target="_blank" class="sa-btn sa-btn-primary" style="flex: 1; min-height: 34px; font-size: 0.75rem; padding: 0.35rem 0.6rem; text-decoration: none; text-align: center;">
+                  View Live Page &#8599;
+                </a>
+                
+                <!-- Bulletproof Data-Attribute Based Customizer Button -->
+                <button type="button" 
+                        class="sa-btn sa-btn-outline btn-customize-theme" 
+                        style="width: 100%; min-height: 34px; font-size: 0.75rem; border-color: #a855f7; color: #d8b4fe;"
+                        data-id="{{ item.org.id }}"
+                        data-name="{{ item.org.name|escape }}"
+                        data-accent="{{ item.org.branding.accent_color|default:'#38bdf8' }}"
+                        data-bg="{{ item.org.branding.bg_color|default:'#07090e' }}"
+                        data-card="{{ item.org.branding.card_bg|default:'#111622' }}"
+                        data-text="{{ item.org.branding.text_color|default:'#ffffff' }}"
+                        data-h1="{{ item.org.branding.font_h1|default:'Inter' }}"
+                        data-h2="{{ item.org.branding.font_h2|default:'Inter' }}"
+                        data-h3="{{ item.org.branding.font_h3|default:'Inter' }}"
+                        data-p="{{ item.org.branding.font_p|default:'Inter' }}"
+                        data-price="{{ item.org.branding.font_price|default:'Inter' }}"
+                        onclick="handleThemeClick(this)">
+                  Customize Theme &amp; Fonts &#127912;
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <!-- 3. TAB: MEMBERS TABLE -->
+    <div id="tab-members" class="sa-tab-content">
+      <section class="sa-panel">
+        <div class="sa-panel-header">
+          <div>
+            <h2 class="sa-panel-title">
+              {% if selected_club_slug %}
+                Members of <span style="color: var(--sa-accent);">{{ selected_club_slug }}</span> ({{ all_members.count }})
+              {% else %}
+                All Platform Members ({{ all_members.count }})
+              {% endif %}
+            </h2>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">Real-time search across usernames, emails, and Wellness Center assignments.</p>
+          </div>
+          <div style="width: 100%; max-width: 260px;">
+            <input type="text" id="member-search-input" onkeyup="filterMemberTable()" placeholder="Search members..." class="sa-input" style="min-height: 40px; font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="sa-table-box">
+          <table class="sa-table" id="members-table">
+            <thead>
+              <tr>
+                <th>Member Account</th>
+                <th>Email Address</th>
+                <th>Assigned Center</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in all_members %}
+              <tr class="member-row">
+                <td style="font-weight: 700; color: #fff;">{{ m.user.username }}</td>
+                <td style="color: var(--sa-muted);">{{ m.user.email|default:"—" }}</td>
+                <td style="color: var(--sa-accent); font-weight: 600;">{{ m.organization.name }}</td>
+                <td style="text-align: right;">
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Remove user {{ m.user.username }} globally from platform?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="delete_user">
+                    <input type="hidden" name="user_id" value="{{ m.user.id }}">
+                    <button type="submit" class="sa-btn sa-btn-danger" style="min-height: 34px;">Delete User</button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" style="text-align: center; color: var(--sa-muted); padding: 1.5rem;">No members found for this view.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card-based List -->
+        <div class="sa-mobile-cards-list" id="members-card-list">
+          {% for m in all_members %}
+          <div class="sa-mobile-card member-row">
+            <div class="sa-card-line">
+              <strong style="color: #fff; font-size: 0.95rem;">{{ m.user.username }}</strong>
+              <span style="font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 4px; background: rgba(56,189,248,0.1); color: var(--sa-accent); font-weight: 700;">
+                {{ m.organization.name }}
+              </span>
+            </div>
+            <div class="sa-subtext">{{ m.user.email|default:"No email recorded" }}</div>
+            <form method="POST" onsubmit="return confirm('Remove user {{ m.user.username }}?');" style="margin-top: 0.35rem;">
+              {% csrf_token %}
+              <input type="hidden" name="action_type" value="delete_user">
+              <input type="hidden" name="user_id" value="{{ m.user.id }}">
+              <button type="submit" class="sa-btn sa-btn-danger" style="width: 100%;">Delete User</button>
+            </form>
+          </div>
+          {% empty %}
+          <p style="color: var(--sa-muted); text-align: center; padding: 1rem;">No members found for this view.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <!-- 4. TAB: CLUB ADMINS ROSTER -->
+    <div id="tab-admins" class="sa-tab-content">
+      <section class="sa-panel">
+        <div class="sa-panel-header">
+          <div>
+            <h2 class="sa-panel-title">Wellness Center Organization Admins ({{ org_admins.count }})</h2>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">Credentials and notification routing for center managers.</p>
+          </div>
+          <button type="button" onclick="openCreateAdminModal()" class="sa-btn sa-btn-primary">
+            + Add Wellness Center Admin
+          </button>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="sa-table-box">
+          <table class="sa-table">
+            <thead>
+              <tr>
+                <th>Admin Username</th>
+                <th>Notification Email</th>
+                <th>Managed Club</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in org_admins %}
+              <tr>
+                <td style="font-weight: 700; color: var(--sa-accent);">{{ a.user.username }}</td>
+                <td style="color: var(--sa-muted);">{{ a.user.email|default:"No email configured" }}</td>
+                <td style="color: #fff;">{{ a.organization.name }}</td>
+                <td style="text-align: right;">
+                  <button type="button" onclick="openEditAdmin('{{ a.user.id }}', '{{ a.user.username }}', '{{ a.user.email|default:'' }}', '{{ a.organization.id }}')" class="sa-btn sa-btn-outline" style="min-height: 34px; font-size: 0.78rem; margin-right: 0.35rem;">
+                    Edit Login
+                  </button>
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Delete Admin {{ a.user.username }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="delete_user">
+                    <input type="hidden" name="user_id" value="{{ a.user.id }}">
+                    <button type="submit" class="sa-btn sa-btn-danger" style="min-height: 34px;">Remove</button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" style="text-align: center; color: var(--sa-muted); padding: 1.5rem;">No club administrators provisioned.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="sa-mobile-cards-list">
+          {% for a in org_admins %}
+          <div class="sa-mobile-card">
+            <div class="sa-card-line">
+              <strong style="color: var(--sa-accent); font-size: 0.95rem;">{{ a.user.username }}</strong>
+              <span class="sa-subtext">{{ a.organization.name }}</span>
+            </div>
+            <div class="sa-subtext" style="color: var(--sa-muted);">
+              {{ a.user.email|default:"No email registered" }}
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.35rem;">
+              <button type="button" onclick="openEditAdmin('{{ a.user.id }}', '{{ a.user.username }}', '{{ a.user.email|default:'' }}', '{{ a.organization.id }}')" class="sa-btn sa-btn-outline" style="flex: 1;">
+                Edit
+              </button>
+              <form method="POST" style="flex: 1;" onsubmit="return confirm('Delete Admin {{ a.user.username }}?');">
+                {% csrf_token %}
+                <input type="hidden" name="action_type" value="delete_user">
+                <input type="hidden" name="user_id" value="{{ a.user.id }}">
+                <button type="submit" class="sa-btn sa-btn-danger" style="width: 100%;">Remove</button>
+              </form>
+            </div>
+          </div>
+          {% empty %}
+          <p style="color: var(--sa-muted); text-align: center; padding: 1rem;">No club administrators found.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    
+   <!-- TAB: PROVISION NEW CLUB -->
+    <div id="tab-provision" class="sa-tab-content">
+      <section class="sa-panel" style="max-width: 600px;">
+        <h2 class="sa-panel-title" style="margin-bottom: 0.25rem;">Provision New Organization</h2>
+        <p class="sa-subtext" style="margin-bottom: 1.5rem;">Create a new club tenant with customized branding tokens.</p>
+
+        <form method="POST" action="/dashboard/super-admin/">
+          {% csrf_token %}
+          <input type="hidden" name="action_type" value="create_org">
+
+          <div class="sa-form-group">
+            <label class="sa-form-label">Wellness Center Name</label>
+            <input type="text" name="org_name" placeholder="Miami Biohack Haus" class="sa-input" required>
+          </div>
+          <div class="sa-form-group">
+            <label class="sa-form-label">URL Slug</label>
+            <input type="text" name="org_slug" placeholder="miami-haus" class="sa-input" required>
+          </div>
+          <div class="sa-form-group">
+            <label class="sa-form-label">Founding Slots Limit</label>
+            <input type="number" name="founding_cap" value="100" class="sa-input" required>
+          </div>
+          <div class="sa-form-group">
+            <label class="sa-form-label">Accent Brand Color</label>
+            <input type="color" name="accent_color" value="#38bdf8" style="width: 100%; height: 44px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+          </div>
+          <button type="submit" class="sa-btn sa-btn-primary" style="width: 100%;">Provision Club Tenant</button>
+        </form>
+      </section>
+    </div>
+    <!-- TAB: SUPER ADMINS LIST & GOVERNANCE -->
+    <div id="tab-super-admins" class="sa-tab-content">
+      <section class="sa-panel">
+        <div class="sa-panel-header">
+          <div>
+            <h2 class="sa-panel-title">Platform Super Administrators ({{ total_super_admins }})</h2>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">Full master console access wale administrators ki list. Last Super Admin ko delete nahi kiya ja sakta.</p>
+          </div>
+          <button type="button" onclick="openCreateSuperAdminModal()" class="sa-btn sa-btn-primary">
+            + Add Super Admin
+          </button>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div style="padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; {% if message.tags == 'error' %}background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5;{% else %}background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7;{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Desktop Table View -->
+        <div class="sa-table-box">
+          <table class="sa-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Host Notification Email</th>
+                <th>Privilege Level</th>
+                <th>Date Added</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sa in super_admins %}
+              <tr>
+                <td style="font-weight: 700; color: #fff;">
+                  {{ sa.username }}
+                  {% if sa.id == request.user.id %}
+                    <span style="font-size: 0.7rem; background: rgba(56, 189, 248, 0.2); color: var(--sa-accent); padding: 0.15rem 0.45rem; border-radius: 4px; margin-left: 0.35rem;">(You)</span>
+                  {% endif %}
+                </td>
+                <td style="color: var(--sa-muted);">{{ sa.email|default:"No email registered" }}</td>
+                <td>
+                  <span style="font-size: 0.72rem; background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700;">
+                    Super Administrator
+                  </span>
+                </td>
+                <td style="color: #cbd5e1; font-size: 0.82rem;">{{ sa.date_joined|date:"M d, Y" }}</td>
+                <td style="text-align: right;">
+                  {% if total_super_admins <= 1 %}
+                    <!-- Last Super Admin Protection -->
+                    <button type="button" class="sa-btn sa-btn-outline" style="min-height: 32px; font-size: 0.75rem; opacity: 0.45; cursor: not-allowed;" title="Cannot delete the only remaining Super Admin" disabled>
+                      Protected (Sole Admin)
+                    </button>
+                  {% else %}
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Delete Super Admin \'{{ sa.username }}\'? This will revoke all platform governance access.');">
+                      {% csrf_token %}
+                      <input type="hidden" name="action_type" value="delete_super_admin">
+                      <input type="hidden" name="user_id" value="{{ sa.id }}">
+                      <button type="submit" class="sa-btn sa-btn-danger" style="min-height: 32px; font-size: 0.75rem; padding: 0.3rem 0.75rem;">
+                        Delete Admin
+                      </button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" style="text-align: center; color: var(--sa-muted); padding: 1.5rem;">No super admin accounts found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Cards View -->
+        <div class="sa-mobile-cards-list">
+          {% for sa in super_admins %}
+          <div class="sa-mobile-card">
+            <div class="sa-card-line">
+              <strong style="color: #fff; font-size: 0.95rem;">
+                {{ sa.username }}
+                {% if sa.id == request.user.id %}(You){% endif %}
+              </strong>
+              <span style="font-size: 0.7rem; background: rgba(168, 85, 247, 0.15); color: #d8b4fe; padding: 0.15rem 0.45rem; border-radius: 4px; font-weight: 700;">
+                Super Admin
+              </span>
+            </div>
+            <div class="sa-subtext">{{ sa.email|default:"No email registered" }}</div>
+            <div class="sa-subtext">Joined: {{ sa.date_joined|date:"M d, Y" }}</div>
+            
+            <div style="margin-top: 0.4rem;">
+              {% if total_super_admins <= 1 %}
+                <button type="button" class="sa-btn sa-btn-outline" style="width: 100%; opacity: 0.45; cursor: not-allowed;" disabled>
+                  Protected (Sole Admin)
+                </button>
+              {% else %}
+                <form method="POST" onsubmit="return confirm('Delete Super Admin \'{{ sa.username }}\'?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="action_type" value="delete_super_admin">
+                  <input type="hidden" name="user_id" value="{{ sa.id }}">
+                  <button type="submit" class="sa-btn sa-btn-danger" style="width: 100%;">
+                    Delete Admin
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<!-- ========================================================
+     MODALS
+     ======================================================== -->
+
+<!-- Modal 1: Edit Super Admin Own Credentials (Username, Email, Password) -->
+<div id="super-credentials-modal" class="sa-modal-overlay">
+  <div class="sa-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Edit Super Admin Credentials</h3>
+      <span onclick="closeModal('super-credentials-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+    </div>
+
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="update_own_credentials">
+
+      <!-- Fake Decoy Inputs to absorb browser autofill -->
+      <input type="text" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+      <input type="password" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Username</label>
+        <input type="text" name="new_username" id="sa-edit-username" value="{{ request.user.username }}" class="sa-input" required autocomplete="off">
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Platform Host Email (For alerts & notifications)</label>
+        <input type="email" name="new_email" id="sa-edit-email" value="{{ request.user.email }}" class="sa-input" placeholder="admin@domain.com" required autocomplete="off">
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">New Password (Leave blank to keep current)</label>
+        <div class="password-field-wrapper">
+          <input type="password" 
+                 id="super-admin-pass" 
+                 name="new_password" 
+                 placeholder="Enter new password to change" 
+                 class="sa-input" 
+                 autocomplete="new-password" 
+                 style="padding-right: 40px;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('super-admin-pass', this)" aria-label="Toggle password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.65rem;">
+        <button type="button" onclick="closeModal('super-credentials-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal 2: Create Org Admin (Wellness Center Admin) -->
+<div id="create-admin-modal" class="sa-modal-overlay">
+  <div class="sa-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <div>
+        <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Create Wellness Center Admin</h3>
+        <p class="sa-subtext" style="margin: 0.25rem 0 0;">An automated welcome email with login details will be dispatched immediately.</p>
+      </div>
+      <span onclick="closeModal('create-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+    </div>
+
+    <!-- autocomplete="off" enforced -->
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="create_org_admin">
+
+      <!-- Fake Decoy Inputs: Browser ka autofill in par trap ho jayega -->
+      <input type="text" name="fake_username_trap" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+      <input type="password" name="fake_password_trap" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Assign Wellness Center Organization</label>
+        <select name="org_id" id="new-admin-org-select" class="sa-input" required>
+          {% for o in organizations %}
+            <option value="{{ o.id }}">{{ o.name }} ({{ o.slug }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Username</label>
+        <input type="text" 
+               name="admin_username" 
+               id="new-admin-username-field" 
+               class="sa-input" 
+               placeholder="e.g. miami_manager" 
+               value="" 
+               autocomplete="off" 
+               required>
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Admin Email Address</label>
+        <input type="email" 
+               name="admin_email" 
+               id="new-admin-email-field" 
+               class="sa-input" 
+               placeholder="admin@wellnesscenter.com" 
+               value="" 
+               autocomplete="off" 
+               required>
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Temporary Password</label>
+        <div class="password-field-wrapper">
+          <input type="password" 
+                 id="new-admin-pass-field" 
+                 name="admin_password" 
+                 class="sa-input" 
+                 placeholder="Minimum 8 characters" 
+                 value="" 
+                 autocomplete="new-password" 
+                 required 
+                 style="padding-right: 40px;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('new-admin-pass-field', this)" aria-label="Toggle password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.65rem;">
+        <button type="button" onclick="closeModal('create-admin-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Create Admin &amp; Send Email</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal 3: Edit Admin Login -->
+<div id="edit-admin-modal" class="sa-modal-overlay">
+  <div class="sa-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Edit Admin Credentials</h3>
+      <span onclick="closeModal('edit-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+    </div>
+
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="edit_admin_credentials">
+      <input type="hidden" name="user_id" id="edit-admin-id">
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Managed Wellness Center</label>
+        <select name="target_org_id" id="edit-admin-org" class="sa-input" required>
+          {% for o in organizations %}
+            <option value="{{ o.id }}">{{ o.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Username</label>
+        <input type="text" name="updated_username" id="edit-admin-user" class="sa-input" required autocomplete="off">
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label"> Email Address</label>
+        <input type="email" name="updated_email" id="edit-admin-email" class="sa-input" placeholder="admin@domain.com" required autocomplete="off">
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">New Password (Leave blank to keep current)</label>
+        <div class="password-field-wrapper">
+          <input type="password" 
+                 id="edit-admin-pass" 
+                 name="updated_password" 
+                 placeholder="Enter new password to change" 
+                 class="sa-input" 
+                 autocomplete="new-password" 
+                 style="padding-right: 40px;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('edit-admin-pass', this)" aria-label="Toggle password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.65rem;">
+        <button type="button" onclick="closeModal('edit-admin-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Update Credentials</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal 4: Customize Full Theme & Typography -->
+<div id="theme-customizer-modal" class="sa-modal-overlay">
+  <div class="sa-modal-sheet" style="max-width: 650px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+      <div>
+        <h3 style="margin: 0; color: #fff; font-size: 1.25rem;">Live Theme &amp; Typography Engine</h3>
+        <p style="color: var(--sa-muted); font-size: 0.78rem; margin: 0.2rem 0 0;" id="theme-modal-org-name">Customizing Club Theme</p>
+      </div>
+      <span onclick="closeModal('theme-customizer-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted); line-height: 1;">&times;</span>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="update_club_theme">
+      <input type="hidden" name="theme_org_id" id="theme-org-id">
+
+      <!-- Colors Section -->
+      <h4 style="color: var(--sa-accent); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem; letter-spacing: 0.05em;">Color Palette</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+        <div class="sa-form-group">
+          <label class="sa-form-label">Accent / Buttons</label>
+          <input type="color" name="accent_color" id="theme-accent" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+        </div>
+        <div class="sa-form-group">
+          <label class="sa-form-label">Background Color</label>
+          <input type="color" name="bg_color" id="theme-bg" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+        </div>
+        <div class="sa-form-group">
+          <label class="sa-form-label">Card Surface</label>
+          <input type="color" name="card_bg" id="theme-card" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+        </div>
+        <div class="sa-form-group">
+          <label class="sa-form-label">Text Color</label>
+          <input type="color" name="text_color" id="theme-text" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+        </div>
+      </div>
+
+      <!-- Typography Section -->
+      <h4 style="color: var(--sa-accent); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem; letter-spacing: 0.05em;">Typography &amp; Fonts</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+        
+        <div class="sa-form-group">
+          <label class="sa-form-label">H1 (Hero Headings)</label>
+          <select name="font_h1" id="theme-font-h1" class="sa-input">
+            <option value="Inter">Inter</option>
+            <option value="'Playfair Display', serif">Playfair Display (Luxury Serif)</option>
+            <option value="'Cinzel', serif">Cinzel (Regal)</option>
+            <option value="'Montserrat', sans-serif">Montserrat (Modern Bold)</option>
+            <option value="'Outfit', sans-serif">Outfit (Clean)</option>
+            <option value="'Syne', sans-serif">Syne (Futuristic)</option>
+          </select>
+        </div>
+
+        <div class="sa-form-group">
+          <label class="sa-form-label">H2 (Section Titles)</label>
+          <select name="font_h2" id="theme-font-h2" class="sa-input">
+            <option value="Inter">Inter</option>
+            <option value="'Playfair Display', serif">Playfair Display</option>
+            <option value="'Cinzel', serif">Cinzel</option>
+            <option value="'Montserrat', sans-serif">Montserrat</option>
+            <option value="'Outfit', sans-serif">Outfit</option>
+            <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+          </select>
+        </div>
+
+        <div class="sa-form-group">
+          <label class="sa-form-label">H3 (Card Pass Names)</label>
+          <select name="font_h3" id="theme-font-h3" class="sa-input">
+            <option value="Inter">Inter</option>
+            <option value="'Playfair Display', serif">Playfair Display</option>
+            <option value="'Montserrat', sans-serif">Montserrat</option>
+            <option value="'Outfit', sans-serif">Outfit</option>
+            <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+          </select>
+        </div>
+
+        <div class="sa-form-group">
+          <label class="sa-form-label">P (Body &amp; Inclusions)</label>
+          <select name="font_p" id="theme-font-p" class="sa-input">
+            <option value="Inter">Inter</option>
+            <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+            <option value="'Roboto', sans-serif">Roboto</option>
+            <option value="'Open Sans', sans-serif">Open Sans</option>
+            <option value="'DM Sans', sans-serif">DM Sans</option>
+          </select>
+        </div>
+
+        <div class="sa-form-group">
+          <label class="sa-form-label">Pricing Rate Numbers ($)</label>
+          <select name="font_price" id="theme-font-price" class="sa-input">
+            <option value="Inter">Inter (Clean Numerals)</option>
+            <option value="'Space Grotesk', sans-serif">Space Grotesk (Tech Numeric)</option>
+            <option value="'Outfit', sans-serif">Outfit (Bold Geometric)</option>
+            <option value="'Chivo', sans-serif">Chivo (High Contrast)</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div style="display: flex; gap: 0.65rem;">
+        <button type="button" onclick="closeModal('theme-customizer-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Save &amp; Apply Theme</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Modal: Provision Additional Super Admin -->
+<div id="create-super-admin-modal" class="sa-modal-overlay">
+  <div class="sa-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <div>
+        <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Add Super Admin</h3>
+        <p class="sa-subtext" style="margin: 0.25rem 0 0;">Grants full master console governance over all clubs.</p>
+      </div>
+      <span onclick="closeModal('create-super-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+    </div>
+
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="create_super_admin">
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Super Admin Username</label>
+        <input type="text" name="sa_username" class="sa-input" placeholder="e.g. platform_director" required autocomplete="off">
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Notification Email Address</label>
+        <input type="email" name="sa_email" class="sa-input" placeholder="director@hausplatform.com" required autocomplete="off">
+      </div>
+
+      <div class="sa-form-group">
+        <label class="sa-form-label">Password</label>
+        <div class="password-field-wrapper">
+          <input type="password" 
+                 id="new-sa-pass" 
+                 name="sa_password" 
+                 placeholder="Minimum 8 characters" 
+                 class="sa-input" 
+                 required 
+                 autocomplete="new-password" 
+                 style="padding-right: 40px;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('new-sa-pass', this)" aria-label="Toggle password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.65rem;">
+        <button type="button" onclick="closeModal('create-super-admin-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Create Super Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Dedicated function to open Create Admin Modal with forced empty fields
+function openCreateAdminModal() {
+  const uField = document.getElementById('new-admin-username-field');
+  const eField = document.getElementById('new-admin-email-field');
+  const pField = document.getElementById('new-admin-pass-field');
+
+  // Clear any browser autofill on modal open
+  if (uField) uField.value = '';
+  if (eField) eField.value = '';
+  if (pField) {
+    pField.value = '';
+    pField.type = 'password';
+  }
+
+  openModal('create-admin-modal');
+}
+// Toggle Slide-over Drawer for Mobile
+function toggleSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  sidebar.classList.toggle('open');
+  backdrop.classList.toggle('open');
+}
+
+// Switch Active Section Tab
+function activateSection(targetId) {
+  document.querySelectorAll('.sa-nav-item').forEach(btn => btn.classList.remove('active'));
+  if (window.event && window.event.currentTarget) {
+    window.event.currentTarget.classList.add('active');
+  }
+
+  document.querySelectorAll('.sa-tab-content').forEach(section => section.classList.remove('active'));
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.classList.add('active');
+  }
+
+  // Auto-close drawer on mobile upon selection
+  if (window.innerWidth <= 1024) {
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('open');
+    }
+  }
+}
+
+// Real-time Search Filter for Members (Table & Mobile Cards)
+function filterMemberTable() {
+  const input = document.getElementById("member-search-input").value.toLowerCase();
+  const rows = document.querySelectorAll(".member-row");
+
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(input) ? "" : "none";
+  });
+}
+
+// Universal Modal Controls
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.style.display = 'flex';
+}
+
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.style.display = 'none';
+}
+
+function togglePasswordVisibility(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+  const eyeOpen = btn.querySelector('.eye-open');
+  const eyeClosed = btn.querySelector('.eye-closed');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eyeOpen.style.display = 'none';
+    eyeClosed.style.display = 'inline-block';
+  } else {
+    input.type = 'password';
+    eyeOpen.style.display = 'inline-block';
+    eyeClosed.style.display = 'none';
+  }
+}
+
+function openEditAdmin(id, username, email, orgId) {
+  document.getElementById('edit-admin-id').value = id;
+  document.getElementById('edit-admin-user').value = username;
+  document.getElementById('edit-admin-email').value = email || '';
+  document.getElementById('edit-admin-org').value = orgId;
+  const pwdField = document.getElementById('edit-admin-pass');
+  if (pwdField) {
+    pwdField.value = '';
+    pwdField.type = 'password';
+  }
+  openModal('edit-admin-modal');
+}
+
+function handleThemeClick(btn) {
+  const d = btn.dataset;
+  document.getElementById('theme-org-id').value = d.id;
+  document.getElementById('theme-modal-org-name').innerText = "Customizing theme for: " + d.name;
+  
+  // Safe Color assignment
+  document.getElementById('theme-accent').value = d.accent || "#38bdf8";
+  document.getElementById('theme-bg').value = d.bg || "#07090e";
+  document.getElementById('theme-card').value = d.card || "#111622";
+  document.getElementById('theme-text').value = d.text || "#ffffff";
+
+  // Safe Select Dropdown matching
+  setSelectValue('theme-font-h1', d.h1);
+  setSelectValue('theme-font-h2', d.h2);
+  setSelectValue('theme-font-h3', d.h3);
+  setSelectValue('theme-font-p', d.p);
+  setSelectValue('theme-font-price', d.price);
+
+  openModal('theme-customizer-modal');
+}
+
+function setSelectValue(selectId, val) {
+  const el = document.getElementById(selectId);
+  if (!el || !val) return;
+  const cleanVal = val.replace(/['"]/g, '');
+  for (let i = 0; i < el.options.length; i++) {
+    const optVal = el.options[i].value.replace(/['"]/g, '');
+    if (optVal.toLowerCase().includes(cleanVal.toLowerCase()) || cleanVal.toLowerCase().includes(optVal.toLowerCase())) {
+      el.selectedIndex = i;
+      return;
+    }
+  }
+}
+function openSuperCredentialsModal() {
+  // Clear the password field so browser saved passwords don't pre-fill
+  const pField = document.getElementById('super-admin-pass');
+  if (pField) {
+    pField.value = '';
+    pField.type = 'password';
+  }
+  openModal('super-credentials-modal');
+}
+
+function openCreateSuperAdminModal() {
+  const pField = document.getElementById('new-sa-pass');
+  if (pField) {
+    pField.value = '';
+    pField.type = 'password';
+  }
+  openModal('create-super-admin-modal');
+}
+</script>
+{% endblock %}

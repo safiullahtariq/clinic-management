@@ -1,0 +1,64 @@
+<section class="scheduler-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+    <h2 class="scheduler-title" style="margin: 0;">Reserve a Modality</h2>
+    <span id="step-indicator" style="font-size: 0.85rem; color: var(--accent-gold); font-weight: bold;">Step 1 of 3</span>
+  </div>
+
+  <!-- Step 1: Select Service -->
+  <div id="booking-step-1" class="booking-step">
+    <div class="form-group">
+      <label for="resource-selector">Choose Service / Modality</label>
+      <select id="resource-selector" class="form-control">
+        <option value="">Loading services...</option>
+      </select>
+    </div>
+    <button type="button" id="btn-to-step-2" class="btn-tier-cta" style="margin-top: 1rem;" disabled>
+      Next: Select Date & Time &rarr;
+    </button>
+  </div>
+
+  <!-- Step 2: Select Date & Time -->
+  <div id="booking-step-2" class="booking-step" style="display: none;">
+    <div class="form-group">
+      <label for="slot-date-picker">Select Date</label>
+      <input type="date" id="slot-date-picker" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Available Times</label>
+      <div class="slots-grid" id="slots-output">
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Date select karein taaki open slots show hon.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+      <button type="button" id="btn-back-to-1" class="btn-tier-cta" style="background: transparent; border: 1px solid var(--border-color); color: #fff;">
+        &larr; Back
+      </button>
+      <button type="button" id="btn-to-step-3" class="btn-tier-cta" disabled>
+        Next: Review &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 3: Review & Confirm -->
+  <div id="booking-step-3" class="booking-step" style="display: none;">
+    <div style="background: var(--bg-surface); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 6px; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--accent-gold);">Booking Summary</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>Modality:</strong> <span id="summary-service">-</span></p>
+      <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>Date & Time:</strong> <span id="summary-datetime">-</span></p>
+      <p style="font-size: 0.9rem; margin-bottom: 0;"><strong>Credit Cost:</strong> <span id="summary-credits" style="color: #7bf199;">-</span></p>
+    </div>
+
+    <div id="scheduler-feedback" class="feedback-banner"></div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+      <button type="button" id="btn-back-to-2" class="btn-tier-cta" style="background: transparent; border: 1px solid var(--border-color); color: #fff;">
+        &larr; Back
+      </button>
+      <button type="button" id="btn-confirm-slot" class="btn-tier-cta">
+        Confirm Slot Reservation
+      </button>
+    </div>
+  </div>
+</section>

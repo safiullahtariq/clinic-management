@@ -1,0 +1,673 @@
+{% extends 'tenancy/base.html' %}
+{% load static %}
+{% block title %}Member Portal | {{ tenant.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'scheduling/css/scheduler.css' %}">
+<style>
+  :root {
+    --mem-bg: #07090e;
+    --mem-sidebar-bg: #0d1117;
+    --mem-surface: #111620;
+    --mem-card: #161c26;
+    --mem-border: #212936;
+    --mem-border-light: rgba(255, 255, 255, 0.07);
+    --mem-accent: #60a5fa;
+    --mem-accent-hover: #3b82f6;
+    --mem-text: #f0f6fc;
+    --mem-muted: #8b949e;
+    --mem-success: #7bf199;
+    --mem-danger: #ff9b9b;
+    --mem-warning: #fbbf24;
+    --sidebar-w: 260px;
+  }
+
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    background-color: var(--mem-bg);
+  }
+
+  .mem-app-layout {
+    display: flex;
+    min-height: calc(100vh - 70px);
+    position: relative;
+    width: 100%;
+  }
+
+  .mem-sidebar {
+    width: var(--sidebar-w);
+    background: var(--mem-sidebar-bg);
+    border-right: 1px solid var(--mem-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem 1rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+  }
+
+  .mem-sidebar-brand {
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--mem-border);
+    margin-bottom: 1.25rem;
+  }
+
+  .mem-sidebar-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--mem-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .mem-sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--mem-text);
+    margin: 0.2rem 0 0;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .mem-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mem-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 0.95rem;
+    background: transparent;
+    color: var(--mem-muted);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+
+  .mem-nav-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+  }
+
+  .mem-nav-item.active {
+    background: var(--mem-card);
+    border-color: var(--mem-border);
+    color: var(--mem-accent);
+    font-weight: 700;
+  }
+
+  .mem-nav-badge {
+    font-size: 0.72rem;
+    background: rgba(96, 165, 250, 0.15);
+    color: var(--mem-accent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+
+  .mem-stage {
+    flex-grow: 1;
+    min-width: 0;
+    padding: clamp(1rem, 2.5vw, 2.5rem);
+    box-sizing: border-box;
+  }
+
+  .mem-mobile-topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--mem-sidebar-bg);
+    border-bottom: 1px solid var(--mem-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .mem-hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--mem-surface);
+    border: 1px solid var(--mem-border);
+    color: var(--mem-text);
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .mem-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 1040;
+  }
+
+  .mem-panel {
+    background: var(--mem-card);
+    border: 1px solid var(--mem-border);
+    border-radius: 8px;
+    padding: clamp(1rem, 2vw, 1.75rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .mem-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .mem-panel-title {
+    font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+
+  .mem-table-box {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid var(--mem-border);
+  }
+
+  .mem-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+  }
+
+  .mem-table th, .mem-table td {
+    padding: 0.8rem;
+  }
+
+  .mem-table thead tr {
+    border-bottom: 1px solid var(--mem-border);
+    color: var(--mem-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mem-table tbody tr {
+    border-bottom: 1px solid var(--mem-border-light);
+  }
+
+  .mem-mobile-cards-list {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mem-mobile-card {
+    background: var(--mem-surface);
+    border: 1px solid var(--mem-border);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .mem-card-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  .mem-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0.45rem 1rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    box-sizing: border-box;
+    transition: opacity 0.2s;
+  }
+
+  .mem-btn-primary {
+    background: var(--mem-accent);
+    color: #000;
+  }
+
+  .mem-btn-danger {
+    background: transparent;
+    border: 1px solid rgba(255, 155, 155, 0.4);
+    color: var(--mem-danger);
+  }
+
+  .mem-tab-content {
+    display: none;
+  }
+
+  .mem-tab-content.active {
+    display: block;
+  }
+
+  @media (max-width: 1024px) {
+    .mem-mobile-topbar {
+      display: flex;
+    }
+    .mem-sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .mem-sidebar.open {
+      transform: translateX(0);
+    }
+    .mem-sidebar-backdrop.open {
+      display: block;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .mem-table-box {
+      display: none;
+    }
+    .mem-mobile-cards-list {
+      display: flex;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mem-mobile-topbar">
+  <button type="button" class="mem-hamburger-btn" onclick="toggleSidebar()">
+    <span>&#9776;</span>
+    <span>Menu</span>
+  </button>
+  <div style="text-align: right;">
+    <strong style="font-size: 0.95rem; color: #fff;">{{ request.user.username }}</strong>
+  </div>
+</div>
+
+<div id="sidebar-backdrop" class="mem-sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+<div class="mem-app-layout">
+  <aside id="app-sidebar" class="mem-sidebar">
+    <div>
+      <div class="mem-sidebar-brand">
+        <div class="mem-sidebar-badge">Member Portal</div>
+        <h2 class="mem-sidebar-title">{{ tenant.name|default:"Wellness Club" }}</h2>
+      </div>
+
+      <nav>
+        <ul class="mem-nav-list">
+          <li>
+            <button type="button" class="mem-nav-item active" onclick="activateSection('tab-overview')">
+              <span>My Passes</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="mem-nav-item" onclick="activateSection('tab-reserve')">
+              <span>Reserve Modality</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="mem-nav-item" onclick="activateSection('tab-bookings')">
+              <span>My Appointments</span>
+              <span class="mem-nav-badge">{{ bookings|length }}</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.5rem; border-top: 1px solid var(--mem-border);">
+      <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="width: 100%; text-decoration: none;">
+        + Buy Another Pass
+      </a>
+      <a href="/logout/" class="mem-btn mem-btn-danger" style="width: 100%;">Sign Out</a>
+    </div>
+  </aside>
+
+  <main class="mem-stage">
+    
+    <!-- 1. TAB: OVERVIEW & SEPARATE PLAN CARDS -->
+    <div id="tab-overview" class="mem-tab-content active">
+      <section class="mem-panel">
+        <div class="mem-panel-header">
+          <div>
+            <h2 class="mem-panel-title">My Membership Passes</h2>
+            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+              Total Available Credit Pool: <strong style="color: var(--mem-success); font-size: 1.1rem;">{{ total_active_credits }} cr</strong>
+            </p>
+          </div>
+          <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
+            + Purchase Another Tier Pass
+          </a>
+        </div>
+
+        <!-- Render All Purchased Plans Separately -->
+        <!-- <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+          {% for mem in all_user_memberships %}
+          <div style="background: var(--mem-surface); border: 1px solid {% if mem.status == 'active' %}var(--mem-accent){% else %}var(--mem-warning){% endif %}; padding: 1.5rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; position: relative;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+                <span style="font-size: 0.72rem; color: var(--mem-muted); font-weight: 800; text-transform: uppercase;">
+                  {{ mem.plan.tier_label }}
+                </span>
+                {% if mem.status == 'active' %}
+                  <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
+                    &#10003; Active &bull; Confirmed
+                  </span>
+                {% else %}
+                  <span style="font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
+                    &#9679; Pending Org Admin Confirmation
+                  </span>
+                {% endif %}
+              </div>
+
+              <h3 style="margin: 0; font-size: 1.3rem; color: #fff; font-weight: 800;">{{ mem.plan.name }}</h3>
+              <div style="font-size: 0.85rem; color: var(--mem-muted); margin-top: 0.35rem;">
+                ${{ mem.plan.rate_monthly|floatformat:0 }}/month founding rate
+              </div>
+
+              <div style="margin: 1.25rem 0 0.5rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--mem-muted); font-weight: 700;">Credits Balance</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #fff;">
+                  {% if mem.status == 'active' %}
+                    {{ mem.credit_balance }} <span style="font-size: 0.9rem; color: var(--mem-muted); font-weight: 400;">/ {{ mem.plan.credits_per_period }} cr</span>
+                  {% else %}
+                    <span style="color: #fbbf24; font-size: 1.2rem;">+{{ mem.plan.credits_per_period }} credits pending</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem; border-top: 1px solid var(--mem-border-light); padding-top: 0.75rem;">
+                <div style="font-size: 0.72rem; color: var(--mem-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem;">Inclusions:</div>
+                <ul style="padding-left: 1.1rem; margin: 0; font-size: 0.8rem; color: #cbd5e1; line-height: 1.45;">
+                  {% for inc in mem.plan.inclusions %}
+                    <li>{{ inc }}</li>
+                  {% empty %}
+                    <li>{{ mem.plan.credits_per_period }} Biohacking credits/mo</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+
+            <div style="font-size: 0.76rem; color: var(--mem-muted); border-top: 1px solid var(--mem-border); padding-top: 0.65rem;">
+              {% if mem.status == 'active' %}
+                <span style="color: #6ee7b7;">&bull; Ready to book modalities</span>
+              {% else %}
+                <span style="color: #fbbf24;">&bull; Org Admin will review payment &amp; release credits</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
+            <p style="color: var(--mem-muted); margin-bottom: 1.25rem;">You do not have any membership passes yet.</p>
+            <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
+              Choose a Founding Pass &rarr;
+            </a>
+          </div>
+          {% endfor %}
+        </div> -->
+      <!-- Render All Purchased Plans with Dynamic Payment Buttons -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+          {% for mem in all_user_memberships %}
+          <div style="background: var(--mem-surface); border: 1px solid {% if mem.status == 'active' %}var(--mem-accent){% elif mem.status == 'pending_deposit' %}var(--mem-warning){% else %}rgba(255, 255, 255, 0.2){% endif %}; padding: 1.5rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; position: relative;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+                <span style="font-size: 0.72rem; color: var(--mem-muted); font-weight: 800; text-transform: uppercase;">
+                  {{ mem.plan.tier_label }}
+                </span>
+
+                {% if mem.status == 'active' %}
+                  <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
+                    &#10003; Active &bull; Confirmed
+                  </span>
+                {% elif mem.status == 'pending_deposit' %}
+                  <span style="font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
+                    &#9679; Payment Received &bull; Pending Admin Approval
+                  </span>
+                {% else %}
+                  <span style="font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
+                    &#9888; Payment Required (Unpaid)
+                  </span>
+                {% endif %}
+              </div>
+
+              <h3 style="margin: 0; font-size: 1.3rem; color: #fff; font-weight: 800;">{{ mem.plan.name }}</h3>
+              <div style="font-size: 0.85rem; color: var(--mem-muted); margin-top: 0.35rem;">
+                ${{ mem.plan.rate_monthly|floatformat:0 }}/month founding rate
+              </div>
+
+              <div style="margin: 1.25rem 0 0.5rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--mem-muted); font-weight: 700;">Credits Balance</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #fff;">
+                  {% if mem.status == 'active' %}
+                    {{ mem.credit_balance }} <span style="font-size: 0.9rem; color: var(--mem-muted); font-weight: 400;">/ {{ mem.plan.credits_per_period }} cr</span>
+                  {% elif mem.status == 'pending_deposit' %}
+                    <span style="color: #fbbf24; font-size: 1.2rem;">+{{ mem.plan.credits_per_period }} credits pending approval</span>
+                  {% else %}
+                    <span style="color: #fca5a5; font-size: 1.2rem;">0 credits (Pay to unlock)</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem; border-top: 1px solid var(--mem-border-light); padding-top: 0.75rem;">
+                <div style="font-size: 0.72rem; color: var(--mem-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem;">Inclusions:</div>
+                <ul style="padding-left: 1.1rem; margin: 0; font-size: 0.8rem; color: #cbd5e1; line-height: 1.45;">
+                  {% for inc in mem.plan.inclusions %}
+                    <li>{{ inc }}</li>
+                  {% empty %}
+                    <li>{{ mem.plan.credits_per_period }} Biohacking credits/mo</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+
+            <!-- Action Block based on State -->
+            <div style="margin-top: 0.75rem; border-top: 1px solid var(--mem-border); padding-top: 0.85rem;">
+              {% if mem.status == 'active' %}
+                <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">&bull; Ready to reserve modalities</span>
+              {% elif mem.status == 'pending_deposit' %}
+                <span style="color: #fbbf24; font-size: 0.78rem; font-weight: 600;">&bull; Payment verified. Awaiting Admin to release credits.</span>
+              {% else %}
+                <!-- DIRECT STRIPE PAYMENT BUTTON -->
+                <form method="POST" action="{% url 'memberships:stripe_checkout' %}?org={{ tenant.slug|default:request.tenant.slug }}">
+                  {% csrf_token %}
+                  <input type="hidden" name="plan_id" value="{{ mem.plan.id }}">
+                  <button type="submit" class="mem-btn mem-btn-primary" style="width: 100%; font-size: 0.85rem; font-weight: 800; justify-content: center;">
+                    Pay Now via Stripe (${{ mem.plan.rate_monthly|floatformat:0 }}) &rarr;
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
+            <p style="color: var(--mem-muted); margin-bottom: 1.25rem;">You do not have any membership passes yet.</p>
+            <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
+              Choose a Founding Pass &rarr;
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <!-- 2. TAB: RESERVE MODALITY -->
+    <div id="tab-reserve" class="mem-tab-content">
+      <section class="mem-panel">
+        <div class="mem-panel-header">
+          <div>
+            <h2 class="mem-panel-title">Reserve a Modality</h2>
+            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">Select an available service and book with your credits.</p>
+          </div>
+        </div>
+
+        {% if total_active_credits > 0 %}
+          {% include 'scheduling/scheduler_component.html' %}
+        {% else %}
+          <div style="text-align: center; padding: 3rem 1rem;">
+            <p style="color: var(--mem-muted); margin-bottom: 1.25rem;">
+              You do not have active credits available. If you recently purchased a plan, please wait for Org Admin payment confirmation.
+            </p>
+            <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
+              Purchase Passes / Add Credits &rarr;
+            </a>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+
+    <!-- 3. TAB: MY APPOINTMENTS -->
+    <div id="tab-bookings" class="mem-tab-content">
+      <section class="mem-panel">
+        <div class="mem-panel-header">
+          <div>
+            <h2 class="mem-panel-title">My Reserved Appointments ({{ bookings|length }})</h2>
+            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">Review appointments or cancel to restore credits.</p>
+          </div>
+        </div>
+
+        <div class="mem-table-box">
+          <table class="mem-table">
+            <thead>
+              <tr>
+                <th>Modality Service</th>
+                <th>Scheduled Time</th>
+                <th>Credits</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bookings %}
+              <tr>
+                <td style="font-weight: 700; color: #fff;">{{ b.resource.name }}</td>
+                <td style="color: #cbd5e1;">{{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|date:"H:i" }}</td>
+                <td style="font-weight: 700; color: var(--mem-accent);">{{ b.credits_used }} cr</td>
+                <td>
+                  {% if b.status == 'pending' %}
+                    <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
+                      &#9679; Service Booked (Pending)
+                    </span>
+                  {% elif b.status == 'completed' %}
+                    <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4);">
+                      &#10003; Service Completed
+                    </span>
+                  {% else %}
+                    <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">
+                      Canceled
+                    </span>
+                  {% endif %}
+                </td>
+                <td style="text-align: right;">
+                  {% if b.status == 'pending' %}
+                    <button onclick="cancelBooking('{{ b.id }}')" class="mem-btn mem-btn-danger" style="min-height: 32px; font-size: 0.75rem;">
+                      Cancel
+                    </button>
+                  {% elif b.status == 'completed' %}
+                    <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">Service Rendered</span>
+                  {% else %}
+                    <span style="color: var(--mem-muted); font-size: 0.75rem;">Canceled</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" style="text-align: center; color: var(--mem-muted); padding: 1.5rem;">No appointments booked yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  sidebar.classList.toggle('open');
+  backdrop.classList.toggle('open');
+}
+
+function activateSection(targetId) {
+  document.querySelectorAll('.mem-nav-item').forEach(btn => btn.classList.remove('active'));
+  if (window.event && window.event.currentTarget) {
+    window.event.currentTarget.classList.add('active');
+  }
+
+  document.querySelectorAll('.mem-tab-content').forEach(section => section.classList.remove('active'));
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.classList.add('active');
+  }
+
+  if (window.innerWidth <= 1024) {
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('open');
+    }
+  }
+}
+
+async function cancelBooking(bookingId) {
+  if (!confirm("Are you sure you want to cancel this booking and restore credits?")) return;
+  const tenantSlug = new URLSearchParams(window.location.search).get('org') || 'longevity-haus';
+  try {
+    const res = await fetch(`/v1/bookings/${bookingId}/cancel?org=${tenantSlug}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      window.location.reload();
+    } else {
+      alert("Cancellation error: " + data.error);
+    }
+  } catch(e) {
+    alert("Server communication error.");
+  }
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'scheduling/js/scheduler.js' %}"></script>
+{% endblock %}

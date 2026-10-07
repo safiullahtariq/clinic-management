@@ -1,0 +1,187 @@
+{% extends 'tenancy/base.html' %}
+{% block title %}Sign In | Haus Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+  .password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #8b949e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .toggle-password-btn:hover {
+    color: #fff;
+  }
+
+  /* Browser autofill blue/white background ko override karne ke liye */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-surface, #111620) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 440px; margin: 4.5rem auto;">
+  <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <h2 style="font-size: 1.6rem; margin-bottom: 0.35rem; text-align: center;">Sign In</h2>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center;">
+      Member, Club Admin, or Super Admin 
+    </p>
+
+    {% if error %}
+      <div style="background: #4a1919; color: #ff9b9b; padding: 0.75rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem;">
+        {{ error }}
+      </div>
+    {% endif %}
+
+    {% if success_msg %}
+      <div style="background: #153e20; color: #7bf199; padding: 0.75rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem;">
+        {{ success_msg }}
+      </div>
+    {% endif %}
+
+    <!-- Autofill Protected Form -->
+    <form method="POST" id="signin-form" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="login">
+
+      <!-- Fake Decoy Inputs: Browser ka auto-fill in par capture ho jayega -->
+      <input type="text" name="fake_username_remember" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+      <input type="password" name="fake_password_remember" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Username</label>
+        <input type="text" 
+               id="login-username" 
+               name="username" 
+               value="" 
+               autocomplete="off" 
+               placeholder="Enter username" 
+               required 
+               style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; outline: none; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <label style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Password</label>
+          <a href="javascript:void(0)" onclick="document.getElementById('forgot-modal').style.display='block'" style="font-size: 0.8rem; color: var(--accent-gold); text-decoration: none;">
+            Forgot Password?
+          </a>
+        </div>
+        <div class="password-wrapper">
+          <input type="password" 
+                 id="login-password" 
+                 name="password" 
+                 value="" 
+                 autocomplete="new-password" 
+                 placeholder="Enter password" 
+                 required 
+                 style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; outline: none; box-sizing: border-box;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('login-password', this)" aria-label="Toggle password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%; padding: 0.85rem; background: var(--accent-gold); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-top: 0.5rem;">
+        Sign In
+      </button>
+    </form>
+
+    <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+      Don't have an account? 
+      <a href="/join/?org={{ request.tenant.slug|default:'longevity-haus' }}" style="color: var(--accent-gold); text-decoration: none; font-weight: bold; margin-left: 0.3rem;">
+        Join as a Founding Member &rarr; 
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Forgot Password Reset -->
+<div id="forgot-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; backdrop-filter: blur(5px);">
+  <div style="background: var(--bg-card); max-width: 440px; margin: 8% auto; padding: 2.25rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.6);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+      <h3 style="margin: 0; font-size: 1.25rem;">Reset Account Password</h3>
+      <span onclick="document.getElementById('forgot-modal').style.display='none'" style="cursor: pointer; font-size: 1.5rem; color: var(--text-muted);">&times;</span>
+    </div>
+
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="forgot_password">
+
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Enter your registered username and choose a new password.
+      </p>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="display:block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Account Username</label>
+        <input type="text" name="reset_username" placeholder="e.g. john_member" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display:block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">New Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="reset-password" name="new_password" autocomplete="new-password" placeholder="Enter new password" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reset-password', this)" aria-label="Toggle password view">
+            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem;">
+        <button type="button" onclick="document.getElementById('forgot-modal').style.display='none'" style="flex: 1; background: transparent; border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="submit" style="flex: 1; background: var(--accent-gold); color: #000; font-weight: bold; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
+          Update Password
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Page load hone par browser ke auto-fill ko forcefully wipe/clear karna
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const u = document.getElementById('login-username');
+      const p = document.getElementById('login-password');
+      if (u) u.value = '';
+      if (p) p.value = '';
+    }, 50);
+  });
+
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+    if (input.type === 'password') {
+      input.type = 'text';
+      eyeOpen.style.display = 'none';
+      eyeClosed.style.display = 'inline-block';
+    } else {
+      input.type = 'password';
+      eyeOpen.style.display = 'inline-block';
+      eyeClosed.style.display = 'none';
+    }
+  }
+</script>
+{% endblock %}
