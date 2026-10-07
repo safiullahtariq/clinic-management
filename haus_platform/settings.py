@@ -215,6 +215,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tenancy.middleware.TenantResolutionMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'haus_platform.urls'

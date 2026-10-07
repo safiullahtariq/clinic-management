@@ -21,19 +21,38 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
+# class UserProfile(models.Model):
+#     ROLE_CHOICES = (
+#         ('super_admin', 'Super Admin'),
+#         ('org_admin', 'Org Admin'),
+#         ('member', 'Member'),
+#     )
+#     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+#     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True, related_name='users')
+#     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
+
+#     def __str__(self):
+#         return f"{self.user.username} ({self.role}) - {self.organization.slug if self.organization else 'Global'}"
+# tenancy/models.py
+
+
+
 class UserProfile(models.Model):
     ROLE_CHOICES = (
         ('super_admin', 'Super Admin'),
-        ('org_admin', 'Org Admin'),
-        ('member', 'Member'),
+        ('org_admin', 'Clinic Admin'),      # Updated label (was Org Admin)
+        ('member', 'Patient'),              # Updated label (was Member)
+        ('doctor', 'Doctor'),               # NEW ROLE
+        ('receptionist', 'Receptionist'),   # NEW ROLE
     )
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True, related_name='users')
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE, null=True, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
-
+    
     def __str__(self):
-        return f"{self.user.username} ({self.role}) - {self.organization.slug if self.organization else 'Global'}"
-# Add in tenancy/models.py
+        return f"{self.user.username} - {self.get_role_display()}"
+
 
 class AdminNotification(models.Model):
     NOTIFICATION_TYPES = (
