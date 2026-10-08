@@ -43,10 +43,38 @@
     line-height: 1.55;
   }
 
+  /* Progress Slot Indicator */
+  .slots-progress-container {
+    max-width: 480px;
+    margin: 1.5rem auto 0;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .slots-bar-track {
+    flex-grow: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .slots-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    transition: width 0.4s ease;
+  }
+
   /* Responsive Dynamic Grid */
   .founders-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.25rem;
     max-width: 1400px;
     margin: 2.5rem auto 4rem;
@@ -203,7 +231,7 @@
   }
 
   .card-cta-btn.gradient-cta {
-    background: linear-gradient(90deg, #60a5fa 0%, #a855f7 100%) !important;
+    background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%) !important;
     color: #000000 !important;
     border: none;
   }
@@ -307,19 +335,33 @@
   <!-- Dynamic Hero Header -->
   <section class="founders-hero">
     <div class="hero-location-tag">
-      {{ tenant.branding.tagline|default:"EXCLUSIVE WELLNESS CLUB" }}
+      {{ tenant.branding.tagline|default:"CLINICAL WELLNESS & MEDICINE" }}
     </div>
     <h1 class="hero-main-title">Lock in Your Founding Rate</h1>
     <p class="hero-description">
-      $100 fully refundable deposit applied to your first month. 
-      Three-month minimum, then month-to-month. Credits never expire while membership is active.
+      Guaranteed locked pricing on all clinical modalities and doctor consultations.
+      Continuous monthly rollover — credits never expire while your membership is active.
     </p>
+
+    {% if total_founding_slots %}
+    <div class="slots-progress-container">
+      <span style="font-size: 0.75rem; color: #8b949e; text-transform: uppercase; font-weight: 700;">
+        Founding Slots:
+      </span>
+      <div class="slots-bar-track">
+        <div class="slots-bar-fill" style="width: {{ slots_progress_percent|default:20 }}%;"></div>
+      </div>
+      <span style="font-size: 0.8rem; font-weight: 800; color: #38bdf8;">
+        {{ remaining_founding_slots|default:total_founding_slots }} Left
+      </span>
+    </div>
+    {% endif %}
   </section>
 
   <!-- Dynamic Tiers Grid Loaded Directly from Database -->
   <div id="pricing-tiers" class="founders-grid">
     {% for plan in plans %}
-    <div class="tier-card {% if plan.is_featured or forloop.counter == 4 %}featured{% endif %}">
+    <div class="tier-card {% if plan.is_featured or forloop.counter == 2 %}featured{% endif %}">
       <div>
         <div class="card-tier-label">{{ plan.tier_label|default:"TIER" }}</div>
         <h3 class="card-tier-name">{{ plan.name }}</h3>
@@ -330,7 +372,7 @@
         </div>
         <div class="card-tenure-subtext">
           per month &middot; founding rate<br>
-          3-month minimum &middot; month-to-month after
+          Clinical consultations + modalities included
         </div>
 
         <div class="card-inclusions-header">Monthly Inclusions</div>
@@ -338,8 +380,9 @@
           {% for item in plan.inclusions %}
             <li>{{ item }}</li>
           {% empty %}
-            <li>{{ plan.credits_per_period }} Biohacking Credits</li>
-            <li>Continuous rollover — credits never expire while active</li>
+            <li>{{ plan.credits_per_period }} Clinical Credits / month</li>
+            <li>Direct Doctor consultation priority</li>
+            <li>Continuous rollover — credits never expire</li>
           {% endfor %}
         </ul>
       </div>
@@ -349,25 +392,23 @@
         <form method="POST" action="{% url 'memberships:stripe_checkout' %}?org={{ tenant.slug|default:request.tenant.slug }}">
           {% csrf_token %}
           <input type="hidden" name="plan_id" value="{{ plan.id }}">
-          <button type="submit" class="card-cta-btn {% if plan.is_featured or forloop.counter == 4 %}gradient-cta{% endif %}">
+          <button type="submit" class="card-cta-btn {% if plan.is_featured or forloop.counter == 2 %}gradient-cta{% endif %}">
             Pay &amp; Reserve Tier &rarr;
           </button>
         </form>
       {% else %}
-        <a href="/join/?org={{ tenant.slug|default:request.tenant.slug }}&plan={{ plan.id }}" class="card-cta-btn {% if plan.is_featured or forloop.counter == 4 %}gradient-cta{% endif %}">
+        <a href="/join/?org={{ tenant.slug|default:request.tenant.slug }}&plan={{ plan.id }}" class="card-cta-btn {% if plan.is_featured or forloop.counter == 2 %}gradient-cta{% endif %}">
           Sign Up &amp; Reserve Tier
         </a>
       {% endif %}
     </div>
     {% empty %}
     <div style="grid-column: 1 / -1; text-align: center; color: var(--app-text); padding: 3rem;">
-      <p style="opacity: 0.7;">No membership tiers configured yet. Please configure tiers in the Club Console.</p>
+      <p style="opacity: 0.7;">No membership tiers configured yet. Please configure tiers in the Clinic Console.</p>
     </div>
     {% endfor %}
   </div>
 
-  <!-- Dynamic Modalities Scheduler Component -->
-  {% include 'scheduling/scheduler_component.html' %}
 </div>
 
 <!-- Dynamic Modal Carousel Triggered by Top Banner -->
@@ -379,7 +420,7 @@
           Claim Your Founding Pass
         </h2>
         <p style="font-family: var(--font-family-p, inherit) !important; color: #8b949e; font-size: 0.85rem; margin: 0.25rem 0 0;">
-          Select your tier below to lock in founding rates. Remaining slots: <strong style="color: var(--app-accent, #38bdf8);">{{ remaining_founding_slots }}</strong>
+          Select your tier below to lock in founding rates. Remaining slots: <strong style="color: var(--app-accent, #38bdf8);">{{ remaining_founding_slots|default:"Available" }}</strong>
         </p>
       </div>
       <button type="button" onclick="closeTierPopup()" class="modal-close-icon" aria-label="Close modal">&times;</button>
@@ -387,7 +428,7 @@
 
     <div class="horizontal-cards-track">
       {% for plan in plans %}
-      <div class="modal-tier-box {% if plan.is_featured or forloop.counter == 4 %}is-featured{% endif %}">
+      <div class="modal-tier-box {% if plan.is_featured or forloop.counter == 2 %}is-featured{% endif %}">
         <div>
           <div style="font-size: 0.72rem; letter-spacing: 0.18em; color: var(--app-accent, #38bdf8); font-weight: 700; text-transform: uppercase; margin-bottom: 0.85rem;">
             {{ plan.tier_label|default:"TIER" }}
@@ -404,7 +445,7 @@
           </div>
           <div style="font-size: 0.78rem; color: #8b949e; line-height: 1.4; margin: 0.65rem 0 1.25rem;">
             per month &middot; founding rate<br>
-            3-month minimum &middot; month-to-month after
+            Includes {{ plan.credits_per_period }} credits
           </div>
 
           <div style="font-size: 0.72rem; letter-spacing: 0.18em; color: #8b949e; text-transform: uppercase; font-weight: 700; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem; margin-bottom: 0.85rem;">
@@ -416,7 +457,7 @@
                 <span style="position: absolute; left: 0; color: var(--app-accent, #38bdf8);">&mdash;</span>{{ item }}
               </li>
             {% empty %}
-              <li style="font-size: 0.84rem; color: #c9d1d9; padding-left: 1.25rem;">{{ plan.credits_per_period }} Biohacking Credits</li>
+              <li style="font-size: 0.84rem; color: #c9d1d9; padding-left: 1.25rem;">{{ plan.credits_per_period }} Clinical Credits</li>
             {% endfor %}
           </ul>
         </div>
@@ -425,12 +466,12 @@
           <form method="POST" action="{% url 'memberships:stripe_checkout' %}?org={{ tenant.slug|default:request.tenant.slug }}">
             {% csrf_token %}
             <input type="hidden" name="plan_id" value="{{ plan.id }}">
-            <button type="submit" class="card-cta-btn {% if plan.is_featured or forloop.counter == 4 %}gradient-cta{% endif %}">
+            <button type="submit" class="card-cta-btn {% if plan.is_featured or forloop.counter == 2 %}gradient-cta{% endif %}">
               Claim Pass &rarr;
             </button>
           </form>
         {% else %}
-          <a href="/join/?org={{ tenant.slug|default:request.tenant.slug }}&plan={{ plan.id }}" class="card-cta-btn {% if plan.is_featured or forloop.counter == 4 %}gradient-cta{% endif %}">
+          <a href="/join/?org={{ tenant.slug|default:request.tenant.slug }}&plan={{ plan.id }}" class="card-cta-btn {% if plan.is_featured or forloop.counter == 2 %}gradient-cta{% endif %}">
             Claim Pass &rarr;
           </a>
         {% endif %}
@@ -448,7 +489,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'scheduling/js/scheduler.js' %}"></script>
 <script>
   function openTierPopup() {
     const modal = document.getElementById('tier-selection-modal');

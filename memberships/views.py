@@ -73,20 +73,6 @@ def founders_landing_page(request):
     return render(request, 'memberships/founders.html', context)
 
 
-import re
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
-from django.contrib.auth import login
-from django.db import transaction
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-from tenancy.models import UserProfile, Organization
-from tenancy.emails import email_new_member_joined, notify_plan_purchase_pending
-from .models import MembershipPlan, Membership, CreditLedger
-
-
 def register_view(request):
     tenant_slug = request.GET.get('org')
     selected_plan_id = request.GET.get('plan')

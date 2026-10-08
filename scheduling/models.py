@@ -62,7 +62,7 @@ class DoctorShift(models.Model):
 class ClinicalNote(models.Model):
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='clinical_note')
     doctor = models.ForeignKey(User, on_delete=models.CASCADE)
-    patient_notes = models.TextField(help_text="Visible to patient", blank=True)
-    private_notes = models.TextField(help_text="Internal notes", blank=True)
+    patient_notes = models.TextField(blank=True, help_text="Prescription and diet visible to patient")
+    private_notes = models.TextField(blank=True, help_text="Confidential doctor remarks")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -29,7 +29,6 @@
       --font-family-price: "{{ request.tenant.branding.font_price|default:'Inter' }}", monospace, sans-serif;
     }
 
-
     /* Enforce Theme Universally */
     body {
       background-color: var(--app-bg) !important;
@@ -158,7 +157,7 @@
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff !important;
-      padding: 0.4rem 0.85rem;
+      padding: 0.45rem 0.95rem;
       border-radius: 6px;
       text-decoration: none;
       font-size: 0.8rem;
@@ -169,7 +168,8 @@
       white-space: nowrap;
     }
     .header-dash-btn:hover {
-      background: #fff;
+      background: #38bdf8;
+      border-color: #38bdf8;
       color: #000 !important;
     }
 
@@ -186,77 +186,85 @@
 </head>
 <body>
 
-  <!-- Top Real-time Dynamic Founding Slots Banner -->
-  <div class="founding-banner" id="top-founding-banner">
-    <div class="banner-inner">
-      <div class="banner-left">
-        {% if is_slots_full %}
-          <span class="status-dot red"></span>
-          <span>FOUNDING SLOTS FULL</span>
-        {% else %}
-          <span class="status-dot"></span>
-          <span>SLOTS REMAINING</span>
-          <span style="font-size: 1.05rem; font-weight: 800; letter-spacing: 0.02em;">
-            {{ remaining_founding_slots|default:"12" }} <span style="font-size: 0.75rem; opacity: 0.85;">/ {{ total_founding_slots|default:"100" }}</span>
-          </span>
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: {{ slots_progress_percent|default:'88' }}%;"></div>
-          </div>
-          <span class="claimed-badge">{{ claimed_founding_slots|default:"88" }} claimed</span>
-        {% endif %}
-      </div>
+  {# ======================================================================= #}
+  {# 1. BANNER CHECK: ONLY VISIBLE ON PUBLIC HOME PAGE, NEVER IN DASHBOARDS  #}
+  {# ======================================================================= #}
+  {% if request.path == "/" and "/dashboard/" not in request.path %}
+    <div class="founding-banner" id="top-founding-banner">
+      <div class="banner-inner">
+        <div class="banner-left">
+          {% if is_slots_full %}
+            <span class="status-dot red"></span>
+            <span>FOUNDING SLOTS FULL</span>
+          {% else %}
+            <span class="status-dot"></span>
+            <span>SLOTS REMAINING</span>
+            <span style="font-size: 1.05rem; font-weight: 800; letter-spacing: 0.02em;">
+              {{ remaining_founding_slots|default:"12" }} <span style="font-size: 0.75rem; opacity: 0.85;">/ {{ total_founding_slots|default:"100" }}</span>
+            </span>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" style="width: {{ slots_progress_percent|default:'88' }}%;"></div>
+            </div>
+            <span class="claimed-badge">{{ claimed_founding_slots|default:"88" }} claimed</span>
+          {% endif %}
+        </div>
 
-      <div>
-        {% if is_slots_full %}
-          <span style="color: #f1f5f9; font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.3rem 0.6rem; border-radius: 4px;">
-            SOLD OUT
-          </span>
-        {% else %}
-          <button type="button" onclick="openTierPopup()" class="claim-cta-btn">
-            CLAIM YOURS &rarr;
-          </button>
-        {% endif %}
+        <div>
+          {% if is_slots_full %}
+            <span style="color: #f1f5f9; font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.3rem 0.6rem; border-radius: 4px;">
+              SOLD OUT
+            </span>
+          {% else %}
+            <button type="button" onclick="openTierPopup()" class="claim-cta-btn">
+              CLAIM YOURS &rarr;
+            </button>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </div>
+  {% endif %}
 
+  <!-- Main Site Header -->
   <header class="site-header">
     <div class="header-wrapper" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; width: 100%;">
       <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <a href="/?org={{ request.tenant.slug|default:'longevity-haus' }}" class="brand-logo" style="color: #fff; font-weight: 800; text-decoration: none; font-size: 1.05rem; letter-spacing: 0.08em;">
-          {{ request.tenant.name|default:"HBOT Booking Portal"|upper }}
+        <a href="/?org={{ request.tenant.slug|default:'biohacking' }}" class="brand-logo" style="color: #fff; font-weight: 800; text-decoration: none; font-size: 1.05rem; letter-spacing: 0.08em;">
+          {{ request.tenant.name|default:"BIOHACKING"|upper }}
         </a>
         <span id="tenant-accent-badge" class="hide-mobile" style="color: var(--app-accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em;">
           {{ request.tenant.branding.tagline|default:"" }}
         </span>
       </div>
 
-     <!-- Smart Role-Based Portal Routing -->
+      <!-- Smart Role-Based Portal Routing (All Roles Handled Cleanly) -->
       <div>
         {% if request.user.is_authenticated %}
-          {% if portal_url %}
-            <!-- Recommended: Loaded via Context Processor -->
-            <a href="{{ portal_url }}" class="header-dash-btn">
-              {{ portal_label }} &rarr;
+          {% if request.user.is_superuser %}
+            <a href="/dashboard/super-admin/" class="header-dash-btn">
+              Master Console &rarr;
+            </a>
+          {% elif request.user.profile.role == 'org_admin' or request.user.userprofile.role == 'org_admin' %}
+            <a href="/dashboard/org-admin/?org={{ request.tenant.slug|default:request.user.profile.organization.slug|default:'biohacking' }}" class="header-dash-btn">
+              Club Console &rarr;
+            </a>
+          {% elif request.user.profile.role == 'doctor' or request.user.userprofile.role == 'doctor' %}
+            <a href="/dashboard/doctor/?org={{ request.tenant.slug|default:request.user.profile.organization.slug|default:'biohacking' }}" class="header-dash-btn">
+              Doctor Console &rarr;
+            </a>
+          {% elif request.user.profile.role == 'receptionist' or request.user.userprofile.role == 'receptionist' %}
+            <a href="/dashboard/reception/?org={{ request.tenant.slug|default:request.user.profile.organization.slug|default:'biohacking' }}" class="header-dash-btn">
+              Reception Desk &rarr;
             </a>
           {% else %}
-            <!-- Template Fallback -->
-            {% if request.user.is_superuser %}
-              <a href="/dashboard/super-admin/" class="header-dash-btn">
-                Master Console &rarr;
-              </a>
-            {% elif request.user.profile.role == 'org_admin' or request.user.userprofile.role == 'org_admin' %}
-              <a href="/dashboard/org-admin/?org={{ request.tenant.slug|default:'longevity-haus' }}" class="header-dash-btn">
-                Club Console &rarr;
-              </a>
-            {% else %}
-              <a href="/dashboard/member/?org={{ request.tenant.slug|default:'longevity-haus' }}" class="header-dash-btn">
-                My Portal &rarr;
-              </a>
-            {% endif %}
+            <!-- Patient / Member Default -->
+            <a href="/dashboard/member/?org={{ request.tenant.slug|default:request.user.profile.organization.slug|default:'biohacking' }}" class="header-dash-btn">
+              My Patient Portal &rarr;
+            </a>
           {% endif %}
         {% else %}
-          <a href="/login/" class="header-dash-btn">Sign In</a>
+          <a href="/login/?org={{ request.tenant.slug|default:'biohacking' }}" class="header-dash-btn">
+            Sign In &rarr;
+          </a>
         {% endif %}
       </div>
     </div>

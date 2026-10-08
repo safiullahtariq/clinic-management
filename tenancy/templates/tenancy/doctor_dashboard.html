@@ -1,0 +1,427 @@
+{% extends 'tenancy/base.html' %}
+{% load static %}
+{% block title %}Doctor Console | {{ tenant.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --doc-bg: #07090e;
+    --doc-sidebar-bg: #0d1117;
+    --doc-surface: #111620;
+    --doc-card: #161c26;
+    --doc-border: #212936;
+    --doc-accent: #38bdf8;
+    --doc-text: #f0f6fc;
+    --doc-muted: #8b949e;
+    --doc-success: #7bf199;
+    --doc-warning: #fbbf24;
+    --doc-danger: #ff9b9b;
+    --sidebar-w: 260px;
+  }
+
+  body { background-color: var(--doc-bg); color: var(--doc-text); margin: 0; font-family: Inter, sans-serif; }
+  .doc-layout { display: flex; min-height: 100vh; }
+  .doc-sidebar { width: var(--sidebar-w); background: var(--doc-sidebar-bg); border-right: 1px solid var(--doc-border); padding: 1.5rem 1rem; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+  .doc-nav-item { width: 100%; padding: 0.75rem 1rem; background: transparent; border: 1px solid transparent; color: var(--doc-muted); border-radius: 6px; text-align: left; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; }
+  .doc-nav-item.active { background: var(--doc-card); color: var(--doc-accent); border-color: var(--doc-border); }
+  .doc-stage { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+  
+  .doc-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .doc-card { background: var(--doc-card); border: 1px solid var(--doc-border); border-radius: 8px; padding: 1.25rem; }
+  
+  .doc-badge { font-size: 0.72rem; padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .status-pending { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+  .status-waiting { background: rgba(251, 191, 36, 0.15); color: var(--doc-warning); border: 1px solid rgba(251, 191, 36, 0.4); }
+  .status-consult { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+  .status-completed { background: rgba(123, 241, 153, 0.15); color: var(--doc-success); border: 1px solid rgba(123, 241, 153, 0.4); }
+  .status-canceled { background: rgba(239, 68, 68, 0.15); color: var(--doc-danger); border: 1px solid rgba(239, 68, 68, 0.4); }
+
+  .doc-table { width: 100%; border-collapse: collapse; text-align: left; }
+  .doc-table th { color: var(--doc-muted); font-size: 0.75rem; text-transform: uppercase; padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--doc-border); }
+  .doc-table td { padding: 0.95rem 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+
+  .doc-btn { padding: 0.45rem 0.85rem; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+  .doc-btn-primary { background: var(--doc-accent); color: #000; }
+  .doc-btn-success { background: var(--doc-success); color: #000; }
+  .doc-btn-outline { background: transparent; border: 1px solid var(--doc-border); color: #fff; }
+  .doc-btn-danger { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .doc-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+  .doc-modal-sheet { background: var(--doc-card); border: 1px solid var(--doc-border); border-radius: 8px; width: 100%; max-width: 620px; padding: 2rem; max-height: 90vh; overflow-y: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-layout">
+  <!-- Sidebar -->
+  <aside class="doc-sidebar">
+    <div>
+      <div style="border-bottom: 1px solid var(--doc-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <span style="font-size: 0.7rem; color: var(--doc-accent); font-weight: 800; text-transform: uppercase;">Medical Console</span>
+        <h2 style="font-size: 1.25rem; margin: 0.2rem 0 0; color: #fff;">Dr. {{ request.user.username }}</h2>
+        <span style="font-size: 0.8rem; color: var(--doc-muted);">{{ tenant.name }}</span>
+      </div>
+
+      <nav>
+        <button type="button" class="doc-nav-item active" onclick="switchDocTab('tab-queue')">
+          <span>🩺 Active Queue</span>
+          <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.2); color: var(--doc-accent); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ total_active_count }}</span>
+        </button>
+        <button type="button" class="doc-nav-item" onclick="switchDocTab('tab-upcoming')">
+          <span>📅 Upcoming Schedule</span>
+          <span style="font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ upcoming_bookings|length }}</span>
+        </button>
+        <button type="button" class="doc-nav-item" onclick="switchDocTab('tab-completed')">
+          <span>✅ Completed Visits</span>
+          <span style="font-size: 0.75rem; background: rgba(123, 241, 153, 0.15); color: var(--doc-success); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ completed_count }}</span>
+        </button>
+        <button type="button" class="doc-nav-item" onclick="switchDocTab('tab-patients')">
+          <span>👥 Patient Directory</span>
+          <span style="font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ total_patients_count }}</span>
+        </button>
+      </nav>
+    </div>
+
+    <div>
+      <a href="/logout/" class="doc-btn doc-btn-outline" style="width: 100%; text-align: center; color: var(--doc-danger); border-color: rgba(255,155,155,0.3);">Sign Out</a>
+    </div>
+  </aside>
+
+  <!-- Main Stage -->
+  <main class="doc-stage">
+    
+    <!-- Top Summary Metrics (LIVE DATA SYNC) -->
+    <div class="doc-metrics">
+      <div class="doc-card">
+        <span style="font-size: 0.75rem; color: var(--doc-muted); text-transform: uppercase; font-weight: 700;">Waiting in Lobby</span>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--doc-warning); margin-top: 0.25rem;">{{ waiting_count }}</div>
+        <span style="font-size: 0.75rem; color: var(--doc-muted);">Checked In by Receptionist</span>
+      </div>
+      <div class="doc-card">
+        <span style="font-size: 0.75rem; color: var(--doc-muted); text-transform: uppercase; font-weight: 700;">In Progress</span>
+        <div style="font-size: 2.2rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">{{ in_consult_count }}</div>
+        <span style="font-size: 0.75rem; color: var(--doc-muted);">Currently in Consultation</span>
+      </div>
+      <div class="doc-card">
+        <span style="font-size: 0.75rem; color: var(--doc-muted); text-transform: uppercase; font-weight: 700;">Completed / Fulfilled</span>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--doc-success); margin-top: 0.25rem;">{{ completed_count }}</div>
+        <span style="font-size: 0.75rem; color: var(--doc-muted);">Closed Sessions</span>
+      </div>
+      <div class="doc-card">
+        <span style="font-size: 0.75rem; color: var(--doc-muted); text-transform: uppercase; font-weight: 700;">Upcoming Bookings</span>
+        <div style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-top: 0.25rem;">{{ upcoming_bookings|length }}</div>
+        <span style="font-size: 0.75rem; color: var(--doc-muted);">Scheduled in Future</span>
+      </div>
+    </div>
+
+    <!-- TAB 1: ACTIVE LIVE QUEUE (WHERE ACTION HAPPENS) -->
+    <div id="tab-queue" class="tab-content active">
+      <div class="doc-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h3 style="margin: 0; color: #fff;">Active Patient Queue</h3>
+            <p style="color: var(--doc-muted); font-size: 0.85rem; margin: 0.25rem 0 0;">
+              Patients sent by Receptionist waiting in lobby or currently inside consultation room.
+            </p>
+          </div>
+        </div>
+
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Scheduled Time</th>
+              <th>Patient</th>
+              <th>Service</th>
+              <th>Current Status</th>
+              <th>Clinical Note</th>
+              <th style="text-align: right;">Doctor Action (Complete / Cancel)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in active_queue %}
+            <tr>
+              <td style="color: #cbd5e1; font-weight: 600; white-space: nowrap;">
+                {{ b.start_time|date:"M d" }} &bull; {{ b.start_time|time:"g:i A" }}
+              </td>
+              <td>
+                <strong style="color: #fff; display: block;">{{ b.membership.user.username }}</strong>
+                <span style="font-size: 0.75rem; color: var(--doc-muted);">{{ b.membership.user.email }}</span>
+              </td>
+              <td style="color: var(--doc-accent); font-weight: 600;">{{ b.resource.name }}</td>
+              <td>
+                {% if b.status == 'waiting' %}
+                  <span class="doc-badge status-waiting">&#9679; Waiting in Lobby</span>
+                {% elif b.status == 'in_consultation' %}
+                  <span class="doc-badge status-consult">&#9679; In Consultation</span>
+                {% else %}
+                  <span class="doc-badge status-pending">&#9679; Scheduled</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if b.clinical_note and b.clinical_note.patient_notes %}
+                  <span style="color: var(--doc-success); font-size: 0.8rem; font-weight: 600;">&#10003; Documented</span>
+                {% else %}
+                  <span style="color: var(--doc-muted); font-size: 0.8rem;">Pending Notes</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                
+                <!-- 2 MAIN DOCTOR ACTIONS -->
+                {% if b.status == 'waiting' %}
+                  <!-- If in lobby, Doctor calls patient in -->
+                  <form method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="update_appointment_status">
+                    <input type="hidden" name="booking_id" value="{{ b.id }}">
+                    <button type="submit" name="status" value="in_consultation" class="doc-btn doc-btn-primary" style="margin-right: 0.35rem;">
+                      Call Patient In &rarr;
+                    </button>
+                  </form>
+                {% endif %}
+
+                {% if b.status == 'in_consultation' or b.status == 'waiting' %}
+                  <!-- ACTION 1: Check Out / Complete Fulfill -->
+                  <form method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="update_appointment_status">
+                    <input type="hidden" name="booking_id" value="{{ b.id }}">
+                    <button type="submit" name="status" value="completed" class="doc-btn doc-btn-success" style="margin-right: 0.35rem;">
+                      Check Out (Complete) &#10003;
+                    </button>
+                  </form>
+
+                  <!-- ACTION 2: Cancel & Refund -->
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Cancel consultation and refund credits to {{ b.membership.user.username }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="update_appointment_status">
+                    <input type="hidden" name="booking_id" value="{{ b.id }}">
+                    <button type="submit" name="status" value="canceled" class="doc-btn doc-btn-danger" style="margin-right: 0.35rem;">
+                      Cancel &amp; Refund
+                    </button>
+                  </form>
+                {% endif %}
+
+                <!-- Add / Edit Prescription Note Modal -->
+                <button type="button" class="doc-btn doc-btn-outline" onclick="openClinicalNoteModal('{{ b.id }}', '{{ b.membership.user.username }}', '{{ b.clinical_note.patient_notes|default:''|escapejs }}', '{{ b.clinical_note.private_notes|default:''|escapejs }}')">
+                  📝 {% if b.clinical_note %}Edit Note{% else %}Prescribe{% endif %}
+                </button>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--doc-muted); padding: 3rem;">
+                No active patients waiting or in consultation right now.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: UPCOMING APPOINTMENTS -->
+    <div id="tab-upcoming" class="tab-content">
+      <div class="doc-card">
+        <h3 style="margin: 0 0 1.25rem; color: #fff;">Upcoming Appointments (Future Dates)</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Date &amp; Time Window</th>
+              <th>Patient</th>
+              <th>Service</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in upcoming_bookings %}
+            <tr>
+              <td style="color: #cbd5e1; font-weight: 600;">
+                {{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}
+              </td>
+              <td>
+                <strong style="color: #fff; display: block;">{{ b.membership.user.username }}</strong>
+                <span style="font-size: 0.75rem; color: var(--doc-muted);">{{ b.membership.user.email }}</span>
+              </td>
+              <td style="color: var(--doc-accent); font-weight: 600;">{{ b.resource.name }}</td>
+              <td>{{ b.resource.duration_minutes }} mins</td>
+              <td>
+                <span class="doc-badge status-pending">Scheduled</span>
+              </td>
+              <td style="text-align: right;">
+                <!-- Doctor can cancel future visit if unavailable -->
+                <form method="POST" style="display:inline;" onsubmit="return confirm('Cancel appointment and refund credits?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="action_type" value="update_appointment_status">
+                  <input type="hidden" name="booking_id" value="{{ b.id }}">
+                  <button type="submit" name="status" value="canceled" class="doc-btn doc-btn-danger">
+                    Cancel &amp; Refund
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align: center; color: var(--doc-muted); padding: 3rem;">No upcoming appointments scheduled.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: COMPLETED VISITS HISTORY -->
+    <div id="tab-completed" class="tab-content">
+      <div class="doc-card">
+        <h3 style="margin: 0 0 1.25rem; color: #fff;">Completed &amp; Fulfilled Visits ({{ completed_count }})</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Fulfilled Date &amp; Time</th>
+              <th>Patient</th>
+              <th>Service</th>
+              <th>Prescription</th>
+              <th style="text-align: right;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in completed_bookings %}
+            <tr>
+              <td style="color: #cbd5e1; font-weight: 600;">
+                {{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}
+              </td>
+              <td>
+                <strong style="color: #fff;">{{ b.membership.user.username }}</strong>
+                <div style="font-size: 0.75rem; color: var(--doc-muted);">{{ b.membership.user.email }}</div>
+              </td>
+              <td style="color: var(--doc-accent); font-weight: 600;">{{ b.resource.name }}</td>
+              <td>
+                {% if b.clinical_note and b.clinical_note.patient_notes %}
+                  <span style="color: var(--doc-success); font-size: 0.8rem;">&#10003; Documented</span>
+                {% else %}
+                  <span style="color: var(--doc-muted); font-size: 0.8rem;">None recorded</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+                <span class="doc-badge status-completed">&#10003; Fulfilled</span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align: center; color: var(--doc-muted); padding: 3rem;">No completed visits recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: PATIENT DIRECTORY -->
+    <div id="tab-patients" class="tab-content">
+      <div class="doc-card">
+        <h3 style="margin: 0 0 1.25rem; color: #fff;">Assigned Patient Directory ({{ total_patients_count }})</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Patient Name</th>
+              <th>Email</th>
+              <th>Total Appointments</th>
+              <th>Fulfilled Sessions</th>
+              <th>Last Seen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in assigned_patients %}
+            <tr>
+              <td style="font-weight: 700; color: #fff;">{{ p.user.username }}</td>
+              <td style="color: var(--doc-muted);">{{ p.user.email|default:"No email registered" }}</td>
+              <td style="color: #38bdf8; font-weight: 600;">{{ p.total_visits }} visit(s)</td>
+              <td style="color: var(--doc-success); font-weight: 600;">{{ p.completed_visits }} completed</td>
+              <td style="color: #cbd5e1;">{{ p.last_visit|date:"M d, Y &bull; g:i A" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align: center; color: var(--doc-muted); padding: 3rem;">No patients found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal: Clinical Notes & Prescription Editor -->
+<div id="clinical-note-modal" class="doc-modal-overlay">
+  <div class="doc-modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--doc-border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+      <h3 style="margin: 0; color: #fff;">Clinical Notes: <span id="note-patient-name" style="color: var(--doc-accent);"></span></h3>
+      <span onclick="closeClinicalNoteModal()" style="cursor: pointer; font-size: 1.5rem; color: var(--doc-muted);">&times;</span>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="save_clinical_note">
+      <input type="hidden" name="booking_id" id="note-booking-id">
+
+      <!-- Patient-Visible Prescription -->
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display:block; font-size: 0.8rem; color: var(--doc-muted); margin-bottom: 0.4rem; font-weight: 700;">
+          Prescription &amp; Guidance (Visible to Patient)
+        </label>
+        <textarea name="patient_notes" id="note-patient-text" rows="4" style="width: 100%; background: var(--doc-surface); border: 1px solid var(--doc-border); color: #fff; padding: 0.75rem; border-radius: 6px; box-sizing: border-box; font-family: inherit;" placeholder="Prescription, dosage, dietary advice, lifestyle protocol..."></textarea>
+      </div>
+
+      <!-- Private Notes -->
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display:block; font-size: 0.8rem; color: var(--doc-muted); margin-bottom: 0.4rem; font-weight: 700;">
+          Private Clinical Remarks (Doctor Only)
+        </label>
+        <textarea name="private_notes" id="note-private-text" rows="3" style="width: 100%; background: var(--doc-surface); border: 1px solid var(--doc-border); color: #fff; padding: 0.75rem; border-radius: 6px; box-sizing: border-box; font-family: inherit;" placeholder="Confidential diagnosis observations, follow-up alerts..."></textarea>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="submit" name="mark_complete" value="false" class="doc-btn doc-btn-outline" style="flex: 1;">
+          Save Draft Notes
+        </button>
+        <button type="submit" name="mark_complete" value="true" class="doc-btn doc-btn-success" style="flex: 1.2;">
+          Save &amp; Check Out (Complete) &#10003;
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function switchDocTab(tabId) {
+  document.querySelectorAll('.doc-nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  const btn = document.querySelector(`button[onclick*="'${tabId}'"]`);
+  if (btn) btn.classList.add('active');
+
+  const content = document.getElementById(tabId);
+  if (content) content.classList.add('active');
+  window.location.hash = tabId;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && document.getElementById(hash)) {
+    switchDocTab(hash);
+  }
+});
+
+function openClinicalNoteModal(bookingId, patientName, patientNotes, privateNotes) {
+  document.getElementById('note-booking-id').value = bookingId;
+  document.getElementById('note-patient-name').innerText = patientName;
+  document.getElementById('note-patient-text').value = patientNotes;
+  document.getElementById('note-private-text').value = privateNotes;
+  document.getElementById('clinical-note-modal').style.display = 'flex';
+}
+
+function closeClinicalNoteModal() {
+  document.getElementById('clinical-note-modal').style.display = 'none';
+}
+</script>
+{% endblock %}

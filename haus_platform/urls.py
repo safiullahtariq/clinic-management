@@ -40,4 +40,5 @@ urlpatterns = [
     path('', include('memberships.urls', namespace='memberships')),
     path('', include('tenancy.urls', namespace='tenancy')),
     path('', include('scheduling.urls', namespace='scheduling')),
+    path('scheduling/', include('scheduling.urls')),
 ]

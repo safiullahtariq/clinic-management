@@ -536,36 +536,118 @@
   <!-- Main Stage -->
   <main class="sa-stage">
     
-    <!-- 1. TAB: OVERVIEW -->
+   <!-- SUPER ADMIN OVERVIEW: GLOBAL PLATFORM EARNINGS -->
     <div id="tab-overview" class="sa-tab-content active">
-      <section class="sa-panel">
-        <div class="sa-panel-header">
+      
+      <!-- Top Metrics Row -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+        
+        <!-- GLOBAL PLATFORM REVENUE CARD -->
+        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem; border-left: 4px solid #10b981;">
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
+            All Clinics Total Revenue
+          </span>
+          <div style="font-size: 2.3rem; font-weight: 900; color: #7bf199; margin: 0.4rem 0 0.2rem;">
+            ${{ total_platform_revenue|floatformat:2 }}
+          </div>
+          <span style="font-size: 0.75rem; color: #8b949e;">Live gross earnings across all tenant clinics</span>
+        </div>
+
+       <!-- ACTIVE TENANT CLINICS -->
+        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem;">
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
+            Active Tenant Clinics
+          </span>
+          <div style="font-size: 2.3rem; font-weight: 900; color: #38bdf8; margin: 0.4rem 0 0.2rem;">
+            {{ total_clinics_count|default:total_clubs|default:organizations.count }}
+          </div>
+          <span style="font-size: 0.75rem; color: #8b949e;">Configured medical organizations</span>
+        </div>
+
+        <!-- TOTAL ENROLLED PATIENTS -->
+        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem;">
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
+            Total Enrolled Patients
+          </span>
+          <div style="font-size: 2.3rem; font-weight: 900; color: #fff; margin: 0.4rem 0 0.2rem;">
+            {{ total_platform_patients|default:total_members|default:"0" }}
+          </div>
+          <span style="font-size: 0.75rem; color: #8b949e;">Across all active membership tiers</span>
+        </div>
+
+        <!-- SYSTEM CONSULTATIONS -->
+        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem;">
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
+            System Consultations
+          </span>
+          <div style="font-size: 2.3rem; font-weight: 900; color: #d8b4fe; margin: 0.4rem 0 0.2rem;">
+            {{ total_platform_bookings|default:total_bookings|default:"0" }}
+          </div>
+          <span style="font-size: 0.75rem; color: #8b949e;">Total appointments scheduled</span>
+        </div>
+      </div>
+
+      <!-- INDIVIDUAL CLINIC BREAKDOWN MATRIX (LIVE SEPARATE REVENUES) -->
+      <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
           <div>
-            <h2 class="sa-panel-title">Platform-wide Metrics</h2>
-            <p class="sa-subtext" style="margin-top: 0.2rem;">Live Wellness Centers, total subscribers, and system activity across all organizations.</p>
+            <h3 style="margin: 0; color: #fff; font-size: 1.2rem;">Clinic Performance &amp; Revenue Breakdown</h3>
+            <p style="color: #8b949e; font-size: 0.85rem; margin: 0.25rem 0 0;">
+              Separate real-time earnings, patient headcount, and run-rates per clinic.
+            </p>
           </div>
         </div>
 
-        <div class="sa-metrics-row">
-          <div class="sa-stat-card">
-            <span class="sa-stat-label">Wellness Centers</span>
-            <div class="sa-stat-val" style="color: var(--sa-accent);">{{ total_clubs }}</div>
-            <span class="sa-subtext">Multi-tenant wellness organizations</span>
-          </div>
-
-          <div class="sa-stat-card">
-            <span class="sa-stat-label">Platform Members</span>
-            <div class="sa-stat-val" style="color: #fff;">{{ total_members }}</div>
-            <span class="sa-subtext">Total active Center subscribers</span>
-          </div>
-
-          <div class="sa-stat-card">
-            <span class="sa-stat-label">Appointments</span>
-            <div class="sa-stat-val" style="color: var(--sa-success);">{{ total_bookings }}</div>
-            <span class="sa-subtext">Total modality reservations processed</span>
-          </div>
+        <div style="width: 100%; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color, #212936); color: #8b949e; text-transform: uppercase; font-size: 0.75rem;">
+                <th style="padding: 0.85rem;">Clinic Name</th>
+                <th style="padding: 0.85rem;">Tenant Slug</th>
+                <th style="padding: 0.85rem;">Active Patients</th>
+                <th style="padding: 0.85rem;">Total Bookings</th>
+                <th style="padding: 0.85rem;">Monthly Run-Rate</th>
+                <th style="padding: 0.85rem; text-align: right;">Total Gross Earnings</th>
+                <th style="padding: 0.85rem; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in club_stats %}
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 0.95rem 0.85rem; font-weight: 700; color: #fff;">
+                  {{ c.org.name }}
+                </td>
+                <td style="padding: 0.95rem 0.85rem; color: #38bdf8;">
+                  <code>{{ c.org.slug }}</code>
+                </td>
+                <td style="padding: 0.95rem 0.85rem; color: #cbd5e1;">
+                  {{ c.patients_count }}
+                </td>
+                <td style="padding: 0.95rem 0.85rem; color: #cbd5e1;">
+                  {{ c.bookings_count }}
+                </td>
+                <td style="padding: 0.95rem 0.85rem; color: #fbbf24; font-weight: 600;">
+                  ${{ c.monthly_recurring|floatformat:2 }}/mo
+                </td>
+                <td style="padding: 0.95rem 0.85rem; text-align: right; font-weight: 800; color: #7bf199; font-size: 1rem;">
+                  ${{ c.total_earnings|floatformat:2 }}
+                </td>
+                <td style="padding: 0.95rem 0.85rem; text-align: right;">
+                  <a href="/dashboard/org-admin/?org={{ c.org.slug }}" style="padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 700; border-radius: 4px; background: transparent; border: 1px solid #38bdf8; color: #38bdf8; text-decoration: none;">
+                    Inspect Clinic &rarr;
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" style="text-align: center; color: #8b949e; padding: 2.5rem;">No tenant clinics registered yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-      </section>
+      </div>
+
     </div>
 
     <!-- 2. TAB: CLUBS & DEDICATED MEMBERS -->

@@ -1,0 +1,387 @@
+{% extends 'tenancy/base.html' %}
+{% load static %}
+{% block title %}Reception Console | {{ tenant.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --rec-bg: #07090e;
+    --rec-sidebar-bg: #0d1117;
+    --rec-surface: #111620;
+    --rec-card: #161c26;
+    --rec-border: #212936;
+    --rec-accent: #38bdf8;
+    --rec-text: #f0f6fc;
+    --rec-muted: #8b949e;
+    --rec-success: #7bf199;
+    --rec-warning: #fbbf24;
+    --rec-danger: #ff9b9b;
+    --sidebar-w: 260px;
+  }
+
+  body { background-color: var(--rec-bg); color: var(--rec-text); margin: 0; font-family: Inter, sans-serif; }
+  .rec-layout { display: flex; min-height: 100vh; }
+  .rec-sidebar { width: var(--sidebar-w); background: var(--rec-sidebar-bg); border-right: 1px solid var(--rec-border); padding: 1.5rem 1rem; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+  .rec-nav-item { width: 100%; padding: 0.75rem 1rem; background: transparent; border: 1px solid transparent; color: var(--rec-muted); border-radius: 6px; text-align: left; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; }
+  .rec-nav-item.active { background: var(--rec-card); color: var(--rec-accent); border-color: var(--rec-border); }
+  .rec-stage { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+
+  .rec-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .rec-card { background: var(--rec-card); border: 1px solid var(--rec-border); border-radius: 8px; padding: 1.25rem; }
+  
+  .rec-table { width: 100%; border-collapse: collapse; text-align: left; }
+  .rec-table th { color: var(--rec-muted); font-size: 0.75rem; text-transform: uppercase; padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--rec-border); }
+  .rec-table td { padding: 0.95rem 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+
+  .badge { font-size: 0.72rem; padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .b-pending { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+  .b-wait { background: rgba(251, 191, 36, 0.15); color: var(--rec-warning); border: 1px solid rgba(251, 191, 36, 0.4); }
+  .b-consult { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+  .b-done { background: rgba(123, 241, 153, 0.15); color: var(--rec-success); border: 1px solid rgba(123, 241, 153, 0.4); }
+  .b-canceled { background: rgba(239, 68, 68, 0.15); color: var(--rec-danger); border: 1px solid rgba(239, 68, 68, 0.4); }
+
+  .rec-btn { padding: 0.45rem 0.85rem; font-size: 0.8rem; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+  .rec-btn-primary { background: var(--rec-accent); color: #000; }
+  .rec-btn-outline { background: transparent; border: 1px solid var(--rec-border); color: #fff; }
+  .rec-btn-danger { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
+
+  /* Filter Toolbar */
+  .filter-toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; align-items: center; justify-content: space-between; }
+  .filter-pill-group { display: flex; gap: 0.4rem; background: var(--rec-surface); padding: 0.3rem; border-radius: 6px; border: 1px solid var(--rec-border); }
+  .filter-pill { background: transparent; border: none; color: var(--rec-muted); padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer; }
+  .filter-pill.active { background: var(--rec-card); color: #fff; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+  .modal-sheet { background: var(--rec-card); border: 1px solid var(--rec-border); border-radius: 8px; width: 100%; max-width: 500px; padding: 2rem; max-height: 90vh; overflow-y: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rec-layout">
+  <!-- Sidebar -->
+  <aside class="rec-sidebar">
+    <div>
+      <div style="border-bottom: 1px solid var(--rec-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <span style="font-size: 0.7rem; color: var(--rec-accent); font-weight: 800; text-transform: uppercase;">Front Desk Operations</span>
+        <h2 style="font-size: 1.25rem; margin: 0.2rem 0 0; color: #fff;">{{ request.user.username }}</h2>
+        <span style="font-size: 0.8rem; color: var(--rec-muted);">{{ tenant.name }}</span>
+      </div>
+
+      <nav>
+        <button type="button" class="rec-nav-item active" onclick="switchRecTab('tab-roster')">
+          <span>📋 All Patient Bookings</span>
+          <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.2); color: var(--rec-accent); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ all_bookings.count }}</span>
+        </button>
+        <button type="button" class="rec-nav-item" onclick="switchRecTab('tab-patients')">
+          <span>👥 Manage Patients (CRUD)</span>
+          <span style="font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ all_patients.count }}</span>
+        </button>
+      </nav>
+    </div>
+
+    <div>
+      <a href="/logout/" class="rec-btn rec-btn-outline" style="width: 100%; color: var(--rec-danger); border-color: rgba(255,155,155,0.3);">Sign Out</a>
+    </div>
+  </aside>
+
+  <!-- Main Stage -->
+  <main class="rec-stage">
+    
+    <!-- Top Live Status Metrics -->
+    <div class="rec-metrics">
+      <div class="rec-card">
+        <span style="font-size: 0.75rem; color: var(--rec-muted); text-transform: uppercase; font-weight: 700;">Scheduled Upcoming</span>
+        <div style="font-size: 2rem; font-weight: 800; color: #fff; margin-top: 0.25rem;">{{ pending_count }}</div>
+        <span style="font-size: 0.75rem; color: var(--rec-muted);">Awaiting Arrival</span>
+      </div>
+      <div class="rec-card">
+        <span style="font-size: 0.75rem; color: var(--rec-muted); text-transform: uppercase; font-weight: 700;">Waiting in Lobby</span>
+        <div style="font-size: 2rem; font-weight: 800; color: var(--rec-warning); margin-top: 0.25rem;">{{ waiting_count }}</div>
+        <span style="font-size: 0.75rem; color: var(--rec-muted);">Arrived &amp; Queued</span>
+      </div>
+      <div class="rec-card">
+        <span style="font-size: 0.75rem; color: var(--rec-muted); text-transform: uppercase; font-weight: 700;">With Doctors</span>
+        <div style="font-size: 2rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">{{ in_consult_count }}</div>
+        <span style="font-size: 0.75rem; color: var(--rec-muted);">In-Consultation</span>
+      </div>
+      <div class="rec-card">
+        <span style="font-size: 0.75rem; color: var(--rec-muted); text-transform: uppercase; font-weight: 700;">Completed Visits</span>
+        <div style="font-size: 2rem; font-weight: 800; color: var(--rec-success); margin-top: 0.25rem;">{{ completed_count }}</div>
+        <span style="font-size: 0.75rem; color: var(--rec-muted);">Fulfilled Sessions</span>
+      </div>
+    </div>
+
+    <!-- TAB 1: ALL PATIENT BOOKINGS (FILTERABLE & SEARCHABLE) -->
+    <div id="tab-roster" class="tab-content active">
+      <div class="rec-card">
+        
+        <!-- Filter and Search Controls Bar -->
+        <div class="filter-toolbar">
+          <!-- Status Pill Filter -->
+          <div class="filter-pill-group">
+            <button type="button" class="filter-pill active" onclick="filterBookings('all', this)">All ({{ all_bookings.count }})</button>
+            <button type="button" class="filter-pill" onclick="filterBookings('pending', this)">Scheduled</button>
+            <button type="button" class="filter-pill" onclick="filterBookings('waiting', this)">Waiting</button>
+            <button type="button" class="filter-pill" onclick="filterBookings('in_consultation', this)">In-Doctor</button>
+            <button type="button" class="filter-pill" onclick="filterBookings('completed', this)">Completed</button>
+            <button type="button" class="filter-pill" onclick="filterBookings('canceled', this)">Canceled</button>
+          </div>
+
+          <!-- Live Search Input -->
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="booking-search" onkeyup="searchBookingsTable()" placeholder="Search patient, service, doctor..." style="padding: 0.55rem 0.85rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px; font-size: 0.85rem; width: 240px;">
+          </div>
+        </div>
+
+        <table class="rec-table" id="bookings-table">
+          <thead>
+            <tr>
+              <th>Scheduled Window</th>
+              <th>Patient</th>
+              <th>Service</th>
+              <th>Assigned Doctor</th>
+              <th>Status</th>
+              <th style="text-align: right;">Reception Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in all_bookings %}
+            <tr class="booking-row" data-status="{{ b.status }}">
+              <td style="color: #cbd5e1; font-weight: 600; white-space: nowrap;">
+                {{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}
+              </td>
+              <td>
+                <strong style="color: #fff; display: block;">{{ b.membership.user.username }}</strong>
+                <span style="font-size: 0.75rem; color: var(--rec-muted);">{{ b.membership.user.email }}</span>
+              </td>
+              <td style="color: var(--rec-accent); font-weight: 600;">{{ b.resource.name }}</td>
+              <td>Dr. {{ b.doctor.username|default:"Unassigned" }}</td>
+              <td>
+                {% if b.status == 'waiting' %}
+                  <span class="badge b-wait">&#9679; In Lobby (Waiting)</span>
+                {% elif b.status == 'in_consultation' %}
+                  <span class="badge b-consult">&#9679; In Consultation</span>
+                {% elif b.status == 'completed' %}
+                  <span class="badge b-done">&#10003; Completed</span>
+                {% elif b.status == 'canceled' %}
+                  <span class="badge b-canceled">Canceled</span>
+                {% else %}
+                  <span class="badge b-pending">&#9679; Scheduled</span>
+                {% endif %}
+              </td>
+             <td style="text-align: right; white-space: nowrap;">
+                <form method="POST" style="display: inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action_type" value="update_booking_status">
+                  <input type="hidden" name="booking_id" value="{{ b.id }}">
+
+                  {% if b.status == 'pending' %}
+                    <button type="submit" name="status" value="waiting" class="rec-btn" style="background: var(--rec-warning); color: #000;">
+                      Mark Arrived &rarr;
+                    </button>
+                    <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel appointment and refund credits?');">
+                      Cancel
+                    </button>
+                  {% elif b.status == 'waiting' %}
+                    <button type="submit" name="status" value="in_consultation" class="rec-btn" style="background: #38bdf8; color: #000;">
+                      Send to Doctor &rarr;
+                    </button>
+                    <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel appointment and refund credits?');">
+                      Cancel
+                    </button>
+                  {% elif b.status == 'in_consultation' %}
+                    <button type="submit" name="status" value="completed" class="rec-btn" style="background: var(--rec-success); color: #000;">
+                      Check Out (Fulfill) &#10003;
+                    </button>
+                    <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel session and refund credits?');">
+                      Cancel
+                    </button>
+                  {% elif b.status == 'completed' %}
+                    <span style="color: var(--rec-success); font-size: 0.8rem; font-weight: 700;">&#10003; Fulfilled</span>
+                  {% elif b.status == 'canceled' %}
+                    <span style="color: var(--rec-danger); font-size: 0.8rem;">Refunded &amp; Closed</span>
+                  {% endif %}
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align: center; color: var(--rec-muted); padding: 3rem;">No booking requests found in system.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: MANAGE PATIENTS (CRUD & PDF) -->
+    <div id="tab-patients" class="tab-content">
+      <div class="rec-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3 style="margin: 0; color: #fff;">Patient Records Directory ({{ all_patients.count }})</h3>
+          <button type="button" class="rec-btn rec-btn-primary" onclick="openNewPatientModal()">+ Register Walk-In Patient</button>
+        </div>
+
+        <table class="rec-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Enrolled Date</th>
+              <th style="text-align: center;">Clinical Dossier</th>
+              <th style="text-align: right;">Manage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in all_patients %}
+            <tr>
+              <td style="font-weight: 700; color: #fff;">{{ p.user.username }}</td>
+              <td style="color: var(--rec-muted);">{{ p.user.email|default:"No email registered" }}</td>
+              <td style="color: #cbd5e1;">{{ p.user.date_joined|date:"M d, Y" }}</td>
+              <td style="text-align: center;">
+                <a href="?org={{ tenant.slug }}&export_pdf={{ p.user.id }}" class="rec-btn rec-btn-outline" style="border-color: #38bdf8; color: #38bdf8; font-size: 0.75rem;">
+                  📄 Download PDF
+                </a>
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                <button type="button" class="rec-btn rec-btn-outline" onclick="openEditPatientModal('{{ p.user.id }}', '{{ p.user.username }}', '{{ p.user.email }}')">Edit</button>
+                <form method="POST" onsubmit="return confirm('Delete patient {{ p.user.username }}?');" style="display: inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action_type" value="delete_patient">
+                  <input type="hidden" name="user_id" value="{{ p.user.id }}">
+                  <button type="submit" class="rec-btn rec-btn-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align: center; color: var(--rec-muted); padding: 2rem;">No registered patients found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal: New Patient -->
+<div id="new-patient-modal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rec-border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+      <h3 style="margin: 0; color: #fff;">Register Walk-In Patient</h3>
+      <span onclick="closeNewPatientModal()" style="cursor: pointer; font-size: 1.5rem; color: var(--rec-muted);">&times;</span>
+    </div>
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="create_patient">
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; font-size: 0.8rem; color: var(--rec-muted); margin-bottom: 0.3rem;">Username</label>
+        <input type="text" name="username" required placeholder="e.g. john_doe" style="width: 100%; padding: 0.7rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; font-size: 0.8rem; color: var(--rec-muted); margin-bottom: 0.3rem;">Email Address</label>
+        <input type="email" name="email" required placeholder="patient@example.com" style="width: 100%; padding: 0.7rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; font-size: 0.8rem; color: var(--rec-muted); margin-bottom: 0.3rem;">Temporary Password</label>
+        <input type="password" name="password" placeholder="Pass@1234" style="width: 100%; padding: 0.7rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.8rem; color: var(--rec-muted); margin-bottom: 0.3rem;">Assign Initial Plan</label>
+        <select name="plan_id" style="width: 100%; padding: 0.7rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px;">
+          {% for plan in plans %}
+            <option value="{{ plan.id }}">{{ plan.name }} ({{ plan.credits_per_period }} credits)</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="rec-btn rec-btn-primary" style="width: 100%; padding: 0.8rem;">Create Patient Account</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Patient -->
+<div id="edit-patient-modal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rec-border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+      <h3 style="margin: 0; color: #fff;">Edit Patient Record</h3>
+      <span onclick="closeEditPatientModal()" style="cursor: pointer; font-size: 1.5rem; color: var(--rec-muted);">&times;</span>
+    </div>
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="update_patient">
+      <input type="hidden" name="user_id" id="edit-p-id">
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; font-size: 0.8rem; color: var(--rec-muted); margin-bottom: 0.3rem;">Username</label>
+        <input type="text" id="edit-p-username" disabled style="width: 100%; padding: 0.7rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #888; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="display: block; font-size: 0.8rem; color: var(--rec-muted); margin-bottom: 0.3rem;">Email</label>
+        <input type="email" name="email" id="edit-p-email" required style="width: 100%; padding: 0.7rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.8rem; color: var(--rec-muted); margin-bottom: 0.3rem;">Reset Password</label>
+        <input type="password" name="new_password" placeholder="Leave blank to keep unchanged" style="width: 100%; padding: 0.7rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <button type="submit" class="rec-btn rec-btn-primary" style="width: 100%; padding: 0.8rem;">Save Patient Updates</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function switchRecTab(tabId) {
+  document.querySelectorAll('.rec-nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  const btn = document.querySelector(`button[onclick*="'${tabId}'"]`);
+  if (btn) btn.classList.add('active');
+
+  const content = document.getElementById(tabId);
+  if (content) content.classList.add('active');
+  window.location.hash = tabId;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && document.getElementById(hash)) {
+    switchRecTab(hash);
+  }
+});
+
+// Dynamic Filter Pills (All, Scheduled, Waiting, In-Consultation, Completed, Canceled)
+function filterBookings(status, btn) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+
+  const rows = document.querySelectorAll('.booking-row');
+  rows.forEach(r => {
+    if (status === 'all' || r.getAttribute('data-status') === status) {
+      r.style.display = '';
+    } else {
+      r.style.display = 'none';
+    }
+  });
+}
+
+// Live Search in Table
+function searchBookingsTable() {
+  const query = document.getElementById('booking-search').value.toLowerCase();
+  const rows = document.querySelectorAll('.booking-row');
+  rows.forEach(r => {
+    const text = r.innerText.toLowerCase();
+    r.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+
+function openNewPatientModal() { document.getElementById('new-patient-modal').style.display = 'flex'; }
+function closeNewPatientModal() { document.getElementById('new-patient-modal').style.display = 'none'; }
+
+function openEditPatientModal(id, username, email) {
+  document.getElementById('edit-p-id').value = id;
+  document.getElementById('edit-p-username').value = username;
+  document.getElementById('edit-p-email').value = email;
+  document.getElementById('edit-patient-modal').style.display = 'flex';
+}
+function closeEditPatientModal() { document.getElementById('edit-patient-modal').style.display = 'none'; }
+</script>
+{% endblock %}

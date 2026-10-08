@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: a4 portrait;
+    margin: 1.5cm;
+  }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 11pt; color: #222; }
+  .header { border-bottom: 2px solid #38bdf8; padding-bottom: 10px; margin-bottom: 20px; }
+  .clinic-title { font-size: 20pt; font-weight: bold; color: #0284c7; }
+  .meta-grid { margin-bottom: 20px; width: 100%; }
+  .meta-td { padding: 4px; font-size: 10pt; }
+  .section-heading { font-size: 13pt; font-weight: bold; background: #f0f9ff; padding: 6px 10px; border-left: 4px solid #38bdf8; margin-top: 15px; margin-bottom: 10px; }
+  table.history-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  table.history-table th, table.history-table td { border: 1px solid #cbd5e1; padding: 8px; font-size: 9pt; text-align: left; }
+  table.history-table th { background-color: #f8fafc; font-weight: bold; }
+  .notes-box { background: #fafafa; border: 1px dashed #94a3b8; padding: 8px; margin-top: 5px; font-size: 9pt; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <table style="width: 100%;">
+    <tr>
+      <td>
+        <div class="clinic-title">{{ tenant.name|upper }}</div>
+        <div style="font-size: 9pt; color: #64748b;">Clinical Practice &amp; Health Center Dossier</div>
+      </td>
+      <td style="text-align: right; font-size: 9pt; color: #64748b;">
+        Generated: {{ generated_at|date:"M d, Y H:i" }}
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="section-heading">PATIENT INFORMATION</div>
+<table class="meta-grid">
+  <tr>
+    <td class="meta-td" style="width: 25%;"><strong>Patient Name:</strong></td>
+    <td class="meta-td">{{ patient.username }}</td>
+    <td class="meta-td" style="width: 25%;"><strong>Enrolled Date:</strong></td>
+    <td class="meta-td">{{ patient.date_joined|date:"M d, Y" }}</td>
+  </tr>
+  <tr>
+    <td class="meta-td"><strong>Email Address:</strong></td>
+    <td class="meta-td">{{ patient.email|default:"N/A" }}</td>
+    <td class="meta-td"><strong>Membership Plan:</strong></td>
+    <td class="meta-td">{{ membership.plan.name|default:"General Practice" }}</td>
+  </tr>
+  <tr>
+    <td class="meta-td"><strong>Account Status:</strong></td>
+    <td class="meta-td">{{ membership.status|upper }}</td>
+    <td class="meta-td"><strong>Active Credits:</strong></td>
+    <td class="meta-td">{{ membership.credit_balance|default:"0" }} credits</td>
+  </tr>
+</table>
+
+<div class="section-heading">CONSULTATION &amp; TREATMENT HISTORY</div>
+<table class="history-table">
+  <thead>
+    <tr>
+      <th style="width: 18%;">Date &amp; Time</th>
+      <th style="width: 22%;">Clinical Modality</th>
+      <th style="width: 20%;">Doctor</th>
+      <th style="width: 15%;">Status</th>
+      <th style="width: 25%;">Prescription / Clinical Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for b in bookings %}
+    <tr>
+      <td>{{ b.start_time|date:"M d, Y" }}<br>{{ b.start_time|time:"g:i A" }}</td>
+      <td><strong>{{ b.resource.name }}</strong></td>
+      <td>Dr. {{ b.doctor.username|default:"Unassigned" }}</td>
+      <td>{{ b.status|upper }}</td>
+      <td>
+        {% if b.clinical_note and b.clinical_note.patient_notes %}
+          <div class="notes-box">{{ b.clinical_note.patient_notes }}</div>
+        {% else %}
+          <span style="color: #94a3b8; font-style: italic;">No notes recorded.</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5" style="text-align: center; color: #94a3b8;">No clinical consultations found for this patient.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div style="margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 8pt; color: #94a3b8; text-align: center;">
+  Confidential Medical Record &bull; {{ tenant.name }} &bull; All Rights Reserved.
+</div>
+
+</body>
+</html>

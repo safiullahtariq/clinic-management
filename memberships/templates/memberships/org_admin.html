@@ -421,57 +421,50 @@
 
       <nav>
         <ul class="oa-nav-list">
+          <!-- SIDEBAR ITEMS -->
           <li>
             <button type="button" class="oa-nav-item active" onclick="activateSection('tab-overview')">
               <span>Overview</span>
             </button>
           </li>
-
-          <!-- 1. NOTIFICATIONS TAB IN SIDEBAR -->
-          <li>
-            <button type="button" class="oa-nav-item" onclick="activateSection('tab-notifications')">
-              <span>&#128276; Notifications</span>
-              {% if unread_notifications_count > 0 %}
-                <span class="oa-nav-badge danger">{{ unread_notifications_count }}</span>
-              {% endif %}
-            </button>
-          </li>
-
           <li>
             <button type="button" class="oa-nav-item" onclick="activateSection('tab-approvals')">
-              <span>Plan Approvals</span>
+              <span>💳 Plan Approvals</span>
               <span class="oa-nav-badge warning">{{ pending_plan_memberships.count }}</span>
             </button>
           </li>
           <li>
-            <button type="button" class="oa-nav-item" onclick="activateSection('tab-members')">
-              <span>Active Members</span>
-              <span class="oa-nav-badge">{{ memberships.count }}</span>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-all-patients')">
+              <span>👥 Total Patients Directory</span>
+              <span class="oa-nav-badge">{{ all_patients.count }}</span>
             </button>
           </li>
           <li>
-            <button type="button" class="oa-nav-item" onclick="activateSection('tab-bookings')">
-              <span>Appointments</span>
-              <span class="oa-nav-badge">{{ bookings.count }}</span>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-staff')">
+              <span>👨‍⚕️ Manage Doctors &amp; Staff</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-shifts')">
+              <span>⏰ Doctor Shifts</span>
             </button>
           </li>
           <li>
             <button type="button" class="oa-nav-item" onclick="activateSection('tab-services')">
-              <span>Modalities</span>
-              <span class="oa-nav-badge">{{ resources.count }}</span>
+              <span>🩺 Modalities</span>
             </button>
           </li>
           <li>
             <button type="button" class="oa-nav-item" onclick="activateSection('tab-plans')">
               <span>Membership Tiers</span>
-              <span class="oa-nav-badge">{{ plans.count }}</span>
             </button>
           </li>
           <li>
-            <button type="button" class="oa-nav-item" onclick="activateSection('tab-settings')">
-              <span>Club Settings</span>
+            <button type="button" class="oa-nav-item" onclick="activateSection('tab-reports')">
+              <span>📊 Reports &amp; Exports</span>
             </button>
           </li>
+          
         </ul>
       </nav>
     </div>
@@ -483,7 +476,59 @@
 
   <!-- Main Stage -->
   <main class="oa-stage">
-    
+   <!-- TAB: TOTAL PATIENTS DIRECTORY (Full Patient List for Org Admin) -->
+    <div id="tab-all-patients" class="oa-tab-content">
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h2 class="oa-panel-title">Total Patients Master Directory ({{ all_patients.count }})</h2>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Complete roster of all enrolled clinic patients, active credit reserves, and membership states.</p>
+          </div>
+          <a href="?org={{ tenant.slug }}&export=patients_csv" class="oa-btn oa-btn-outline" style="border-color: #38bdf8; color: #38bdf8;">
+            Export CSV &darr;
+          </a>
+        </div>
+
+        <div class="oa-table-box">
+          <table class="oa-table">
+            <thead>
+              <tr>
+                <th>Patient Name</th>
+                <th>Email</th>
+                <th>Membership Tier</th>
+                <th>Credit Balance</th>
+                <th>Payment State</th>
+                <th>Enrolled Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in all_patients %}
+              <tr>
+                <td style="font-weight: 700; color: #fff;">{{ p.user.username }}</td>
+                <td style="color: var(--oa-muted);">{{ p.user.email|default:"No email registered" }}</td>
+                <td style="color: var(--oa-accent); font-weight: 600;">{{ p.plan.name|default:"General Patient" }}</td>
+                <td style="font-weight: 700; color: {% if p.credit_balance > 0 %}var(--oa-success){% else %}var(--oa-danger){% endif %};">
+                  {{ p.credit_balance }} cr
+                </td>
+                <td>
+                  {% if p.status == 'active' %}
+                    <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700;">Active</span>
+                  {% elif p.status == 'pending_deposit' %}
+                    <span style="font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700;">Awaiting Approval</span>
+                  {% else %}
+                    <span style="font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700;">Unpaid</span>
+                  {% endif %}
+                </td>
+                <td style="color: #cbd5e1; font-size: 0.82rem;">{{ p.user.date_joined|date:"M d, Y" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" style="text-align: center; color: var(--oa-muted); padding: 2rem;">No patients registered in this clinic.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div> 
     <!-- 1. TAB: OVERVIEW -->
     <div id="tab-overview" class="oa-tab-content active">
       <section class="oa-panel">
@@ -887,6 +932,322 @@
         </form>
       </section>
     </div>
+<!-- TAB: MANAGE CLINIC STAFF -->
+<div id="tab-staff" class="oa-tab-content" >
+    <h2 style="color: #fff; margin-bottom: 1.5rem;">Clinic Staff Management</h2>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+        <!-- Add Staff Form -->
+        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); height: fit-content;">
+            <h3 style="margin-bottom: 1rem; color: #fff;">Add New Staff Member</h3>
+            <form method="POST" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="action_type" value="create_staff">
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Staff Role</label>
+                    <select name="staff_role" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <option value="doctor">Doctor</option>
+                        <option value="receptionist">Receptionist</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Username</label>
+                    <input type="text" name="username" required autocomplete="off" placeholder="e.g. dr_ali" style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Email (Credentials will be sent here)</label>
+                    <input type="email" name="email" required autocomplete="off" placeholder="staff@example.com" style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Temporary Password</label>
+                    <input type="password" name="password" required autocomplete="new-password" placeholder="Min 8 characters" style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                </div>
+                
+                <button type="submit" style="width: 100%; padding: 0.85rem; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
+                    Create & Send Login Details
+                </button>
+            </form>
+        </div>
+
+        <!-- Staff List (Doctors & Receptionists) -->
+        <div>
+            <!-- Doctors Section -->
+            <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                <h3 style="margin-bottom: 1rem; color: #38bdf8;">👨‍⚕️ Doctors ({{ doctors.count }})</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for doc in doctors %}
+                        <div style="padding: 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #fff; display: block;">Dr. {{ doc.user.username }}</strong>
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">{{ doc.user.email|default:"No email registered" }}</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button type="button" onclick="openEditStaffModal('{{ doc.user.id }}', '{{ doc.user.username }}', '{{ doc.user.email }}', 'doctor')" style="padding: 0.4rem 0.8rem; background: transparent; border: 1px solid #38bdf8; color: #38bdf8; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    Edit
+                                </button>
+                                <form method="POST" onsubmit="return confirm('Dr. {{ doc.user.username }} ko delete karna chahte hain?');" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action_type" value="delete_staff">
+                                    <input type="hidden" name="user_id" value="{{ doc.user.id }}">
+                                    <button type="submit" style="padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">No doctors registered.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Receptionists Section -->
+            <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 1rem; color: #d8b4fe;">🧑‍💼 Receptionists ({{ receptionists.count }})</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for rec in receptionists %}
+                        <div style="padding: 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #fff; display: block;">{{ rec.user.username }}</strong>
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">{{ rec.user.email|default:"No email registered" }}</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button type="button" onclick="openEditStaffModal('{{ rec.user.id }}', '{{ rec.user.username }}', '{{ rec.user.email }}', 'receptionist')" style="padding: 0.4rem 0.8rem; background: transparent; border: 1px solid #d8b4fe; color: #d8b4fe; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    Edit
+                                </button>
+                                <form method="POST" onsubmit="return confirm('Receptionist {{ rec.user.username }} ko delete karna chahte hain?');" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action_type" value="delete_staff">
+                                    <input type="hidden" name="user_id" value="{{ rec.user.id }}">
+                                    <button type="submit" style="padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">No receptionists registered.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- TAB: DOCTOR SHIFTS TIMETABLE -->
+<div id="tab-shifts" class="oa-tab-content">
+    <h2 style="color: #fff; margin-bottom: 1.5rem;">Doctor Duty Shifts & Timing</h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+        <!-- Add Shift Form -->
+        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); height: fit-content;">
+            <h3 style="margin-bottom: 1rem; color: #fff;">Assign Shift Timing</h3>
+            
+            <!-- Explicit POST action target -->
+            <form method="POST" action="/dashboard/org-admin/?org={{ tenant.slug }}#tab-shifts" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="action_type" value="save_doctor_shift">
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Select Doctor</label>
+                    <select name="doctor_id" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                        {% for doc in doctors %}
+                            <option value="{{ doc.user.id }}">Dr. {{ doc.user.username }}</option>
+                        {% empty %}
+                            <option disabled selected>Pehle 'Manage Staff' se Doctor add karein</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Day of Week</label>
+                    <select name="day_of_week" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Duty Start</label>
+                        <input type="time" name="start_time" step="60" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Duty End</label>
+                        <input type="time" name="end_time" step="60" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 0.85rem; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
+                    Save Shift Schedule
+                </button>
+            </form>
+        </div>
+
+        <!-- Weekly Roster Display -->
+        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 1rem; color: #fff;">Weekly Roster</h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for sh in shifts %}
+                    <div style="padding: 0.75rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: #38bdf8;">Dr. {{ sh.doctor.username }}</strong>
+                            <div style="color: #cbd5e1; font-size: 0.85rem; margin-top: 0.2rem;">
+                                {{ sh.get_day_of_week_display }}: {{ sh.start_time|time:"g:i A" }} - {{ sh.end_time|time:"g:i A" }}
+                            </div>
+                        </div>
+                        <form method="POST" action="/dashboard/org-admin/?org={{ tenant.slug }}#tab-shifts" onsubmit="return confirm('Shift remove karni hai?');" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action_type" value="delete_doctor_shift">
+                            <input type="hidden" name="shift_id" value="{{ sh.id }}">
+                            <button type="submit" style="padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                Remove
+                            </button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Abhi tak kisi doctor ki shifts configure nahi hui hain.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<!-- TAB: CLINIC REPORTS & EXPORT CENTER -->
+<div id="tab-reports" class="oa-tab-content">
+  <h2 style="color: #fff; margin-bottom: 0.5rem;">Clinic Reports &amp; Intelligence</h2>
+  <p class="oa-subtext" style="margin-bottom: 2rem;">Export verified records to CSV, audit data files, or generate downloadable management PDF summaries.</p>
+
+  <!-- Export Actions Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    <!-- Export Patients CSV -->
+    <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📄 Export Patients (CSV)</h3>
+        <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Download raw patient demographic records, memberships, credit balances, and enrollment dates.</p>
+      </div>
+      <a href="?org={{ tenant.slug }}&export=patients_csv" class="oa-btn oa-btn-outline" style="width: 100%; border-color: #38bdf8; color: #38bdf8;">
+        Export Patients CSV &darr;
+      </a>
+    </div>
+
+    <!-- Export Appointments CSV -->
+    <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📋 Export Appointments (CSV)</h3>
+        <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Download all historical and upcoming consultation logs with assigned doctors and credit costs.</p>
+      </div>
+      <a href="?org={{ tenant.slug }}&export=appointments_csv" class="oa-btn oa-btn-outline" style="width: 100%; border-color: #6ee7b7; color: #6ee7b7;">
+        Export Appointments CSV &darr;
+      </a>
+    </div>
+
+    <!-- Download Clinic Performance PDF -->
+    <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📑 Clinic Summary Report (PDF)</h3>
+        <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Print-ready A4 executive dossier containing revenue run-rates, patient counts, and doctor productivity.</p>
+      </div>
+      <a href="?org={{ tenant.slug }}&export=clinic_pdf" class="oa-btn oa-btn-primary" style="width: 100%;">
+        Download Executive PDF &darr;
+      </a>
+    </div>
+  </div>
+
+  <!-- Doctor Performance Matrix -->
+  <section class="oa-panel">
+    <div class="oa-panel-header">
+      <div>
+        <h3 class="oa-panel-title">👨‍⚕️ Doctor Productivity &amp; Caseload Matrix</h3>
+        <p class="oa-subtext" style="margin-top: 0.2rem;">Live breakdown of assigned appointments and fulfillment status per medical practitioner.</p>
+      </div>
+    </div>
+
+    <div class="oa-table-box">
+      <table class="oa-table">
+        <thead>
+          <tr>
+            <th>Practitioner</th>
+            <th>Email</th>
+            <th>Total Assigned</th>
+            <th>Currently In-Consultation</th>
+            <th>Completed Visits</th>
+            <th style="text-align: right;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dp in doctor_performance %}
+          <tr>
+            <td style="font-weight: 700; color: #fff;">Dr. {{ dp.user.username }}</td>
+            <td style="color: var(--oa-muted);">{{ dp.user.email|default:"No email registered" }}</td>
+            <td style="font-weight: 700; color: #38bdf8;">{{ dp.total_assigned }} case(s)</td>
+            <td style="color: var(--oa-warning);">{{ dp.in_consult }} active</td>
+            <td style="font-weight: 700; color: var(--oa-success);">{{ dp.completed }} fulfilled</td>
+            <td style="text-align: right;">
+              <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">
+                Practicing
+              </span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No doctors registered in this clinic.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+<!-- Modal: Edit Staff Member -->
+<div id="edit-staff-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); width: 100%; max-width: 440px; padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color); margin: auto; position: relative; top: 15%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3 style="margin: 0; color: #fff;">Edit Staff Member</h3>
+            <span onclick="closeEditStaffModal()" style="cursor: pointer; font-size: 1.5rem; color: var(--text-muted);">&times;</span>
+        </div>
+        <form method="POST" autocomplete="off">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="update_staff">
+            <input type="hidden" name="user_id" id="edit-staff-user-id">
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Username</label>
+                <input type="text" id="edit-staff-username" disabled style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-color); color: #888; border-radius: 4px;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Role</label>
+                <select name="staff_role" id="edit-staff-role" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <option value="doctor">Doctor</option>
+                    <option value="receptionist">Receptionist</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Email Address</label>
+                <input type="email" name="email" id="edit-staff-email" required style="width: 100%; padding: 0.65rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">New Password (Khali chhor dein agar change nahi karna)</label>
+                <input type="password" name="password" autocomplete="new-password" placeholder="Leave blank to retain current" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" onclick="closeEditStaffModal()" style="flex: 1; padding: 0.75rem; background: transparent; border: 1px solid var(--border-color); color: #fff; border-radius: 4px; cursor: pointer;">Cancel</button>
+                <button type="submit" style="flex: 1; padding: 0.75rem; background: var(--accent-gold, #38bdf8); border: none; color: #000; font-weight: bold; border-radius: 4px; cursor: pointer;">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
 
   </main>
 </div>
@@ -1067,6 +1428,17 @@ function openLedgerModal(id) {
 function closeLedgerModal(id) {
   const m = document.getElementById(id);
   if (m) m.style.display = 'none';
+}
+function openEditStaffModal(id, username, email, role) {
+    document.getElementById('edit-staff-user-id').value = id;
+    document.getElementById('edit-staff-username').value = username;
+    document.getElementById('edit-staff-email').value = email;
+    document.getElementById('edit-staff-role').value = role;
+    document.getElementById('edit-staff-modal').style.display = 'block';
+}
+
+function closeEditStaffModal() {
+    document.getElementById('edit-staff-modal').style.display = 'none';
 }
 </script>
 {% endblock %}

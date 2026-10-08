@@ -1,9 +1,8 @@
 {% extends 'tenancy/base.html' %}
 {% load static %}
-{% block title %}Member Portal | {{ tenant.name }}{% endblock %}
+{% block title %}Patient Portal | {{ tenant.name }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'scheduling/css/scheduler.css' %}">
 <style>
   :root {
     --mem-bg: #07090e;
@@ -12,8 +11,8 @@
     --mem-card: #161c26;
     --mem-border: #212936;
     --mem-border-light: rgba(255, 255, 255, 0.07);
-    --mem-accent: #60a5fa;
-    --mem-accent-hover: #3b82f6;
+    --mem-accent: #38bdf8;
+    --mem-accent-hover: #0284c7;
     --mem-text: #f0f6fc;
     --mem-muted: #8b949e;
     --mem-success: #7bf199;
@@ -26,6 +25,8 @@
     max-width: 100vw;
     overflow-x: hidden;
     background-color: var(--mem-bg);
+    color: var(--mem-text);
+    font-family: Inter, sans-serif;
   }
 
   .mem-app-layout {
@@ -113,7 +114,7 @@
 
   .mem-nav-badge {
     font-size: 0.72rem;
-    background: rgba(96, 165, 250, 0.15);
+    background: rgba(56, 189, 248, 0.15);
     color: var(--mem-accent);
     padding: 0.15rem 0.5rem;
     border-radius: 10px;
@@ -202,7 +203,7 @@
   }
 
   .mem-table th, .mem-table td {
-    padding: 0.8rem;
+    padding: 0.85rem 0.8rem;
   }
 
   .mem-table thead tr {
@@ -215,29 +216,6 @@
 
   .mem-table tbody tr {
     border-bottom: 1px solid var(--mem-border-light);
-  }
-
-  .mem-mobile-cards-list {
-    display: none;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .mem-mobile-card {
-    background: var(--mem-surface);
-    border: 1px solid var(--mem-border);
-    border-radius: 8px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-  }
-
-  .mem-card-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
   }
 
   .mem-btn {
@@ -256,53 +234,85 @@
     transition: opacity 0.2s;
   }
 
-  .mem-btn-primary {
+  .mem-btn-primary { background: var(--mem-accent); color: #000; }
+  .mem-btn-outline { background: transparent; border: 1px solid var(--mem-border); color: #fff; }
+  .mem-btn-danger  { background: transparent; border: 1px solid rgba(255, 155, 155, 0.4); color: var(--mem-danger); }
+
+  .mem-tab-content { display: none; }
+  .mem-tab-content.active { display: block; }
+
+  /* Slot Picker Styling */
+  .slot-chip {
+    padding: 0.6rem 0.9rem;
+    background: var(--mem-surface);
+    border: 1px solid var(--mem-border);
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .slot-chip:hover {
+    border-color: var(--mem-accent);
+  }
+
+  .slot-chip.selected {
+    background: var(--mem-accent);
+    color: #000;
+    border-color: var(--mem-accent);
+  }
+/* Slot Status Badges & Buttons */
+  .slot-btn {
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  /* Available: Clickable */
+  .slot-btn-available {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid var(--mem-accent);
+    color: #fff;
+    cursor: pointer;
+  }
+  .slot-btn-available:hover {
     background: var(--mem-accent);
     color: #000;
   }
-
-  .mem-btn-danger {
-    background: transparent;
-    border: 1px solid rgba(255, 155, 155, 0.4);
-    color: var(--mem-danger);
+  .slot-btn-available.selected {
+    background: var(--mem-accent) !important;
+    color: #000 !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
   }
 
-  .mem-tab-content {
-    display: none;
+  /* Booked: Disabled & Unclickable */
+  .slot-btn-booked {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #555e6d;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    opacity: 0.6;
+    pointer-events: none;
   }
-
-  .mem-tab-content.active {
-    display: block;
-  }
-
   @media (max-width: 1024px) {
-    .mem-mobile-topbar {
-      display: flex;
-    }
+    .mem-mobile-topbar { display: flex; }
     .mem-sidebar {
       position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
+      top: 0; bottom: 0; left: 0;
       transform: translateX(-100%);
       height: 100vh;
       overflow-y: auto;
     }
-    .mem-sidebar.open {
-      transform: translateX(0);
-    }
-    .mem-sidebar-backdrop.open {
-      display: block;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .mem-table-box {
-      display: none;
-    }
-    .mem-mobile-cards-list {
-      display: flex;
-    }
+    .mem-sidebar.open { transform: translateX(0); }
+    .mem-sidebar-backdrop.open { display: block; }
   }
 </style>
 {% endblock %}
@@ -324,26 +334,31 @@
   <aside id="app-sidebar" class="mem-sidebar">
     <div>
       <div class="mem-sidebar-brand">
-        <div class="mem-sidebar-badge">Member Portal</div>
-        <h2 class="mem-sidebar-title">{{ tenant.name|default:"Wellness Club" }}</h2>
+        <div class="mem-sidebar-badge">Patient Console</div>
+        <h2 class="mem-sidebar-title">{{ tenant.name|default:"Clinical Practice" }}</h2>
       </div>
 
       <nav>
         <ul class="mem-nav-list">
           <li>
             <button type="button" class="mem-nav-item active" onclick="activateSection('tab-overview')">
-              <span>My Passes</span>
+              <span>💳 Membership Passes</span>
             </button>
           </li>
           <li>
             <button type="button" class="mem-nav-item" onclick="activateSection('tab-reserve')">
-              <span>Reserve Modality</span>
+              <span>🩺 Book Consultation</span>
             </button>
           </li>
           <li>
             <button type="button" class="mem-nav-item" onclick="activateSection('tab-bookings')">
-              <span>My Appointments</span>
+              <span>📅 My Appointments</span>
               <span class="mem-nav-badge">{{ bookings|length }}</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="mem-nav-item" onclick="activateSection('tab-history')">
+              <span>📑 Medical Records &amp; Notes</span>
             </button>
           </li>
         </ul>
@@ -351,8 +366,8 @@
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.5rem; border-top: 1px solid var(--mem-border);">
-      <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="width: 100%; text-decoration: none;">
-        + Buy Another Pass
+      <a href="/?org={{ tenant.slug|default:'bio-hacking' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="width: 100%; text-decoration: none;">
+        + Upgrade / Buy Pass
       </a>
       <a href="/logout/" class="mem-btn mem-btn-danger" style="width: 100%;">Sign Out</a>
     </div>
@@ -360,87 +375,21 @@
 
   <main class="mem-stage">
     
-    <!-- 1. TAB: OVERVIEW & SEPARATE PLAN CARDS -->
+    <!-- 1. TAB: MEMBERSHIP PASSES -->
     <div id="tab-overview" class="mem-tab-content active">
       <section class="mem-panel">
         <div class="mem-panel-header">
           <div>
-            <h2 class="mem-panel-title">My Membership Passes</h2>
+            <h2 class="mem-panel-title">My Active Membership Passes</h2>
             <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-              Total Available Credit Pool: <strong style="color: var(--mem-success); font-size: 1.1rem;">{{ total_active_credits }} cr</strong>
+              Total Available Clinical Credits: <strong style="color: var(--mem-success); font-size: 1.1rem;">{{ total_active_credits|default:0 }} cr</strong>
             </p>
           </div>
-          <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
-            + Purchase Another Tier Pass
+          <a href="/?org={{ tenant.slug|default:'bio-hacking' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
+            + Purchase Another Pass
           </a>
         </div>
 
-        <!-- Render All Purchased Plans Separately -->
-        <!-- <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
-          {% for mem in all_user_memberships %}
-          <div style="background: var(--mem-surface); border: 1px solid {% if mem.status == 'active' %}var(--mem-accent){% else %}var(--mem-warning){% endif %}; padding: 1.5rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; position: relative;">
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
-                <span style="font-size: 0.72rem; color: var(--mem-muted); font-weight: 800; text-transform: uppercase;">
-                  {{ mem.plan.tier_label }}
-                </span>
-                {% if mem.status == 'active' %}
-                  <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
-                    &#10003; Active &bull; Confirmed
-                  </span>
-                {% else %}
-                  <span style="font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
-                    &#9679; Pending Org Admin Confirmation
-                  </span>
-                {% endif %}
-              </div>
-
-              <h3 style="margin: 0; font-size: 1.3rem; color: #fff; font-weight: 800;">{{ mem.plan.name }}</h3>
-              <div style="font-size: 0.85rem; color: var(--mem-muted); margin-top: 0.35rem;">
-                ${{ mem.plan.rate_monthly|floatformat:0 }}/month founding rate
-              </div>
-
-              <div style="margin: 1.25rem 0 0.5rem;">
-                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--mem-muted); font-weight: 700;">Credits Balance</div>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #fff;">
-                  {% if mem.status == 'active' %}
-                    {{ mem.credit_balance }} <span style="font-size: 0.9rem; color: var(--mem-muted); font-weight: 400;">/ {{ mem.plan.credits_per_period }} cr</span>
-                  {% else %}
-                    <span style="color: #fbbf24; font-size: 1.2rem;">+{{ mem.plan.credits_per_period }} credits pending</span>
-                  {% endif %}
-                </div>
-              </div>
-
-              <div style="margin-top: 1rem; border-top: 1px solid var(--mem-border-light); padding-top: 0.75rem;">
-                <div style="font-size: 0.72rem; color: var(--mem-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem;">Inclusions:</div>
-                <ul style="padding-left: 1.1rem; margin: 0; font-size: 0.8rem; color: #cbd5e1; line-height: 1.45;">
-                  {% for inc in mem.plan.inclusions %}
-                    <li>{{ inc }}</li>
-                  {% empty %}
-                    <li>{{ mem.plan.credits_per_period }} Biohacking credits/mo</li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </div>
-
-            <div style="font-size: 0.76rem; color: var(--mem-muted); border-top: 1px solid var(--mem-border); padding-top: 0.65rem;">
-              {% if mem.status == 'active' %}
-                <span style="color: #6ee7b7;">&bull; Ready to book modalities</span>
-              {% else %}
-                <span style="color: #fbbf24;">&bull; Org Admin will review payment &amp; release credits</span>
-              {% endif %}
-            </div>
-          </div>
-          {% empty %}
-          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
-            <p style="color: var(--mem-muted); margin-bottom: 1.25rem;">You do not have any membership passes yet.</p>
-            <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
-              Choose a Founding Pass &rarr;
-            </a>
-          </div>
-          {% endfor %}
-        </div> -->
-      <!-- Render All Purchased Plans with Dynamic Payment Buttons -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
           {% for mem in all_user_memberships %}
           <div style="background: var(--mem-surface); border: 1px solid {% if mem.status == 'active' %}var(--mem-accent){% elif mem.status == 'pending_deposit' %}var(--mem-warning){% else %}rgba(255, 255, 255, 0.2){% endif %}; padding: 1.5rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; position: relative;">
@@ -456,7 +405,7 @@
                   </span>
                 {% elif mem.status == 'pending_deposit' %}
                   <span style="font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
-                    &#9679; Payment Received &bull; Pending Admin Approval
+                    &#9679; Payment Received &bull; Pending Verification
                   </span>
                 {% else %}
                   <span style="font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.18rem 0.5rem; border-radius: 4px; font-weight: 700;">
@@ -467,7 +416,7 @@
 
               <h3 style="margin: 0; font-size: 1.3rem; color: #fff; font-weight: 800;">{{ mem.plan.name }}</h3>
               <div style="font-size: 0.85rem; color: var(--mem-muted); margin-top: 0.35rem;">
-                ${{ mem.plan.rate_monthly|floatformat:0 }}/month founding rate
+                ${{ mem.plan.rate_monthly|floatformat:0 }}/month locked founding rate
               </div>
 
               <div style="margin: 1.25rem 0 0.5rem;">
@@ -476,7 +425,7 @@
                   {% if mem.status == 'active' %}
                     {{ mem.credit_balance }} <span style="font-size: 0.9rem; color: var(--mem-muted); font-weight: 400;">/ {{ mem.plan.credits_per_period }} cr</span>
                   {% elif mem.status == 'pending_deposit' %}
-                    <span style="color: #fbbf24; font-size: 1.2rem;">+{{ mem.plan.credits_per_period }} credits pending approval</span>
+                    <span style="color: #fbbf24; font-size: 1.2rem;">+{{ mem.plan.credits_per_period }} credits pending release</span>
                   {% else %}
                     <span style="color: #fca5a5; font-size: 1.2rem;">0 credits (Pay to unlock)</span>
                   {% endif %}
@@ -484,25 +433,24 @@
               </div>
 
               <div style="margin-top: 1rem; border-top: 1px solid var(--mem-border-light); padding-top: 0.75rem;">
-                <div style="font-size: 0.72rem; color: var(--mem-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem;">Inclusions:</div>
+                <div style="font-size: 0.72rem; color: var(--mem-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem;">Plan Inclusions:</div>
                 <ul style="padding-left: 1.1rem; margin: 0; font-size: 0.8rem; color: #cbd5e1; line-height: 1.45;">
                   {% for inc in mem.plan.inclusions %}
                     <li>{{ inc }}</li>
                   {% empty %}
-                    <li>{{ mem.plan.credits_per_period }} Biohacking credits/mo</li>
+                    <li>{{ mem.plan.credits_per_period }} Clinical credits/mo</li>
                   {% endfor %}
                 </ul>
               </div>
             </div>
 
-            <!-- Action Block based on State -->
+            <!-- State-Based Action -->
             <div style="margin-top: 0.75rem; border-top: 1px solid var(--mem-border); padding-top: 0.85rem;">
               {% if mem.status == 'active' %}
-                <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">&bull; Ready to reserve modalities</span>
+                <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">&bull; Ready to schedule appointments</span>
               {% elif mem.status == 'pending_deposit' %}
-                <span style="color: #fbbf24; font-size: 0.78rem; font-weight: 600;">&bull; Payment verified. Awaiting Admin to release credits.</span>
+                <span style="color: #fbbf24; font-size: 0.78rem; font-weight: 600;">&bull; Clinic Admin will verify &amp; activate credits</span>
               {% else %}
-                <!-- DIRECT STRIPE PAYMENT BUTTON -->
                 <form method="POST" action="{% url 'memberships:stripe_checkout' %}?org={{ tenant.slug|default:request.tenant.slug }}">
                   {% csrf_token %}
                   <input type="hidden" name="plan_id" value="{{ mem.plan.id }}">
@@ -515,8 +463,8 @@
           </div>
           {% empty %}
           <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
-            <p style="color: var(--mem-muted); margin-bottom: 1.25rem;">You do not have any membership passes yet.</p>
-            <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
+            <p style="color: var(--mem-muted); margin-bottom: 1.25rem;">You do not have any clinical membership passes yet.</p>
+            <a href="/?org={{ tenant.slug|default:'bio-hacking' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
               Choose a Founding Pass &rarr;
             </a>
           </div>
@@ -525,24 +473,85 @@
       </section>
     </div>
 
-    <!-- 2. TAB: RESERVE MODALITY -->
+    <!-- 2. TAB: SMART DYNAMIC APPOINTMENT SCHEDULER (EMPTY SLOTS ENGINE) -->
     <div id="tab-reserve" class="mem-tab-content">
-      <section class="mem-panel">
+      <section class="mem-panel" style="max-width: 800px; margin: 0 auto;">
         <div class="mem-panel-header">
           <div>
-            <h2 class="mem-panel-title">Reserve a Modality</h2>
-            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">Select an available service and book with your credits.</p>
+            <h2 class="mem-panel-title">Book Clinical Consultation</h2>
+            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+              Select a doctor and service to view real-time available time slots.
+            </p>
           </div>
         </div>
 
         {% if total_active_credits > 0 %}
-          {% include 'scheduling/scheduler_component.html' %}
+          <!-- Interactive 3-Step Booking Widget -->
+          <form id="smart-booking-form" onsubmit="submitSmartBooking(event)">
+            
+           <!-- Step 1: Modality / Service -->
+            <div style="margin-bottom: 1.25rem;">
+              <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.4rem; font-weight: 700;">
+                1. Select Service / Modality
+              </label>
+              <select id="book-resource" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px;">
+                <option value="" disabled selected>-- Choose Service --</option>
+                {% for r in resources %}
+                  <option value="{{ r.id }}" data-cost="{{ r.credit_cost }}" data-duration="{{ r.duration_minutes }}">
+                    {{ r.name }} ({{ r.duration_minutes }} mins) &mdash; {{ r.credit_cost }} credit(s)
+                  </option>
+                {% empty %}
+                  <option disabled>No services active for this clinic</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Step 2: Doctor Selection -->
+            <div style="margin-bottom: 1.25rem;">
+              <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.4rem; font-weight: 700;">
+                2. Select Doctor
+              </label>
+              <select id="book-doctor" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px;">
+                <option value="" disabled selected>-- Choose Doctor --</option>
+                {% for d in doctors %}
+                  <option value="{{ d.user.id }}">Dr. {{ d.user.username }}</option>
+                {% empty %}
+                  <option disabled>No doctors currently registered</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Step 3: Date Picker -->
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.4rem; font-weight: 700;">
+                3. Choose Appointment Date
+              </label>
+              <input type="date" id="book-date" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px; box-sizing: border-box;">
+            </div>
+
+            <!-- Available Empty Slots Box -->
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.6rem; font-weight: 700;">
+                Available Time Slots (Empty &amp; Unbooked)
+              </label>
+              <div id="slots-container" style="display: flex; flex-wrap: wrap; gap: 0.65rem; min-height: 48px; align-items: center; background: var(--mem-surface); padding: 1rem; border-radius: 6px; border: 1px solid var(--mem-border);">
+                <span style="color: var(--mem-muted); font-size: 0.85rem;">Select doctor, service, and date above to load free slots.</span>
+              </div>
+            </div>
+
+            <input type="hidden" id="selected-slot-start">
+            <input type="hidden" id="selected-slot-end">
+
+            <button type="submit" id="book-submit-btn" disabled class="mem-btn mem-btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem;">
+              Confirm Booking (Deduct Credits)
+            </button>
+          </form>
         {% else %}
           <div style="text-align: center; padding: 3rem 1rem;">
             <p style="color: var(--mem-muted); margin-bottom: 1.25rem;">
-              You do not have active credits available. If you recently purchased a plan, please wait for Org Admin payment confirmation.
+              You do not have active credits available. If you recently purchased a plan, please wait for Clinic Admin payment confirmation.
             </p>
-            <a href="/?org={{ tenant.slug|default:'longevity-haus' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
+            <a href="/?org={{ tenant.slug|default:'bio-hacking' }}#pricing-tiers" class="mem-btn mem-btn-primary" style="text-decoration: none;">
               Purchase Passes / Add Credits &rarr;
             </a>
           </div>
@@ -556,7 +565,9 @@
         <div class="mem-panel-header">
           <div>
             <h2 class="mem-panel-title">My Reserved Appointments ({{ bookings|length }})</h2>
-            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">Review appointments or cancel to restore credits.</p>
+            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+              Review scheduled consultations or cancel to restore credits.
+            </p>
           </div>
         </div>
 
@@ -564,10 +575,11 @@
           <table class="mem-table">
             <thead>
               <tr>
-                <th>Modality Service</th>
-                <th>Scheduled Time</th>
+                <th>Service</th>
+                <th>Doctor</th>
+                <th>Scheduled Window</th>
                 <th>Credits</th>
-                <th>Status</th>
+                <th>Queue Status</th>
                 <th style="text-align: right;">Action</th>
               </tr>
             </thead>
@@ -575,40 +587,94 @@
               {% for b in bookings %}
               <tr>
                 <td style="font-weight: 700; color: #fff;">{{ b.resource.name }}</td>
-                <td style="color: #cbd5e1;">{{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|date:"H:i" }}</td>
+                <td style="color: var(--mem-accent);">Dr. {{ b.doctor.username|default:"Unassigned" }}</td>
+                <td style="color: #cbd5e1;">{{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}</td>
                 <td style="font-weight: 700; color: var(--mem-accent);">{{ b.credits_used }} cr</td>
+                <!-- Status Badge Column -->
                 <td>
                   {% if b.status == 'pending' %}
-                    <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
-                      &#9679; Service Booked (Pending)
+                    <span style="padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
+                      &#9679; Scheduled
+                    </span>
+                  {% elif b.status == 'waiting' %}
+                    <span style="padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4);">
+                      &#9679; In Lobby (Waiting)
+                    </span>
+                  {% elif b.status == 'in_consultation' %}
+                    <span style="padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
+                      &#9679; In Progress (With Doctor)
                     </span>
                   {% elif b.status == 'completed' %}
-                    <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4);">
-                      &#10003; Service Completed
+                    <span style="padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4);">
+                      &#10003; Fulfilled &amp; Completed
                     </span>
-                  {% else %}
-                    <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">
-                      Canceled
+                  {% elif b.status == 'canceled' %}
+                    <span style="padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">
+                      Canceled &amp; Refunded
                     </span>
                   {% endif %}
                 </td>
+
+                <!-- Action Column -->
                 <td style="text-align: right;">
-                  {% if b.status == 'pending' %}
-                    <button onclick="cancelBooking('{{ b.id }}')" class="mem-btn mem-btn-danger" style="min-height: 32px; font-size: 0.75rem;">
-                      Cancel
+                  {% if b.status in 'pending,waiting' %}
+                    <button onclick="cancelBooking('{{ b.id }}')" class="mem-btn mem-btn-danger" style="min-height: 30px; font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+                      Cancel &amp; Refund
                     </button>
+                  {% elif b.status == 'in_consultation' %}
+                    <span style="color: #38bdf8; font-size: 0.78rem; font-weight: 600;">Active Session</span>
                   {% elif b.status == 'completed' %}
-                    <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">Service Rendered</span>
+                    <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">Fulfilled</span>
                   {% else %}
-                    <span style="color: var(--mem-muted); font-size: 0.75rem;">Canceled</span>
+                    <span style="color: var(--mem-muted); font-size: 0.75rem;">Closed</span>
                   {% endif %}
                 </td>
               </tr>
               {% empty %}
-              <tr><td colspan="5" style="text-align: center; color: var(--mem-muted); padding: 1.5rem;">No appointments booked yet.</td></tr>
+              <tr><td colspan="6" style="text-align: center; color: var(--mem-muted); padding: 1.5rem;">No appointments booked yet.</td></tr>
               {% endfor %}
             </tbody>
           </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 4. TAB: MEDICAL HISTORY & PRESCRIPTIONS -->
+    <div id="tab-history" class="mem-tab-content">
+      <section class="mem-panel">
+        <div class="mem-panel-header">
+          <div>
+            <h2 class="mem-panel-title">Clinical History &amp; Prescriptions</h2>
+            <p style="color: var(--mem-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+              Doctor observations, prescriptions, and lifestyle protocols from your fulfilled sessions.
+            </p>
+          </div>
+          <!-- Dynamic PDF Medical Dossier Download -->
+          <a href="/dashboard/reception/?org={{ tenant.slug }}&export_pdf={{ request.user.id }}" class="mem-btn mem-btn-outline" style="border-color: var(--mem-accent); color: var(--mem-accent);">
+            📄 Download Complete Medical PDF
+          </a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for b in bookings %}
+            {% if b.clinical_note and b.clinical_note.patient_notes %}
+            <div style="background: var(--mem-surface); border: 1px solid var(--mem-border); border-radius: 8px; padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mem-border); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+                <div>
+                  <strong style="color: #fff; font-size: 1.05rem;">{{ b.resource.name }}</strong>
+                  <span style="color: var(--mem-muted); font-size: 0.85rem; margin-left: 0.5rem;">Dr. {{ b.doctor.username }}</span>
+                </div>
+                <span style="color: #cbd5e1; font-size: 0.8rem;">{{ b.start_time|date:"M d, Y &bull; g:i A" }}</span>
+              </div>
+              <div>
+                <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--mem-accent); font-weight: 700;">Prescription / Doctor Guidance:</span>
+                <p style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.5; margin: 0.4rem 0 0; white-space: pre-wrap;">{{ b.clinical_note.patient_notes }}</p>
+              </div>
+            </div>
+            {% endif %}
+          {% empty %}
+            <p style="color: var(--mem-muted); text-align: center; padding: 2rem;">No clinical notes documented yet.</p>
+          {% endfor %}
         </div>
       </section>
     </div>
@@ -626,15 +692,14 @@ function toggleSidebar() {
 
 function activateSection(targetId) {
   document.querySelectorAll('.mem-nav-item').forEach(btn => btn.classList.remove('active'));
-  if (window.event && window.event.currentTarget) {
-    window.event.currentTarget.classList.add('active');
-  }
+  const clickedBtn = document.querySelector(`button[onclick*="'${targetId}'"]`);
+  if (clickedBtn) clickedBtn.classList.add('active');
 
   document.querySelectorAll('.mem-tab-content').forEach(section => section.classList.remove('active'));
   const target = document.getElementById(targetId);
-  if (target) {
-    target.classList.add('active');
-  }
+  if (target) target.classList.add('active');
+
+  window.location.hash = targetId;
 
   if (window.innerWidth <= 1024) {
     const sidebar = document.getElementById('app-sidebar');
@@ -646,9 +711,163 @@ function activateSection(targetId) {
   }
 }
 
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && document.getElementById(hash)) {
+    activateSection(hash);
+  }
+  
+  // Set minimum date for booking as today
+  const dateInput = document.getElementById('book-date');
+  if (dateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+  }
+});
+
+// Dynamic Empty Slot Fetcher
+// Dynamic Slot Fetcher (With Available vs Booked Visuals)
+async function handleSchedulerFilterChange() {
+  const resourceId = document.getElementById('book-resource').value;
+  const doctorId = document.getElementById('book-doctor').value;
+  const dateVal = document.getElementById('book-date').value;
+  const container = document.getElementById('slots-container');
+  const submitBtn = document.getElementById('book-submit-btn');
+
+  submitBtn.disabled = true;
+  document.getElementById('selected-slot-start').value = '';
+  document.getElementById('selected-slot-end').value = '';
+
+  if (!resourceId || !doctorId || !dateVal) {
+    container.innerHTML = '<span style="color: var(--mem-muted); font-size: 0.85rem;">Select service, doctor, and date above to load schedule.</span>';
+    return;
+  }
+
+  container.innerHTML = '<span style="color: #38bdf8; font-size: 0.85rem;">Checking doctor roster...</span>';
+
+  // Slug dynamic URL parameter se ya template tenant slug se uthayein
+  const tenantSlug = new URLSearchParams(window.location.search).get('org') || '{{ tenant.slug|default:"biohacking" }}';
+  
+  // Guaranteed working path:
+  const url = `/scheduling/api/available-slots/?org=${tenantSlug}&doctor_id=${doctorId}&resource_id=${resourceId}&date=${dateVal}`;
+
+  try {
+    const res = await fetch(url);
+    
+    // Agar status 200 nahi hai toh response inspect karein
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      const errMsg = errData.error || errData.message || `Server responded with status ${res.status}`;
+      container.innerHTML = `<span style="color: #fca5a5; font-size: 0.85rem;">⚠️ ${errMsg}</span>`;
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.slots && data.slots.length > 0) {
+      container.innerHTML = '';
+      
+      data.slots.forEach(slot => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+
+        if (slot.is_booked) {
+          // BOOKED: Disabled & Unclickable
+          btn.className = 'slot-btn slot-btn-booked';
+          btn.disabled = true;
+          btn.innerHTML = `<span>🔒</span> ${slot.display} <small style="font-size:0.7rem; color:#ff9b9b;">(Booked)</small>`;
+        } else {
+          // AVAILABLE: Clickable
+          btn.className = 'slot-btn slot-btn-available';
+          btn.innerHTML = `<span>●</span> ${slot.display}`;
+          btn.onclick = () => {
+            document.querySelectorAll('.slot-btn-available').forEach(c => c.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            document.getElementById('selected-slot-start').value = `${dateVal}T${slot.start_time}:00`;
+            document.getElementById('selected-slot-end').value = `${dateVal}T${slot.end_time}:00`;
+            submitBtn.disabled = false;
+          };
+        }
+
+        container.appendChild(btn);
+      });
+    } else {
+      const msg = data.message || "Doctor has no active shift on this day.";
+      container.innerHTML = `<span style="color: #fca5a5; font-size: 0.85rem;">⚠️ ${msg}</span>`;
+    }
+  } catch(err) {
+    console.error("Fetch Error:", err);
+    container.innerHTML = '<span style="color: #fca5a5; font-size: 0.85rem;">Failed to connect to scheduler API. Check terminal console.</span>';
+  }
+}
+async function submitSmartBooking(e) {
+  e.preventDefault();
+  const resourceId = document.getElementById('book-resource').value;
+  const doctorId = document.getElementById('book-doctor').value;
+  const startTime = document.getElementById('selected-slot-start').value;
+  const endTime = document.getElementById('selected-slot-end').value;
+
+  if (!startTime || !endTime) {
+    alert("Please click on an available time slot chip first.");
+    return;
+  }
+
+  const tenantSlug = new URLSearchParams(window.location.search).get('org') || '{{ tenant.slug|default:"biohacking" }}';
+
+  // Target endpoint:
+  const postUrl = `/scheduling/v1/bookings/?org=${tenantSlug}`;
+
+  try {
+    let res = await fetch(postUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify({
+        resource_id: resourceId,
+        doctor_id: doctorId,
+        start_time: startTime,
+        end_time: endTime
+      })
+    });
+
+    // Fallback agar /scheduling prefix na ho
+    if (res.status === 404) {
+      res = await fetch(`/v1/bookings/?org=${tenantSlug}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          resource_id: resourceId,
+          doctor_id: doctorId,
+          start_time: startTime,
+          end_time: endTime
+        })
+      });
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      alert(data.message || "Appointment successfully confirmed!");
+      window.location.hash = 'tab-bookings';
+      window.location.reload();
+    } else {
+      const errorMsg = data.error || data.detail || `Server Error (${res.status})`;
+      alert("Booking failed: " + errorMsg);
+    }
+  } catch (err) {
+    console.error("Submission Error:", err);
+    alert("Communication error while booking. Please try again.");
+  }
+}
 async function cancelBooking(bookingId) {
-  if (!confirm("Are you sure you want to cancel this booking and restore credits?")) return;
-  const tenantSlug = new URLSearchParams(window.location.search).get('org') || 'longevity-haus';
+  if (!confirm("Are you sure you want to cancel this booking and refund your credit?")) return;
+  const tenantSlug = new URLSearchParams(window.location.search).get('org') || 'bio-hacking';
   try {
     const res = await fetch(`/v1/bookings/${bookingId}/cancel?org=${tenantSlug}`, {
       method: 'POST',
@@ -666,8 +885,4 @@ async function cancelBooking(bookingId) {
   }
 }
 </script>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'scheduling/js/scheduler.js' %}"></script>
 {% endblock %}

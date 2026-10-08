@@ -315,3 +315,31 @@ Details:
 {details}
 """
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [SUPER_ADMIN_EMAIL], fail_silently=True)
+    
+def email_staff_account_created(user, raw_password, role_name, tenant):
+    """
+    Jab Clinic Admin kisi Doctor ya Receptionist ko add kare toh credentials send karta hai.
+    """
+    subject = f"Staff Account Created | {tenant.name}"
+    message = f"""Hello {user.username},
+
+Aapka {role_name.title()} account {tenant.name} par create kar diya gaya hai.
+
+Login Details:
+- Role: {role_name.title()}
+- Username: {user.username}
+- Temporary Password: {raw_password}
+- Clinic Portal: http://127.0.0.1:8000/login/?org={tenant.slug}
+
+Kripya pehle login ke baad apna password change kar lein.
+
+Regards,
+{tenant.name} Administration
+"""
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        fail_silently=True
+    )

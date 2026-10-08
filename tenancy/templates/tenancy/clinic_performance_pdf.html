@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: a4 portrait; margin: 1.5cm; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #1e293b; }
+  .header { border-bottom: 2px solid #38bdf8; padding-bottom: 12px; margin-bottom: 24px; }
+  .title { font-size: 20pt; font-weight: bold; color: #0284c7; }
+  .stat-grid { width: 100%; margin-bottom: 25px; border-collapse: collapse; }
+  .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; text-align: center; }
+  .stat-val { font-size: 16pt; font-weight: bold; color: #0f172a; margin-top: 4px; }
+  .section-h { font-size: 12pt; font-weight: bold; background: #f0f9ff; padding: 6px 10px; border-left: 4px solid #38bdf8; margin: 20px 0 10px 0; }
+  table.report-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  table.report-table th, table.report-table td { border: 1px solid #cbd5e1; padding: 8px; font-size: 9pt; text-align: left; }
+  table.report-table th { background-color: #f1f5f9; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <table style="width: 100%;">
+    <tr>
+      <td>
+        <div class="title">{{ tenant.name|upper }}</div>
+        <div style="font-size: 9pt; color: #64748b;">Executive Clinical Performance &amp; Operations Audit</div>
+      </td>
+      <td style="text-align: right; font-size: 9pt; color: #64748b;">
+        Generated: {{ generated_at|date:"M d, Y H:i" }}
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="section-h">OPERATIONAL METRICS OVERVIEW</div>
+<table class="stat-grid">
+  <tr>
+    <td class="stat-box" style="width: 33%;">
+      <div style="font-size: 8pt; color: #64748b; text-transform: uppercase;">Total Active Patients</div>
+      <div class="stat-val">{{ total_patients }}</div>
+    </td>
+    <td class="stat-box" style="width: 33%;">
+      <div style="font-size: 8pt; color: #64748b; text-transform: uppercase;">Total Appointments</div>
+      <div class="stat-val">{{ total_bookings }}</div>
+    </td>
+    <td class="stat-box" style="width: 34%;">
+      <div style="font-size: 8pt; color: #64748b; text-transform: uppercase;">Estimated Gross Revenue</div>
+      <div class="stat-val" style="color: #059669;">${{ total_revenue|floatformat:2 }}</div>
+    </td>
+  </tr>
+</table>
+
+<div class="section-h">DOCTOR PRODUCTIVITY &amp; CASELOAD BREAKDOWN</div>
+<table class="report-table">
+  <thead>
+    <tr>
+      <th>Doctor Name</th>
+      <th>Official Email</th>
+      <th style="text-align: center;">Total Assigned Cases</th>
+      <th style="text-align: center;">Completed Visits</th>
+      <th style="text-align: center;">Completion Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ds in doc_stats %}
+    <tr>
+      <td><strong>Dr. {{ ds.doctor_name }}</strong></td>
+      <td style="color: #64748b;">{{ ds.email|default:"No email registered" }}</td>
+      <td style="text-align: center;">{{ ds.total_assigned }}</td>
+      <td style="text-align: center;">{{ ds.completed }}</td>
+      <td style="text-align: center;">
+        {% if ds.total_assigned > 0 %}
+          &#10003; Active
+        {% else %}
+          <span style="color: #94a3b8;">Pending Cases</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5" style="text-align: center; color: #94a3b8;">No doctor performance data available.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div style="margin-top: 50px; border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 8pt; color: #94a3b8; text-align: center;">
+  Haus Medical Systems &bull; Confidential Management Report &bull; {{ tenant.name }}
+</div>
+
+</body>
+</html>
