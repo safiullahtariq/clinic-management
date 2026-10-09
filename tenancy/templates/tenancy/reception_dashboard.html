@@ -76,7 +76,7 @@
           <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.2); color: var(--rec-accent); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ all_bookings.count }}</span>
         </button>
         <button type="button" class="rec-nav-item" onclick="switchRecTab('tab-patients')">
-          <span>👥 Manage Patients (CRUD)</span>
+          <span>👥 Manage Patients</span>
           <span style="font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ all_patients.count }}</span>
         </button>
       </nav>
@@ -220,7 +220,8 @@
       <div class="rec-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
           <h3 style="margin: 0; color: #fff;">Patient Records Directory ({{ all_patients.count }})</h3>
-          <button type="button" class="rec-btn rec-btn-primary" onclick="openNewPatientModal()">+ Register Walk-In Patient</button>
+          <button type="button" class="rec-btn rec-btn-primary">+ Register Walk-In Patient</button>
+          <!-- onclick="openNewPatientModal()" -->
         </div>
 
         <table class="rec-table">

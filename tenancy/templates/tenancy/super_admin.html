@@ -486,19 +486,19 @@
           </li>
           <li>
             <button type="button" class="sa-nav-item" onclick="activateSection('tab-clubs')">
-              <span>Clubs</span>
+              <span>Clinics</span>
               <span class="sa-nav-badge">{{ total_clubs }}</span>
             </button>
           </li>
           <li>
             <button type="button" class="sa-nav-item" onclick="activateSection('tab-members')">
-              <span>Members</span>
+              <span>Members/patients</span>
               <span class="sa-nav-badge">{{ total_members }}</span>
             </button>
           </li>
           <li>
             <button type="button" class="sa-nav-item" onclick="activateSection('tab-admins')">
-              <span>Center's Admins</span>
+              <span>Clinic's Admins</span>
               <span class="sa-nav-badge">{{ org_admins.count }}</span>
             </button>
           </li>
@@ -871,7 +871,7 @@
     <div id="tab-provision" class="sa-tab-content">
       <section class="sa-panel" style="max-width: 600px;">
         <h2 class="sa-panel-title" style="margin-bottom: 0.25rem;">Provision New Organization</h2>
-        <p class="sa-subtext" style="margin-bottom: 1.5rem;">Create a new club tenant with customized branding tokens.</p>
+        <p class="sa-subtext" style="margin-bottom: 1.5rem;">Create a new Clinic tenant with customized branding tokens.</p>
 
         <form method="POST" action="/dashboard/super-admin/">
           {% csrf_token %}
@@ -903,7 +903,7 @@
         <div class="sa-panel-header">
           <div>
             <h2 class="sa-panel-title">Platform Super Administrators ({{ total_super_admins }})</h2>
-            <p class="sa-subtext" style="margin-top: 0.2rem;">Full master console access wale administrators ki list. Last Super Admin ko delete nahi kiya ja sakta.</p>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">List of Administrators with Full Master Console Access The last remaining Super Admin cannot be deleted.</p>
           </div>
           <button type="button" onclick="openCreateSuperAdminModal()" class="sa-btn sa-btn-primary">
             + Add Super Admin
@@ -1317,7 +1317,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
       <div>
         <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Add Super Admin</h3>
-        <p class="sa-subtext" style="margin: 0.25rem 0 0;">Grants full master console governance over all clubs.</p>
+        <p class="sa-subtext" style="margin: 0.25rem 0 0;">Grants full master console governance over all Clinics.</p>
       </div>
       <span onclick="closeModal('create-super-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
     </div>

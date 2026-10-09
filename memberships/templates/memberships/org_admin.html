@@ -1,6 +1,6 @@
 {% extends 'tenancy/base.html' %}
 {% load static %}
-{% block title %}Club Console | {{ tenant.name }}{% endblock %}
+{% block title %}Clinic Console | {{ tenant.name }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -424,7 +424,7 @@
           <!-- SIDEBAR ITEMS -->
           <li>
             <button type="button" class="oa-nav-item active" onclick="activateSection('tab-overview')">
-              <span>Overview</span>
+              <span>📊 Overview</span>
             </button>
           </li>
           <li>
@@ -451,12 +451,12 @@
           </li>
           <li>
             <button type="button" class="oa-nav-item" onclick="activateSection('tab-services')">
-              <span>🩺 Modalities</span>
+              <span>🩺 Treatments</span>
             </button>
           </li>
           <li>
             <button type="button" class="oa-nav-item" onclick="activateSection('tab-plans')">
-              <span>Membership Tiers</span>
+              <span>🎟️ Membership Tiers</span>
             </button>
           </li>
           <li>

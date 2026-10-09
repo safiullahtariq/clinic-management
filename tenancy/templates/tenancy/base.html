@@ -229,7 +229,7 @@
     <div class="header-wrapper" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; width: 100%;">
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <a href="/?org={{ request.tenant.slug|default:'biohacking' }}" class="brand-logo" style="color: #fff; font-weight: 800; text-decoration: none; font-size: 1.05rem; letter-spacing: 0.08em;">
-          {{ request.tenant.name|default:"BIOHACKING"|upper }}
+          {{ request.tenant.name|default:"HBOT Booking Portal"|upper }}
         </a>
         <span id="tenant-accent-badge" class="hide-mobile" style="color: var(--app-accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em;">
           {{ request.tenant.branding.tagline|default:"" }}
@@ -245,7 +245,7 @@
             </a>
           {% elif request.user.profile.role == 'org_admin' or request.user.userprofile.role == 'org_admin' %}
             <a href="/dashboard/org-admin/?org={{ request.tenant.slug|default:request.user.profile.organization.slug|default:'biohacking' }}" class="header-dash-btn">
-              Club Console &rarr;
+              Clinic Console &rarr;
             </a>
           {% elif request.user.profile.role == 'doctor' or request.user.userprofile.role == 'doctor' %}
             <a href="/dashboard/doctor/?org={{ request.tenant.slug|default:request.user.profile.organization.slug|default:'biohacking' }}" class="header-dash-btn">
@@ -262,7 +262,7 @@
             </a>
           {% endif %}
         {% else %}
-          <a href="/login/?org={{ request.tenant.slug|default:'biohacking' }}" class="header-dash-btn">
+          <a href="/login/?org={{ request.tenant.slug|default:'HBOT Booking ' }}" class="header-dash-btn">
             Sign In &rarr;
           </a>
         {% endif %}
