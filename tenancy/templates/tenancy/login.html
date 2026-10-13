@@ -1,5 +1,5 @@
 {% extends 'tenancy/base.html' %}
-{% block title %}Sign In | Haus Platform{% endblock %}
+{% block title %}Sign In | {{ request.tenant.name|default:"Clinical Practice" }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -24,7 +24,26 @@
     color: #fff;
   }
 
-  /* Browser autofill blue/white background ko override karne ke liye */
+  .otp-code-input {
+    width: 100%;
+    background: var(--bg-surface, #111620);
+    border: 1px solid var(--border-color, #212936);
+    color: #fff;
+    padding: 0.75rem;
+    font-size: 1.5rem;
+    letter-spacing: 0.4rem;
+    text-align: center;
+    border-radius: 4px;
+    outline: none;
+    font-family: monospace;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+  }
+  .otp-code-input:focus {
+    border-color: var(--accent-gold, #38bdf8);
+  }
+
+  /* Browser autofill background override */
   input:-webkit-autofill,
   input:-webkit-autofill:hover, 
   input:-webkit-autofill:focus {
@@ -36,11 +55,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 440px; margin: 4.5rem auto;">
-  <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-    <h2 style="font-size: 1.6rem; margin-bottom: 0.35rem; text-align: center;">Sign In</h2>
-    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center;">
-      Member, Club Admin, or Super Admin 
+<div class="container" style="max-width: 440px; margin: 4.5rem auto; padding: 0 1rem; box-sizing: border-box;">
+  <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); padding: 2.5rem; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <h2 style="font-size: 1.6rem; margin-bottom: 0.35rem; text-align: center; color: #fff;">Sign In</h2>
+    <p style="color: var(--text-muted, #8b949e); font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center;">
+      Access your Clinical Portal or Console
     </p>
 
     {% if error %}
@@ -60,12 +79,12 @@
       {% csrf_token %}
       <input type="hidden" name="action" value="login">
 
-      <!-- Fake Decoy Inputs: Browser ka auto-fill in par capture ho jayega -->
+      <!-- Fake Decoy Inputs -->
       <input type="text" name="fake_username_remember" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
       <input type="password" name="fake_password_remember" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
 
       <div style="margin-bottom: 1.25rem;">
-        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Username</label>
+        <label style="display:block; font-size: 0.85rem; color: var(--text-muted, #8b949e); margin-bottom: 0.4rem;">Username</label>
         <input type="text" 
                id="login-username" 
                name="username" 
@@ -73,13 +92,13 @@
                autocomplete="off" 
                placeholder="Enter username" 
                required 
-               style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; outline: none; box-sizing: border-box;">
+               style="width: 100%; background: var(--bg-surface, #111620); border: 1px solid var(--border-color, #212936); color: #fff; padding: 0.75rem; border-radius: 4px; outline: none; box-sizing: border-box;">
       </div>
 
       <div style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-          <label style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Password</label>
-          <a href="javascript:void(0)" onclick="document.getElementById('forgot-modal').style.display='block'" style="font-size: 0.8rem; color: var(--accent-gold); text-decoration: none;">
+          <label style="font-size: 0.85rem; color: var(--text-muted, #8b949e); margin: 0;">Password</label>
+          <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 0.8rem; color: var(--accent-gold, #38bdf8); text-decoration: none;">
             Forgot Password?
           </a>
         </div>
@@ -91,7 +110,7 @@
                  autocomplete="new-password" 
                  placeholder="Enter password" 
                  required 
-                 style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; outline: none; box-sizing: border-box;">
+                 style="width: 100%; background: var(--bg-surface, #111620); border: 1px solid var(--border-color, #212936); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; outline: none; box-sizing: border-box;">
           <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('login-password', this)" aria-label="Toggle password view">
             <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -99,66 +118,107 @@
         </div>
       </div>
 
-      <button type="submit" class="btn-primary" style="width: 100%; padding: 0.85rem; background: var(--accent-gold); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-top: 0.5rem;">
+      <button type="submit" class="btn-primary" style="width: 100%; padding: 0.85rem; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-top: 0.5rem;">
         Sign In
       </button>
     </form>
 
-    <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid var(--border-color); padding-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+    <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid var(--border-color, #212936); padding-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted, #8b949e);">
       Don't have an account? 
-      <a href="/join/?org={{ request.tenant.slug|default:'longevity-haus' }}" style="color: var(--accent-gold); text-decoration: none; font-weight: bold; margin-left: 0.3rem;">
+      <a href="/join/?org={{ request.tenant.slug|default:'biohacking' }}" style="color: var(--accent-gold, #38bdf8); text-decoration: none; font-weight: bold; margin-left: 0.3rem;">
         Join as a Founding Member &rarr; 
       </a>
     </div>
   </div>
 </div>
 
-<!-- Modal: Forgot Password Reset -->
-<div id="forgot-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; backdrop-filter: blur(5px);">
-  <div style="background: var(--bg-card); max-width: 440px; margin: 8% auto; padding: 2.25rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.6);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-      <h3 style="margin: 0; font-size: 1.25rem;">Reset Account Password</h3>
-      <span onclick="document.getElementById('forgot-modal').style.display='none'" style="cursor: pointer; font-size: 1.5rem; color: var(--text-muted);">&times;</span>
+<!-- ============================================================== -->
+<!-- Modal: Forgot Password Reset with Real-Time Email OTP          -->
+<!-- ============================================================== -->
+<div id="forgot-modal" style="display: {% if show_otp_step %}block{% else %}none{% endif %}; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; backdrop-filter: blur(5px);">
+  <div style="background: var(--bg-card, #161c26); max-width: 440px; margin: 8% auto; padding: 2.25rem; border-radius: 8px; border: 1px solid var(--border-color, #212936); box-shadow: 0 10px 40px rgba(0,0,0,0.6);">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color, #212936); padding-bottom: 0.75rem;">
+      <h3 style="margin: 0; font-size: 1.25rem; color: #fff;">
+        {% if show_otp_step %}Enter Verification Code{% else %}Reset Password{% endif %}
+      </h3>
+      <span onclick="closeForgotModal()" style="cursor: pointer; font-size: 1.5rem; color: var(--text-muted, #8b949e);">&times;</span>
     </div>
 
-    <form method="POST" autocomplete="off">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="forgot_password">
+    <!-- STEP 1: Enter Username & New Password -->
+    <div id="reset-step-1" style="display: {% if show_otp_step %}none{% else %}block{% endif %};">
+      <form method="POST" autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="request_password_reset_otp">
 
-      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
-        Enter your registered username and choose a new password.
-      </p>
+        <p style="color: var(--text-muted, #8b949e); font-size: 0.85rem; margin-bottom: 1.25rem;">
+          Enter your username and new password. We will send a 6-digit confirmation code to your email.
+        </p>
 
-      <div style="margin-bottom: 1rem;">
-        <label style="display:block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Account Username</label>
-        <input type="text" name="reset_username" placeholder="e.g. john_member" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
-      </div>
+        <div style="margin-bottom: 1rem;">
+          <label style="display:block; font-size: 0.8rem; color: var(--text-muted, #8b949e); margin-bottom: 0.4rem;">Account Username</label>
+          <input type="text" name="reset_username" placeholder="enter user name" required style="width: 100%; background: var(--bg-surface, #111620); border: 1px solid var(--border-color, #212936); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box; outline: none;">
+        </div>
 
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display:block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">New Password</label>
-        <div class="password-wrapper">
-          <input type="password" id="reset-password" name="new_password" autocomplete="new-password" placeholder="Enter new password" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
-          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reset-password', this)" aria-label="Toggle password view">
-            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display:block; font-size: 0.8rem; color: var(--text-muted, #8b949e); margin-bottom: 0.4rem;">New Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="reset-new-password" name="new_password" autocomplete="new-password" placeholder="Minimum 8 characters" minlength="8" required style="width: 100%; background: var(--bg-surface, #111620); border: 1px solid var(--border-color, #212936); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box; outline: none;">
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reset-new-password', this)" aria-label="Toggle password view">
+              <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button type="button" onclick="closeForgotModal()" style="flex: 1; background: transparent; border: 1px solid var(--border-color, #212936); color: #fff; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
+            Cancel
+          </button>
+          <button type="submit" style="flex: 1; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
+            Send OTP Code &rarr;
           </button>
         </div>
-      </div>
+      </form>
+    </div>
 
-      <div style="display: flex; gap: 1rem;">
-        <button type="button" onclick="document.getElementById('forgot-modal').style.display='none'" style="flex: 1; background: transparent; border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
-          Cancel
-        </button>
-        <button type="submit" style="flex: 1; background: var(--accent-gold); color: #000; font-weight: bold; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
-          Update Password
-        </button>
-      </div>
-    </form>
+    <!-- STEP 2: Enter 6-Digit OTP -->
+    <div id="reset-step-2" style="display: {% if show_otp_step %}block{% else %}none{% endif %};">
+      <form method="POST" autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="confirm_password_reset_otp">
+
+        <p style="color: var(--text-muted, #8b949e); font-size: 0.85rem; margin-bottom: 1.25rem;">
+          Enter the 6-digit code sent to<br>
+          <strong style="color: #fff;">{{ reset_email_masked|default:"your email" }}</strong>
+        </p>
+
+        <div style="margin-bottom: 1.25rem;">
+          <input type="text" 
+                 name="otp_code" 
+                 class="otp-code-input" 
+                 maxlength="6" 
+                 placeholder="000000" 
+                 required 
+                 pattern="\d{6}" 
+                 autofocus>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button type="button" onclick="backToStep1()" style="flex: 1; background: transparent; border: 1px solid var(--border-color, #212936); color: #fff; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
+            Back
+          </button>
+          <button type="submit" style="flex: 1; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer;">
+            Verify &amp; Update
+          </button>
+        </div>
+      </form>
+    </div>
+
   </div>
 </div>
 
 <script>
-  // Page load hone par browser ke auto-fill ko forcefully wipe/clear karna
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       const u = document.getElementById('login-username');
@@ -167,6 +227,19 @@
       if (p) p.value = '';
     }, 50);
   });
+
+  function openForgotModal() {
+    document.getElementById('forgot-modal').style.display = 'block';
+  }
+
+  function closeForgotModal() {
+    document.getElementById('forgot-modal').style.display = 'none';
+  }
+
+  function backToStep1() {
+    document.getElementById('reset-step-2').style.display = 'none';
+    document.getElementById('reset-step-1').style.display = 'block';
+  }
 
   function togglePasswordVisibility(fieldId, btn) {
     const input = document.getElementById(fieldId);

@@ -63,7 +63,7 @@
   }
 
   .sa-sidebar-title {
-    font-size: 1.2rem;
+    font-size: 1.7rem;
     font-weight: 800;
     color: var(--sa-text);
     margin: 0.2rem 0 0;
@@ -621,10 +621,10 @@
                   <code>{{ c.org.slug }}</code>
                 </td>
                 <td style="padding: 0.95rem 0.85rem; color: #cbd5e1;">
-                  {{ c.patients_count }}
+                  {{ c.member_count }}
                 </td>
                 <td style="padding: 0.95rem 0.85rem; color: #cbd5e1;">
-                  {{ c.bookings_count }}
+                  {{ c.booking_count }}
                 </td>
                 <td style="padding: 0.95rem 0.85rem; color: #fbbf24; font-weight: 600;">
                   ${{ c.monthly_recurring|floatformat:2 }}/mo
@@ -678,9 +678,9 @@
 
               <!-- Action Buttons -->
               <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                <a href="/dashboard/super-admin/?club={{ item.org.slug }}" class="sa-btn sa-btn-outline" style="flex: 1; min-height: 34px; font-size: 0.75rem; padding: 0.35rem 0.6rem; text-align: center;">
+                <!-- <a href="/dashboard/super-admin/?club={{ item.org.slug }}" class="sa-btn sa-btn-outline" style="flex: 1; min-height: 34px; font-size: 0.75rem; padding: 0.35rem 0.6rem; text-align: center;">
                   Filter Roster
-                </a>
+                </a> -->
                 <a href="/?org={{ item.org.slug }}" target="_blank" class="sa-btn sa-btn-primary" style="flex: 1; min-height: 34px; font-size: 0.75rem; padding: 0.35rem 0.6rem; text-decoration: none; text-align: center;">
                   View Live Page &#8599;
                 </a>
@@ -734,6 +734,10 @@
           <table class="sa-table" id="members-table">
             <thead>
               <tr>
+
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Phone Number</th>
                 <th>Member Account</th>
                 <th>Email Address</th>
                 <th>Assigned Center</th>
@@ -743,6 +747,9 @@
             <tbody>
               {% for m in all_members %}
               <tr class="member-row">
+                <td style="font-weight: 700; color: #fff;">{{ m.user.first_name|default:"—" }}</td>
+                <td style="font-weight: 700; color: #fff;">{{ m.user.last_name|default:"—" }}</td>
+                <td style="font-weight: 700; color: #fff;">{{ m.phone_number|default:"—" }}</td>
                 <td style="font-weight: 700; color: #fff;">{{ m.user.username }}</td>
                 <td style="color: var(--sa-muted);">{{ m.user.email|default:"—" }}</td>
                 <td style="color: var(--sa-accent); font-weight: 600;">{{ m.organization.name }}</td>

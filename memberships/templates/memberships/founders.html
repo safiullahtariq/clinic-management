@@ -367,9 +367,16 @@
         <h3 class="card-tier-name">{{ plan.name }}</h3>
 
         <div class="card-std-price">Standard: ${{ plan.standard_rate|floatformat:2 }}/mo</div>
-        <div class="card-main-rate">
-          <span class="dollar">$</span>{{ plan.rate_monthly|floatformat:0 }}
-        </div>
+       <div class="card-main-rate">
+  <span class="dollar">$</span>{{ plan.rate_monthly|floatformat:0 }}
+</div>
+<div style="font-size: 0.8rem; color: #fbbf24; margin-top: 0.35rem; font-weight: 600;">
+  {% if request.user.is_authenticated and has_prior_deposit %}
+    $0 initiation fee (Returning Patient)
+  {% else %}
+    + $100 one-time initiation deposit on first purchase
+  {% endif %}
+</div>
         <div class="card-tenure-subtext">
           per month &middot; founding rate<br>
           Clinical consultations + modalities included

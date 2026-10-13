@@ -1,27 +1,4 @@
-# from django.shortcuts import render, redirect, get_object_or_404
-# from django.contrib.auth import authenticate, login, logout
-# from django.contrib.auth.models import User
-# from django.contrib.auth.decorators import login_required
-# from django.http import HttpResponseForbidden
-# from django.db import transaction
-# from django.db.models import Sum, Count
-# from tenancy.emails import (
-#     email_org_admin_created,
-#     email_super_admin_audit,
-#     email_plan_purchased,
-#     email_staff_account_created,
-# )
-# from scheduling.models import Booking, Resource
-# from datetime import datetime, time
-# from django.utils.text import slugify
-# from tenancy.models import Organization, UserProfile
-# from memberships.models import Membership, MembershipPlan, CreditLedger
-# from scheduling.models import Booking, Resource
-# from scheduling.models import Booking, Resource, DoctorShift, ClinicalNote
-# from django.utils import timezone
-# from scheduling.models import Booking, ClinicalNote
-# import csv
-# from xhtml2pdf import pisa
+
 import csv
 import io
 from datetime import datetime, time
@@ -42,68 +19,167 @@ from tenancy.emails import (
     email_super_admin_audit,
     email_staff_account_created
 )
+import re
+from django.contrib.auth import authenticate, login
+from django.core.mail import send_mail
+from django.conf import settings
+from tenancy.models import Organization, UserProfile,EmailOTP
+from tenancy.emails import email_super_admin_audit
+
+
+def send_password_reset_otp(user, otp_code, tenant_name="Clinic"):
+    """Sends a 6-digit OTP for resetting account password."""
+    subject = f"Password Reset Code | {tenant_name}"
+    message = f"""Hello {user.first_name or user.username},
+
+We received a request to reset your password for {tenant_name}.
+
+Your 6-digit verification code is:
+
+    {otp_code}
+
+This code will expire in 10 minutes. If you did not request a password reset, you can safely ignore this email.
+
+Best regards,
+{tenant_name} Security Team
+"""
+    send_mail(
+        subject,
+        message,
+        getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@clinic.com'),
+        [user.email],
+        fail_silently=False
+    )
+
+
 def universal_login_view(request):
     """
-    Single sign-on entry point with password reset handler
+    Single sign-on entry point with OTP-secured password reset handler
     and accurate role-based dashboard redirection.
     """
     error = None
     success_msg = None
+    show_otp_step = False
+    reset_email_masked = None
 
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        # Forgot Password Reset Handler
-        if action == 'forgot_password':
-            reset_username = request.POST.get('reset_username')
-            new_password = request.POST.get('new_password')
-            user_to_reset = User.objects.filter(username=reset_username).first()
+        # -------------------------------------------------------------
+        # 1. FORGOT PASSWORD STEP 1: Request OTP
+        # -------------------------------------------------------------
+        if action == 'request_password_reset_otp':
+            reset_username = request.POST.get('reset_username', '').strip()
+            new_password = request.POST.get('new_password', '')
 
-            if user_to_reset:
-                user_to_reset.set_password(new_password)
-                user_to_reset.save()
-                success_msg = f"Password updated successfully for '{reset_username}'. You can now sign in."
-            else:
+            user_to_reset = User.objects.filter(username__iexact=reset_username).first()
+
+            if not user_to_reset:
                 error = f"No account found with username '{reset_username}'."
+            elif not user_to_reset.email:
+                error = f"No email address is associated with account '{reset_username}'. Please contact support."
+            elif len(new_password) < 8:
+                error = "New password must be at least 8 characters long."
+            else:
+                # Store pending reset details in session
+                request.session['reset_user_id'] = user_to_reset.id
+                request.session['pending_new_password'] = new_password
 
-        # Standard Login Handler
+                # Generate and dispatch OTP
+                otp_obj = EmailOTP.generate_otp(user_to_reset)
+                req_tenant = getattr(request, 'tenant', None)
+                tenant_name = req_tenant.name if req_tenant else "Clinic"
+                send_password_reset_otp(user_to_reset, otp_obj.otp_code, tenant_name)
+
+                show_otp_step = True
+                # Mask email for UI display (e.g. j***n@domain.com)
+                parts = user_to_reset.email.split('@')
+                if len(parts) == 2 and len(parts[0]) > 2:
+                    reset_email_masked = f"{parts[0][0]}***{parts[0][-1]}@{parts[1]}"
+                else:
+                    reset_email_masked = user_to_reset.email
+
+        # -------------------------------------------------------------
+        # 2. FORGOT PASSWORD STEP 2: Confirm OTP & Change Password
+        # -------------------------------------------------------------
+        elif action == 'confirm_password_reset_otp':
+            reset_user_id = request.session.get('reset_user_id')
+            pending_new_password = request.session.get('pending_new_password')
+            entered_otp = request.POST.get('otp_code', '').strip()
+
+            user_to_reset = User.objects.filter(id=reset_user_id).first() if reset_user_id else None
+
+            if not user_to_reset or not pending_new_password:
+                error = "Session expired. Please request a new password reset."
+            else:
+                otp_record = EmailOTP.objects.filter(
+                    user=user_to_reset, 
+                    otp_code=entered_otp
+                ).order_by('-created_at').first()
+
+                if not otp_record or not otp_record.is_valid():
+                    error = "Invalid or expired verification code. Please check your email."
+                    show_otp_step = True
+                    reset_email_masked = user_to_reset.email
+                else:
+                    with transaction.atomic():
+                        otp_record.is_verified = True
+                        otp_record.save()
+
+                        user_to_reset.set_password(pending_new_password)
+                        user_to_reset.save()
+
+                    # Clear session keys
+                    request.session.pop('reset_user_id', None)
+                    request.session.pop('pending_new_password', None)
+
+                    success_msg = f"Password updated successfully for '{user_to_reset.username}'. You can now sign in."
+
+        # -------------------------------------------------------------
+        # 3. STANDARD LOGIN HANDLER
+        # -------------------------------------------------------------
         else:
             u = request.POST.get('username')
             p = request.POST.get('password')
             user = authenticate(request, username=u, password=p)
+
             if user:
                 login(request, user)
 
-                # Robust profile extraction (supports both related_name='profile' and userprofile)
                 profile = getattr(user, 'profile', None) or getattr(user, 'userprofile', None)
                 if not profile:
                     profile, _ = UserProfile.objects.get_or_create(user=user)
 
-                # Determine fallback tenant slug from request or profile
                 req_tenant = getattr(request, 'tenant', None)
                 tenant_slug = getattr(req_tenant, 'slug', None) or request.GET.get('org')
 
-                # 1. Super Admin Routing
+                # 1. Super Admin
                 if user.is_superuser or profile.role == 'super_admin':
                     return redirect('/dashboard/super-admin/')
 
-                # 2. Org Admin Routing (Strictly redirects to Club Console)
+                # 2. Staff Roles
                 elif profile.role == 'org_admin':
-                    org_slug = profile.organization.slug if profile.organization else (tenant_slug or 'longevity-haus')
+                    org_slug = profile.organization.slug if profile.organization else (tenant_slug or 'biohacking')
                     return redirect(f"/dashboard/org-admin/?org={org_slug}")
                 elif profile.role == 'doctor':
                     return redirect(f"/dashboard/doctor/?org={profile.organization.slug}")
                 elif profile.role == 'receptionist':
                     return redirect(f"/dashboard/reception/?org={profile.organization.slug}")
-                # 3. Regular Member Routing
+
+                # 3. Patient Portal
                 else:
-                    org_slug = (profile.organization.slug if profile.organization else None) or tenant_slug or 'longevity-haus'
+                    org_slug = (profile.organization.slug if profile.organization else None) or tenant_slug or 'biohacking'
                     return redirect(f"/dashboard/member/?org={org_slug}")
 
             else:
                 error = "Invalid username or password."
 
-    return render(request, 'tenancy/login.html', {'error': error, 'success_msg': success_msg})
+    return render(request, 'tenancy/login.html', {
+        'error': error,
+        'success_msg': success_msg,
+        'show_otp_step': show_otp_step,
+        'reset_email_masked': reset_email_masked,
+    })
 def logout_view(request):
     logout(request)
     return redirect('/login/')
@@ -244,22 +320,6 @@ def member_dashboard_view(request):
         'doctors': doctors,  # <-- Dropdown ke liye doctors list
     }
     return render(request, 'memberships/dashboard.html', context)
-
-# from django.shortcuts import render, redirect, get_object_or_404
-# from django.contrib.auth import authenticate, login, logout
-# from django.contrib.auth.models import User
-# from django.contrib.auth.decorators import login_required
-# from django.http import HttpResponseForbidden
-# from django.db import transaction
-
-# from tenancy.models import Organization, UserProfile, AdminNotification
-
-# from scheduling.models import Booking, Resource
-# from tenancy.emails import (
-#     email_org_admin_created,
-#     email_plan_activated,
-#     email_super_admin_audit,
-# )
 
 # ==========================================
 # SUPER ADMIN DASHBOARD
@@ -545,6 +605,9 @@ def super_admin_dashboard_view(request):
     if not request.user.is_superuser and profile.role != 'super_admin':
         return HttpResponseForbidden("Access Denied: Super Admin permissions required.")
 
+    # =========================================================
+    # POST HANDLERS
+    # =========================================================
     if request.method == 'POST':
         action = request.POST.get('action_type')
 
@@ -615,12 +678,10 @@ Haus Platform Operations
         elif action == 'delete_super_admin':
             target_sa_id = request.POST.get('user_id')
             
-            # Count total active super admins
             total_super_admins_count = User.objects.filter(
                 Q(is_superuser=True) | Q(profile__role='super_admin')
             ).distinct().count()
 
-            # Rule: Last Super Admin cannot be deleted
             if total_super_admins_count <= 1:
                 messages.error(request, "Action Denied: You cannot delete the last Super Admin of the platform.")
                 return redirect('/dashboard/super-admin/#tab-super-admins')
@@ -639,7 +700,6 @@ Haus Platform Operations
                     f"Super Admin '{request.user.username}' removed Super Admin account '{deleted_name}' ({deleted_email})."
                 )
 
-                # Agar admin ne khud ko delete kiya aur doosre admins bache hue the, toh logout kar do
                 if is_deleting_self:
                     logout(request)
                     return redirect('/login/')
@@ -656,22 +716,51 @@ Haus Platform Operations
             org_id = request.POST.get('org_id')
             target_org = get_object_or_404(Organization, id=org_id)
 
-            admin_user = User.objects.create_user(
-                username=admin_username,
-                email=admin_email,
-                password=admin_password
-            )
-            UserProfile.objects.create(
-                user=admin_user,
-                organization=target_org,
-                role='org_admin'
-            )
+            if User.objects.filter(username=admin_username).exists():
+                messages.error(request, f"Username '{admin_username}' already exists.")
+            else:
+                admin_user = User.objects.create_user(
+                    username=admin_username,
+                    email=admin_email,
+                    password=admin_password
+                )
+                UserProfile.objects.create(
+                    user=admin_user,
+                    organization=target_org,
+                    role='org_admin'
+                )
 
-            email_org_admin_created(admin_user, admin_password, target_org)
-            messages.success(request, f"Club Admin '{admin_username}' provisioned.")
+                email_org_admin_created(admin_user, admin_password, target_org)
+                messages.success(request, f"Clinic Admin '{admin_username}' provisioned.")
             return redirect('/dashboard/super-admin/#tab-admins')
 
-        # 5. Delete Regular User or Org Admin
+        # 5. Edit Org Admin Credentials
+        elif action == 'edit_admin_credentials':
+            user_id = request.POST.get('user_id')
+            target_org_id = request.POST.get('target_org_id')
+            updated_username = request.POST.get('updated_username', '').strip()
+            updated_email = request.POST.get('updated_email', '').strip()
+            updated_password = request.POST.get('updated_password', '').strip()
+
+            user_obj = User.objects.filter(id=user_id).first()
+            org_obj = Organization.objects.filter(id=target_org_id).first()
+
+            if user_obj:
+                with transaction.atomic():
+                    user_obj.username = updated_username
+                    user_obj.email = updated_email
+                    if updated_password:
+                        user_obj.set_password(updated_password)
+                    user_obj.save()
+
+                    u_profile, _ = UserProfile.objects.get_or_create(user=user_obj)
+                    if org_obj:
+                        u_profile.organization = org_obj
+                    u_profile.save()
+                messages.success(request, f"Credentials updated for '{updated_username}'.")
+            return redirect('/dashboard/super-admin/#tab-admins')
+
+        # 6. Delete Regular User or Org Admin
         elif action == 'delete_user':
             user_id = request.POST.get('user_id')
             if str(user_id) != str(request.user.id):
@@ -684,7 +773,7 @@ Haus Platform Operations
                     messages.success(request, f"User '{u_name}' deleted.")
             return redirect('/dashboard/super-admin/#tab-members')
 
-        # 6. Provision New Club / Wellness Center Organization
+        # 7. Provision New Clinic / Wellness Center
         elif action == 'create_org':
             org_name = request.POST.get('org_name', '').strip()
             raw_slug = request.POST.get('org_slug', '').strip()
@@ -692,7 +781,6 @@ Haus Platform Operations
             accent_color = request.POST.get('accent_color', '#38bdf8')
 
             if org_name:
-                # Guaranteed Unique Slug Generator
                 base_slug = slugify(raw_slug or org_name)
                 final_slug = base_slug
                 counter = 1
@@ -705,7 +793,6 @@ Haus Platform Operations
                 except (ValueError, TypeError):
                     cap_val = 100
 
-                # Database Creation inside Atomic Block
                 with transaction.atomic():
                     new_org = Organization.objects.create(
                         name=org_name,
@@ -725,7 +812,6 @@ Haus Platform Operations
                         }
                     )
 
-                    # Default starter tier plans auto-provision
                     MembershipPlan.objects.create(
                         organization=new_org,
                         tier_label="TIER 1",
@@ -748,17 +834,54 @@ Haus Platform Operations
                         inclusions=["16 Biohacking Credits", "Priority booking window"]
                     )
 
-                # Super Admin Audit Log Email
                 email_super_admin_audit(
                     new_org, request.user,
                     "New Wellness Center Provisioned",
-                    f"Super Admin created new club:\n- Name: {org_name}\n- Slug: {final_slug}\n- Cap: {cap_val}\n- Accent: {accent_color}"
+                    f"Super Admin created new clinic:\nName: {org_name}\nSlug: {final_slug}\nCap: {cap_val}\nAccent: {accent_color}"
                 )
-
+                messages.success(request, f"Clinic '{org_name}' provisioned successfully.")
                 return redirect('/dashboard/super-admin/#tab-clubs')
 
-    # ------------------ REAL-TIME DATA QUERIES & LIVE REVENUE ENGINE ------------------
-    # 1. Fetch All Super Admins
+        # 8. Update Clinic Custom Theme & Fonts (CRITICAL FIX)
+        elif action == 'update_club_theme':
+            theme_org_id = request.POST.get('theme_org_id')
+            org = Organization.objects.filter(id=theme_org_id).first()
+
+            if org:
+                accent_color = request.POST.get('accent_color', '#38bdf8').strip()
+                bg_color = request.POST.get('bg_color', '#07090e').strip()
+                card_bg = request.POST.get('card_bg', '#111620').strip()
+                text_color = request.POST.get('text_color', '#ffffff').strip()
+
+                font_h1 = request.POST.get('font_h1', 'Inter').strip()
+                font_h2 = request.POST.get('font_h2', 'Inter').strip()
+                font_h3 = request.POST.get('font_h3', 'Inter').strip()
+                font_p = request.POST.get('font_p', 'Inter').strip()
+                font_price = request.POST.get('font_price', 'Inter').strip()
+
+                # Recreate dictionary to force Django JSONField dirty state update
+                branding_data = dict(org.branding or {})
+                branding_data.update({
+                    'accent_color': accent_color,
+                    'bg_color': bg_color,
+                    'card_bg': card_bg,
+                    'text_color': text_color,
+                    'font_h1': font_h1,
+                    'font_h2': font_h2,
+                    'font_h3': font_h3,
+                    'font_p': font_p,
+                    'font_price': font_price,
+                })
+
+                org.branding = branding_data
+                org.save(update_fields=['branding'])
+                messages.success(request, f"Theme and typography updated for {org.name}.")
+
+            return redirect('/dashboard/super-admin/#tab-clubs')
+
+    # =========================================================
+    # GET DATA QUERIES & LIVE REVENUE ENGINE
+    # =========================================================
     super_admins = User.objects.filter(
         Q(is_superuser=True) | Q(profile__role='super_admin')
     ).distinct().order_by('-date_joined')
@@ -767,7 +890,10 @@ Haus Platform Operations
     organizations = Organization.objects.all().order_by('name')
     selected_club_slug = request.GET.get('club')
 
-    # 2. Live Calculation of Multi-Clinic Revenues & Individual Breakdown
+    # Live Database Counts
+    total_platform_patients = UserProfile.objects.filter(role='member').count()
+    total_platform_bookings = Booking.objects.count()
+
     total_platform_revenue = 0.0
     club_stats = []
 
@@ -775,7 +901,7 @@ Haus Platform Operations
         m_count = UserProfile.objects.filter(role='member', organization=org).count()
         b_count = Booking.objects.filter(organization=org).count()
 
-        # Is clinic ke active members aur unki payment earnings
+        # Revenue for this clinic
         org_active_mems = Membership.objects.filter(organization=org, status='active').select_related('plan')
         deposit_rev = sum(
             float(m.plan.deposit_amount) for m in org_active_mems 
@@ -786,21 +912,20 @@ Haus Platform Operations
             if m.plan and m.plan.rate_monthly
         )
         clinic_earnings = deposit_rev + monthly_rev
-
-        # Global sum mein add karein
         total_platform_revenue += clinic_earnings
 
         club_stats.append({
             'org': org,
             'member_count': m_count,
+            'patients_count': m_count,       # Template references c.patients_count
             'booking_count': b_count,
+            'bookings_count': b_count,       # Template references c.bookings_count
             'monthly_recurring': monthly_rev,
             'total_earnings': clinic_earnings,
             'is_selected': (org.slug == selected_club_slug)
         })
 
-    # Filtered Members List
-    all_members = UserProfile.objects.filter(role='member').select_related('user', 'organization')
+    all_members = UserProfile.objects.filter(role='member').select_related('user', 'organization').order_by('-user__date_joined')
     if selected_club_slug:
         all_members = all_members.filter(organization__slug=selected_club_slug)
 
@@ -815,14 +940,14 @@ Haus Platform Operations
         'super_admins': super_admins,
         'total_super_admins': total_super_admins,
         'total_clubs': organizations.count(),
-        'total_members': UserProfile.objects.filter(role='member').count(),
-        'total_bookings': Booking.objects.count(),
-        # LIVE REVENUE CONTEXT VARIABLES:
+        'total_clinics_count': organizations.count(),
+        'total_members': total_platform_patients,
+        'total_platform_patients': total_platform_patients,
+        'total_bookings': total_platform_bookings,
+        'total_platform_bookings': total_platform_bookings,
         'total_platform_revenue': total_platform_revenue,
         'clinics_summary': club_stats,
     })
-
-
 # -------------------------------------------------------------
 # 1. ORG ADMIN DASHBOARD (Finance, Total Patients & Management)
 # -------------------------------------------------------------

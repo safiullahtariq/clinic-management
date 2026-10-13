@@ -61,25 +61,25 @@
     <div>
       <div style="border-bottom: 1px solid var(--doc-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <span style="font-size: 0.7rem; color: var(--doc-accent); font-weight: 800; text-transform: uppercase;">Medical Console</span>
-        <h2 style="font-size: 1.25rem; margin: 0.2rem 0 0; color: #fff;">Dr. {{ request.user.username }}</h2>
+        <h2 style="font-size: 1.7rem; margin: 0.2rem 0 0; color: #fff;">Dr. {{ request.user.username }}</h2>
         <span style="font-size: 0.8rem; color: var(--doc-muted);">{{ tenant.name }}</span>
       </div>
 
       <nav>
         <button type="button" class="doc-nav-item active" onclick="switchDocTab('tab-queue')">
-          <span>🩺 Active Queue</span>
+          <span>Active Queue</span>
           <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.2); color: var(--doc-accent); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ total_active_count }}</span>
         </button>
         <button type="button" class="doc-nav-item" onclick="switchDocTab('tab-upcoming')">
-          <span>📅 Upcoming Schedule</span>
+          <span>Upcoming Schedule</span>
           <span style="font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ upcoming_bookings|length }}</span>
         </button>
         <button type="button" class="doc-nav-item" onclick="switchDocTab('tab-completed')">
-          <span>✅ Completed Visits</span>
+          <span>Completed Visits</span>
           <span style="font-size: 0.75rem; background: rgba(123, 241, 153, 0.15); color: var(--doc-success); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ completed_count }}</span>
         </button>
         <button type="button" class="doc-nav-item" onclick="switchDocTab('tab-patients')">
-          <span>👥 Patient Directory</span>
+          <span>Patient Directory</span>
           <span style="font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 0.1rem 0.4rem; border-radius: 4px;">{{ total_patients_count }}</span>
         </button>
       </nav>

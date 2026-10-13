@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import founders_landing_page, register_view, PublicPlansAPIView
+from .views import founders_landing_page, register_view, PublicPlansAPIView,verify_otp_view,resend_otp_view
 from .views_stripe import create_checkout_session, payment_success_view, stripe_webhook
 
 app_name = 'memberships'
@@ -11,4 +11,6 @@ urlpatterns = [
     path('payment/checkout/', create_checkout_session, name='stripe_checkout'),
     path('payment/success/', payment_success_view, name='payment_success'),
     path('payment/webhook/', stripe_webhook, name='stripe_webhook'),
+    path('verify-otp/', verify_otp_view, name='verify_otp'),
+    path('resend-otp/', resend_otp_view, name='resend_otp'),
 ]

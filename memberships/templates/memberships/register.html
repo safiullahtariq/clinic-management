@@ -33,6 +33,80 @@
     border-color: #ff9b9b !important;
   }
 
+  /* ---------- Phone Field with Country Selector ---------- */
+  .phone-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--bg-surface, #111620);
+    border: 1px solid var(--border-color, #212936);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .phone-input-wrapper:focus-within {
+    border-color: var(--accent-gold, #38bdf8);
+  }
+  .phone-input-wrapper.input-invalid {
+    border-color: #ff9b9b !important;
+  }
+  .country-code-select {
+    background: transparent;
+    color: #fff;
+    border: none;
+    border-right: 1px solid var(--border-color, #212936);
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    outline: none;
+  }
+  .country-code-select option {
+    background: #161c26;
+    color: #fff;
+  }
+  .phone-text-field {
+    flex: 1;
+    background: transparent !important;
+    border: none !important;
+    color: #fff !important;
+    padding: 0.75rem !important;
+    font-size: 0.95rem;
+    outline: none !important;
+  }
+
+  /* ---------- Layout: horizontal + responsive ---------- */
+  .register-container {
+    max-width: 720px;
+    width: 100%;
+    margin: 3rem auto;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+  .register-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 2.5rem;
+    border-radius: 8px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .form-grid .form-field {
+    min-width: 0;
+  }
+  .form-grid .form-field.full {
+    grid-column: 1 / -1;
+  }
+
+  /* Tablet / phone: stack fields */
+  @media (max-width: 640px) {
+    .register-container { margin: 1.5rem auto; padding: 0 0.75rem; }
+    .register-card { padding: 1.5rem 1.1rem; }
+    .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+  }
+
   /* Browser autofill background override */
   input:-webkit-autofill,
   input:-webkit-autofill:hover, 
@@ -45,8 +119,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 480px; margin: 4rem auto;">
-  <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 8px;">
+<div class="container register-container">
+  <div class="register-card">
     <h2 style="font-size: 1.6rem; text-align: center; margin-bottom: 0.5rem;">Join {{ tenant.name }}</h2>
     <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 1.5rem;">
       Lock in your founding membership rate.
@@ -66,52 +140,87 @@
       <input type="text" name="fake_username_autofill" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
       <input type="password" name="fake_password_autofill" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
 
-      <div style="margin-bottom: 1.25rem;">
-        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Select Membership Pass</label>
-        <select name="plan_id" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
-          {% for p in plans %}
-            <option value="{{ p.id }}" {% if p.id|stringformat:"s" == selected_plan_id %}selected{% endif %}>
-              {{ p.name }} - ${{ p.rate_monthly|floatformat:0 }}/mo ({{ p.credits_per_period }} credits)
-            </option>
-          {% endfor %}
-        </select>
-      </div>
+      <div class="form-grid">
 
-      <div style="margin-bottom: 1.25rem;">
-        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Username</label>
-        <input type="text" id="reg-username" name="username" value="" autocomplete="chrome-off" placeholder="Choose a username" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
-        <div id="username-error" class="field-error-msg">Username must be at least 3 characters (letters, numbers, underscore only).</div>
-      </div>
-
-      <div style="margin-bottom: 1.25rem;">
-        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Email Address</label>
-        <input type="email" id="reg-email" name="email" value="" autocomplete="off" placeholder="name@example.com" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
-        <div id="email-error" class="field-error-msg">Please enter a valid email address.</div>
-      </div>
-
-      <div style="margin-bottom: 1.25rem;">
-        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Password</label>
-        <div class="password-wrapper">
-          <input type="password" id="reg-password" name="password" value="" autocomplete="new-password" placeholder="Minimum 8 characters" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
-          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reg-password', this)" aria-label="Toggle password view">
-            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-          </button>
+        <!-- Row 1: Plan (full width) -->
+        <div class="form-field full">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Select Membership Pass</label>
+          <select name="plan_id" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+            {% for p in plans %}
+              <option value="{{ p.id }}" {% if p.id|stringformat:"s" == selected_plan_id %}selected{% endif %}>
+                {{ p.name }} - ${{ p.rate_monthly|floatformat:0 }}/mo ({{ p.credits_per_period }} credits)
+              </option>
+            {% endfor %}
+          </select>
         </div>
-        <div id="password-error" class="field-error-msg">Password must be at least 8 characters long.</div>
-      </div>
 
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Confirm Password</label>
-        <div class="password-wrapper">
-          <input type="password" id="reg-confirm-password" name="confirm_password" value="" autocomplete="new-password" placeholder="Re-enter password" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
-          <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reg-confirm-password', this)" aria-label="Toggle confirm password view">
-            <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-          </button>
+        <!-- Row 2: First Name | Last Name -->
+        <div class="form-field">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">First Name</label>
+          <input type="text" id="reg-firstName" name="firstName" value="" autocomplete="chrome-off" placeholder="First Name" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          <div id="firstName-error" class="field-error-msg">First name can only contain letters.</div>
         </div>
-        <div id="confirm-error" class="field-error-msg">Passwords do not match.</div>
-      </div>
+        <div class="form-field">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Last Name</label>
+          <input type="text" id="reg-lastName" name="lastName" value="" autocomplete="chrome-off" placeholder="Last Name" required style="width:100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          <div id="lastName-error" class="field-error-msg">Last name can only contain letters.</div>
+        </div>
+
+        <!-- Row 3: Phone (With Country Code) | Username -->
+        <div class="form-field">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Phone Number</label>
+          <div class="phone-input-wrapper" id="phone-wrapper">
+            <select id="reg-countryCode" name="country_code" class="country-code-select">
+              <option value="+1" data-digits="10" selected>🇺🇸 +1 (US)</option>
+              <option value="+44" data-digits="10">🇬🇧 +44 (UK)</option>
+              <option value="+92" data-digits="10">🇵🇰 +92 (PK)</option>
+              <option value="+971" data-digits="9">🇦🇪 +971 (AE)</option>
+              <option value="+61" data-digits="9">🇦🇺 +61 (AU)</option>
+            </select>
+            <input type="tel" id="reg-phoneNumber" name="phone_number" value="" autocomplete="chrome-off" placeholder="(555) 555-1234" maxlength="14" required class="phone-text-field">
+          </div>
+          <div id="phoneNumber-error" class="field-error-msg">Please enter a valid 10-digit number: (555) 555-1234</div>
+        </div>
+
+        <div class="form-field">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Username</label>
+          <input type="text" id="reg-username" name="username" value="" autocomplete="chrome-off" placeholder="Enter User Name" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          <div id="username-error" class="field-error-msg">3-20 characters: letters, numbers, underscores only. Must begin with a letter.</div>
+        </div>
+
+        <!-- Row 4: Email (full width) -->
+        <div class="form-field full">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Email Address</label>
+          <input type="email" id="reg-email" name="email" value="" autocomplete="off" placeholder="name@example.com" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem; border-radius: 4px; box-sizing: border-box;">
+          <div id="email-error" class="field-error-msg">Please enter a valid email address.</div>
+        </div>
+
+        <!-- Row 5: Password | Confirm Password -->
+        <div class="form-field">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="reg-password" name="password" value="" autocomplete="new-password" placeholder="Minimum 8 characters" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reg-password', this)" aria-label="Toggle password view">
+              <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
+          <div id="password-error" class="field-error-msg">Password must be at least 8 characters long.</div>
+        </div>
+
+        <div class="form-field">
+          <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Confirm Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="reg-confirm-password" name="confirm_password" value="" autocomplete="new-password" placeholder="Re-enter password" required style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); color: #fff; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 4px; box-sizing: border-box;">
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('reg-confirm-password', this)" aria-label="Toggle confirm password view">
+              <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
+          <div id="confirm-error" class="field-error-msg">Passwords do not match.</div>
+        </div>
+
+      </div><!-- /.form-grid -->
 
       <button type="submit" class="btn-tier-cta" style="width: 100%; padding: 0.85rem; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
         Complete Signup ($100 Deposit Waived in Dev Mode)
@@ -135,11 +244,19 @@
       const e = document.getElementById('reg-email');
       const p = document.getElementById('reg-password');
       const cp = document.getElementById('reg-confirm-password');
+      const fn = document.getElementById('reg-firstName');
+      const ln = document.getElementById('reg-lastName');
+      const ph = document.getElementById('reg-phoneNumber');
       if (u) u.value = '';
       if (e) e.value = '';
       if (p) p.value = '';
       if (cp) cp.value = '';
+      if (fn) fn.value = '';
+      if (ln) ln.value = '';
+      if (ph) ph.value = '';
     }, 50);
+
+    attachRealTimeValidation();
   });
 
   function togglePasswordVisibility(fieldId, btn) {
@@ -158,60 +275,252 @@
     }
   }
 
+  // --- Phone Helpers ---
+  function formatUSAPhone(val) {
+    const digits = val.replace(/\D/g, '');
+    const len = digits.length;
+    if (len === 0) return '';
+    if (len <= 3) return `(${digits}`;
+    if (len <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+  }
+
+  // --- Real-time Validation Engine ---
+  function attachRealTimeValidation() {
+    const fnInput = document.getElementById('reg-firstName');
+    const lnInput = document.getElementById('reg-lastName');
+    const uInput = document.getElementById('reg-username');
+    const phInput = document.getElementById('reg-phoneNumber');
+    const ccSelect = document.getElementById('reg-countryCode');
+    const emInput = document.getElementById('reg-email');
+    const passInput = document.getElementById('reg-password');
+    const confInput = document.getElementById('reg-confirm-password');
+
+    // 1. First & Last Name: Letters Only Real-time enforcement
+    [fnInput, lnInput].forEach(input => {
+      const errEl = document.getElementById(input.id === 'reg-firstName' ? 'firstName-error' : 'lastName-error');
+      
+      input.addEventListener('input', () => {
+        // Test if non-letters exist
+        if (/[^a-zA-Z\s'-]/.test(input.value)) {
+          errEl.style.display = 'block';
+          input.classList.add('input-invalid');
+          // Sanitize instantly
+          input.value = input.value.replace(/[^a-zA-Z\s'-]/g, '');
+        } else if (input.value.trim().length > 0) {
+          errEl.style.display = 'none';
+          input.classList.remove('input-invalid');
+        }
+      });
+
+      input.addEventListener('blur', () => {
+        if (!/^[a-zA-Z\s'-]{2,}$/.test(input.value.trim())) {
+          errEl.style.display = 'block';
+          input.classList.add('input-invalid');
+        } else {
+          errEl.style.display = 'none';
+          input.classList.remove('input-invalid');
+        }
+      });
+    });
+
+    // 2. Professional Username Validation
+    const uErr = document.getElementById('username-error');
+    uInput.addEventListener('input', () => {
+      // Lowercase & normalize spaces
+      uInput.value = uInput.value.toLowerCase().replace(/\s+/g, '');
+      const val = uInput.value;
+      // Rule: 3-20 chars, starts with a letter, letters, numbers, single underscores/periods
+      const isValid = /^[a-z][a-z0-9_]{2,19}$/.test(val);
+      if (isValid) {
+        uErr.style.display = 'none';
+        uInput.classList.remove('input-invalid');
+      }
+    });
+    uInput.addEventListener('blur', () => {
+      const isValid = /^[a-z][a-z0-9_]{2,19}$/.test(uInput.value);
+      if (!isValid) {
+        uErr.style.display = 'block';
+        uInput.classList.add('input-invalid');
+      } else {
+        uErr.style.display = 'none';
+        uInput.classList.remove('input-invalid');
+      }
+    });
+
+    // 3. Country-Specific Phone Formatter & Length Validation
+    const phWrap = document.getElementById('phone-wrapper');
+    const phErr = document.getElementById('phoneNumber-error');
+
+    function checkPhone() {
+      const rawDigits = phInput.value.replace(/\D/g, '');
+      const isUS = ccSelect.value === '+1';
+      const targetDigits = parseInt(ccSelect.selectedOptions[0].getAttribute('data-digits') || 10, 10);
+      
+      const isValid = isUS ? rawDigits.length === 10 : (rawDigits.length >= targetDigits && rawDigits.length <= 15);
+      
+      if (!isValid && phInput.value.trim().length > 0) {
+        phWrap.classList.add('input-invalid');
+        phErr.textContent = isUS 
+          ? "Please enter a valid 10-digit number: (555) 555-1234" 
+          : `Please enter a valid number (${targetDigits} digits required).`;
+        phErr.style.display = 'block';
+        return false;
+      } else {
+        phWrap.classList.remove('input-invalid');
+        phErr.style.display = 'none';
+        return true;
+      }
+    }
+
+    phInput.addEventListener('input', () => {
+      if (ccSelect.value === '+1') {
+        phInput.value = formatUSAPhone(phInput.value);
+      } else {
+        // International: digits only
+        phInput.value = phInput.value.replace(/\D/g, '');
+      }
+      const rawDigits = phInput.value.replace(/\D/g, '');
+      const targetDigits = parseInt(ccSelect.selectedOptions[0].getAttribute('data-digits') || 10, 10);
+      if (rawDigits.length >= targetDigits) {
+        phWrap.classList.remove('input-invalid');
+        phErr.style.display = 'none';
+      }
+    });
+
+    ccSelect.addEventListener('change', () => {
+      if (ccSelect.value === '+1') {
+        phInput.placeholder = '(555) 555-1234';
+        phInput.setAttribute('maxlength', '14');
+        phInput.value = formatUSAPhone(phInput.value);
+      } else {
+        phInput.placeholder = '123456789';
+        phInput.setAttribute('maxlength', '15');
+        phInput.value = phInput.value.replace(/\D/g, '');
+      }
+      checkPhone();
+    });
+
+    phInput.addEventListener('blur', checkPhone);
+
+    // 4. Email Real-time
+    const emErr = document.getElementById('email-error');
+    emInput.addEventListener('input', () => {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emInput.value.trim())) {
+        emErr.style.display = 'none';
+        emInput.classList.remove('input-invalid');
+      }
+    });
+    emInput.addEventListener('blur', () => {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emInput.value.trim())) {
+        emErr.style.display = 'block';
+        emInput.classList.add('input-invalid');
+      } else {
+        emErr.style.display = 'none';
+        emInput.classList.remove('input-invalid');
+      }
+    });
+
+    // 5. Password & Confirm Password
+    const passErr = document.getElementById('password-error');
+    const confErr = document.getElementById('confirm-error');
+
+    passInput.addEventListener('input', () => {
+      if (passInput.value.length >= 8) {
+        passErr.style.display = 'none';
+        passInput.classList.remove('input-invalid');
+      }
+      if (confInput.value.length > 0 && passInput.value === confInput.value) {
+        confErr.style.display = 'none';
+        confInput.classList.remove('input-invalid');
+      }
+    });
+
+    confInput.addEventListener('input', () => {
+      if (confInput.value === passInput.value) {
+        confErr.style.display = 'none';
+        confInput.classList.remove('input-invalid');
+      }
+    });
+  }
+
+  // --- Final Submit Guard ---
   function validateRegistrationForm(e) {
     let isValid = true;
+
+    // Names
+    const fnInput = document.getElementById('reg-firstName');
+    const lnInput = document.getElementById('reg-lastName');
+    const fnErr = document.getElementById('firstName-error');
+    const lnErr = document.getElementById('lastName-error');
+
+    if (!/^[a-zA-Z\s'-]{2,}$/.test(fnInput.value.trim())) {
+      fnErr.style.display = 'block';
+      fnInput.classList.add('input-invalid');
+      isValid = false;
+    }
+    if (!/^[a-zA-Z\s'-]{2,}$/.test(lnInput.value.trim())) {
+      lnErr.style.display = 'block';
+      lnInput.classList.add('input-invalid');
+      isValid = false;
+    }
+
+    // Username
     const uInput = document.getElementById('reg-username');
-    const eInput = document.getElementById('reg-email');
-    const pInput = document.getElementById('reg-password');
-    const cpInput = document.getElementById('reg-confirm-password');
-
     const uErr = document.getElementById('username-error');
-    const eErr = document.getElementById('email-error');
-    const pErr = document.getElementById('password-error');
-    const cpErr = document.getElementById('confirm-error');
-
-    const uVal = uInput.value.trim();
-    if (!/^[a-zA-Z0-9_]{3,}$/.test(uVal)) {
+    if (!/^[a-z][a-z0-9_]{2,19}$/.test(uInput.value.trim())) {
       uErr.style.display = 'block';
       uInput.classList.add('input-invalid');
       isValid = false;
-    } else {
-      uErr.style.display = 'none';
-      uInput.classList.remove('input-invalid');
     }
 
-    const eVal = eInput.value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(eVal)) {
-      eErr.style.display = 'block';
-      eInput.classList.add('input-invalid');
+    // Phone
+    const phInput = document.getElementById('reg-phoneNumber');
+    const ccSelect = document.getElementById('reg-countryCode');
+    const phWrap = document.getElementById('phone-wrapper');
+    const phErr = document.getElementById('phoneNumber-error');
+    const rawDigits = phInput.value.replace(/\D/g, '');
+    const isUS = ccSelect.value === '+1';
+    const targetDigits = parseInt(ccSelect.selectedOptions[0].getAttribute('data-digits') || 10, 10);
+    const isPhoneValid = isUS ? rawDigits.length === 10 : (rawDigits.length >= targetDigits && rawDigits.length <= 15);
+
+    if (!isPhoneValid) {
+      phWrap.classList.add('input-invalid');
+      phErr.style.display = 'block';
       isValid = false;
-    } else {
-      eErr.style.display = 'none';
-      eInput.classList.remove('input-invalid');
     }
 
-    const pVal = pInput.value;
-    if (!pVal || pVal.length < 8) {
-      pErr.style.display = 'block';
-      pInput.classList.add('input-invalid');
+    // Email
+    const emInput = document.getElementById('reg-email');
+    const emErr = document.getElementById('email-error');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emInput.value.trim())) {
+      emErr.style.display = 'block';
+      emInput.classList.add('input-invalid');
       isValid = false;
-    } else {
-      pErr.style.display = 'none';
-      pInput.classList.remove('input-invalid');
     }
 
-    const cpVal = cpInput.value;
-    if (pVal !== cpVal || !cpVal) {
-      cpErr.style.display = 'block';
-      cpInput.classList.add('input-invalid');
+    // Passwords
+    const passInput = document.getElementById('reg-password');
+    const confInput = document.getElementById('reg-confirm-password');
+    const passErr = document.getElementById('password-error');
+    const confErr = document.getElementById('confirm-error');
+
+    if (!passInput.value || passInput.value.length < 8) {
+      passErr.style.display = 'block';
+      passInput.classList.add('input-invalid');
       isValid = false;
-    } else {
-      cpErr.style.display = 'none';
-      cpInput.classList.remove('input-invalid');
+    }
+    if (passInput.value !== confInput.value || !confInput.value) {
+      confErr.style.display = 'block';
+      confInput.classList.add('input-invalid');
+      isValid = false;
     }
 
     if (!isValid && e) {
       e.preventDefault();
+      // Scroll to first invalid field
+      const firstInvalid = document.querySelector('.input-invalid');
+      if (firstInvalid) firstInvalid.focus();
       return false;
     }
     return isValid;

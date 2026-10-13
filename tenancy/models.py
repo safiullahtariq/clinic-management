@@ -1,7 +1,9 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
+from datetime import timedelta
+import random
 class Organization(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
@@ -49,7 +51,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE, null=True, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
-    
+    phone_number = models.CharField(max_length=30, blank=True, null=True)
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"
 
@@ -75,3 +77,20 @@ class AdminNotification(models.Model):
 
     def __str__(self):
         return f"{self.organization.slug} - {self.title} (Read: {self.is_read})"
+    
+class EmailOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_otps')
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+
+    def is_valid(self):
+        # OTP valid for 10 minutes
+        return not self.is_verified and timezone.now() < self.created_at + timedelta(minutes=10)
+
+    @classmethod
+    def generate_otp(cls, user):
+        code = f"{random.randint(100000, 999999)}"
+        # Invalidate old OTPs for this user
+        cls.objects.filter(user=user, is_verified=False).delete()
+        return cls.objects.create(user=user, otp_code=code)

@@ -6,10 +6,13 @@ from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
-from tenancy.models import UserProfile, Organization
+from django.core.mail import send_mail
+from tenancy.models import UserProfile, Organization,EmailOTP
 from tenancy.emails import email_new_member_joined, notify_plan_purchase_pending
 from .models import MembershipPlan, Membership, CreditLedger
+from django.conf import settings
+
+
 
 
 def founders_landing_page(request):
@@ -72,6 +75,27 @@ def founders_landing_page(request):
     }
     return render(request, 'memberships/founders.html', context)
 
+def send_otp_email(user, otp_code, tenant_name="Clinic"):
+    subject = f"Your Verification Code | {tenant_name}"
+    message = f"""Hello {user.first_name or user.username},
+
+Your 6-digit email verification code is:
+
+    {otp_code}
+
+This code will expire in 10 minutes. If you did not create this account, please ignore this email.
+
+Best regards,
+{tenant_name} Team
+"""
+    send_mail(
+        subject,
+        message,
+        getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@clinic.com'),
+        [user.email],
+        fail_silently=False
+    )
+
 
 def register_view(request):
     tenant_slug = request.GET.get('org')
@@ -86,13 +110,29 @@ def register_view(request):
 
     if request.method == 'POST':
         plan_id = request.POST.get('plan_id') or selected_plan_id
-        username = request.POST.get('username', '').strip()
+        first_name = request.POST.get('firstName', '').strip()
+        last_name = request.POST.get('lastName', '').strip()
+        country_code = request.POST.get('country_code', '+1').strip()
+        phone_input = request.POST.get('phone_number', '').strip()
+
+        username = request.POST.get('username', '').strip().lower()
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
 
-        if not re.match(r'^[a-zA-Z0-9_]{3,}$', username):
-            error = "Username must be at least 3 characters (letters, numbers, underscore)."
+        full_phone = f"{country_code} {phone_input}".strip() if phone_input else ""
+        raw_digits = re.sub(r'\D', '', phone_input)
+
+        if not re.match(r"^[a-zA-Z\s'-]{2,}$", first_name):
+            error = "First name can only contain letters."
+        elif not re.match(r"^[a-zA-Z\s'-]{2,}$", last_name):
+            error = "Last name can only contain letters."
+        elif country_code == '+1' and len(raw_digits) != 10:
+            error = "Please enter a valid 10-digit US/CA phone number: (555) 555-1234."
+        elif country_code != '+1' and not (7 <= len(raw_digits) <= 15):
+            error = "Please enter a valid international phone number."
+        elif not re.match(r'^[a-z][a-z0-9_]{2,19}$', username):
+            error = "Username must be 3-20 characters, start with a letter, and contain only lowercase letters, numbers, or underscores."
         elif not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
             error = "Please enter a valid email address."
         elif len(password) < 8:
@@ -104,15 +144,28 @@ def register_view(request):
         elif User.objects.filter(email=email).exists():
             error = f"An account with email '{email}' already exists. Please sign in."
         else:
-            target_plan = MembershipPlan.objects.filter(id=plan_id, organization=tenant).first() or plans.first()
+            target_plan = MembershipPlan.objects.filter(id=plan_id, organization=tenant).first() or (plans.first() if plans else None)
             if not target_plan:
                 error = "Please select a valid membership plan."
             else:
                 with transaction.atomic():
-                    new_user = User.objects.create_user(username=username, email=email, password=password)
-                    UserProfile.objects.create(user=new_user, organization=tenant, role='member')
+                    # 1. Create User with is_active=False until OTP verified
+                    new_user = User.objects.create_user(
+                        username=username,
+                        email=email,
+                        password=password,
+                        first_name=first_name,
+                        last_name=last_name,
+                        is_active=False
+                    )
 
-                    # IMPORTANT: Status is 'unpaid' because payment has NOT happened yet.
+                    UserProfile.objects.create(
+                        user=new_user,
+                        organization=tenant,
+                        role='member',
+                        phone_number=full_phone
+                    )
+
                     Membership.objects.create(
                         user=new_user,
                         organization=tenant,
@@ -121,11 +174,14 @@ def register_view(request):
                         credit_balance=0
                     )
 
-                    email_new_member_joined(new_user, tenant)
+                    # 2. Generate and Send OTP
+                    otp_obj = EmailOTP.generate_otp(new_user)
+                    send_otp_email(new_user, otp_obj.otp_code, tenant.name if tenant else "Clinic")
 
-                # Log the user in directly and take them to dashboard or payment
-                login(request, new_user)
-                return redirect(f"/dashboard/member/?org={tenant.slug if tenant else 'longevity-haus'}")
+                # 3. Store pending user ID in session and redirect to OTP screen
+                request.session['pending_otp_user_id'] = new_user.id
+                fallback_slug = tenant.slug if tenant else 'biohacking'
+                return redirect(f"/verify-otp/?org={fallback_slug}")
 
     return render(request, 'memberships/register.html', {
         'tenant': tenant,
@@ -133,6 +189,68 @@ def register_view(request):
         'selected_plan_id': selected_plan_id,
         'error': error,
     })
+
+
+def verify_otp_view(request):
+    """
+    Validates the 6-digit OTP entered by the user.
+    """
+    user_id = request.session.get('pending_otp_user_id')
+    tenant_slug = request.GET.get('org')
+    tenant = Organization.objects.filter(slug=tenant_slug).first() if tenant_slug else None
+
+    if not user_id:
+        return redirect(f"/join/?org={tenant_slug if tenant_slug else ''}")
+
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        return redirect(f"/join/?org={tenant_slug if tenant_slug else ''}")
+
+    error = None
+
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp', '').strip()
+        otp_record = EmailOTP.objects.filter(user=user, otp_code=entered_otp).order_by('-created_at').first()
+
+        if not otp_record or not otp_record.is_valid():
+            error = "Invalid or expired verification code. Please try again or request a new code."
+        else:
+            with transaction.atomic():
+                otp_record.is_verified = True
+                otp_record.save()
+
+                user.is_active = True
+                user.save()
+
+            # Clean session and auto-login
+            del request.session['pending_otp_user_id']
+            login(request, user)
+
+            fallback_slug = tenant.slug if tenant else 'biohacking'
+            return redirect(f"/dashboard/member/?org={fallback_slug}")
+
+    return render(request, 'memberships/verify_otp.html', {
+        'tenant': tenant,
+        'email': user.email,
+        'error': error,
+    })
+
+
+def resend_otp_view(request):
+    """
+    Resends a fresh 6-digit OTP.
+    """
+    user_id = request.session.get('pending_otp_user_id')
+    tenant_slug = request.GET.get('org')
+    tenant = Organization.objects.filter(slug=tenant_slug).first() if tenant_slug else None
+
+    if user_id:
+        user = User.objects.filter(id=user_id).first()
+        if user:
+            otp_obj = EmailOTP.generate_otp(user)
+            send_otp_email(user, otp_obj.otp_code, tenant.name if tenant else "Clinic")
+
+    return redirect(f"/verify-otp/?org={tenant_slug if tenant_slug else ''}&resent=1")
 class PublicPlansAPIView(APIView):
     """
     Public API returning active membership plans for the resolved tenant.

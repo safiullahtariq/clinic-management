@@ -8,4 +8,5 @@ urlpatterns = [
     path('dashboard/doctor/', doctor_dashboard_view, name='doctor_dashboard'),
     path('dashboard/reception/', reception_dashboard_view, name='reception_dashboard'),
     path('portal/', dynamic_portal_redirect, name='dynamic_portal'),
+    
 ]
