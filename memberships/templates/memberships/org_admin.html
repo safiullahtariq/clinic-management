@@ -25,11 +25,19 @@
     max-width: 100vw;
     overflow-x: hidden;
     background-color: var(--oa-bg);
+    margin: 0;
+    padding: 0;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.oa-no-scroll {
+    overflow: hidden;
   }
 
   .oa-app-layout {
     display: flex;
     min-height: calc(100vh - 70px);
+    min-height: calc(100dvh - 70px);
     position: relative;
     width: 100%;
   }
@@ -63,7 +71,7 @@
   }
 
   .oa-sidebar-title {
-    font-size: 1.7rem;
+    font-size: clamp(1.35rem, 2vw, 1.7rem);
     font-weight: 800;
     color: var(--oa-text);
     margin: 0.2rem 0 0;
@@ -96,6 +104,7 @@
     text-align: left;
     transition: all 0.2s;
     box-sizing: border-box;
+    min-height: 44px;
   }
 
   .oa-nav-item:hover {
@@ -117,6 +126,8 @@
     padding: 0.15rem 0.5rem;
     border-radius: 10px;
     font-weight: 700;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
   }
 
   .oa-nav-badge.warning {
@@ -132,7 +143,8 @@
   .oa-stage {
     flex-grow: 1;
     min-width: 0;
-    padding: clamp(1rem, 2.5vw, 2.5rem);
+    width: 100%;
+    padding: clamp(0.85rem, 2.5vw, 2.5rem);
     box-sizing: border-box;
   }
 
@@ -140,7 +152,7 @@
     display: none;
     align-items: center;
     justify-content: space-between;
-    padding: 0.85rem 1rem;
+    padding: 0.75rem 1rem;
     background: var(--oa-sidebar-bg);
     border-bottom: 1px solid var(--oa-border);
     position: sticky;
@@ -160,7 +172,7 @@
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 42px;
   }
 
   .oa-sidebar-backdrop {
@@ -202,6 +214,7 @@
     font-weight: 800;
     line-height: 1.15;
     margin: 0.35rem 0 0.15rem;
+    word-break: break-word;
   }
 
   .oa-subtext {
@@ -215,14 +228,15 @@
     border-radius: 8px;
     padding: clamp(1rem, 2vw, 1.75rem);
     margin-bottom: 1.5rem;
+    box-sizing: border-box;
   }
 
   .oa-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
-    gap: 0.5rem;
+    margin-bottom: 1.15rem;
+    gap: 0.85rem;
     flex-wrap: wrap;
   }
 
@@ -231,11 +245,53 @@
     font-weight: 700;
     color: #fff;
     margin: 0;
+    line-height: 1.3;
+  }
+
+  /* Filter Bar */
+  .oa-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    background: var(--oa-surface);
+    border: 1px solid var(--oa-border);
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+  }
+
+  .oa-filter-item {
+    flex: 1;
+    min-width: 190px;
+  }
+
+  .oa-filter-select {
+    flex: 0 1 200px;
+    min-width: 160px;
+  }
+
+  .oa-filter-reset {
+    min-height: 40px !important;
+    padding: 0.4rem 0.85rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .oa-empty-filter-msg {
+    display: none;
+    text-align: center;
+    color: var(--oa-muted);
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+    border: 1px dashed var(--oa-border);
+    border-radius: 8px;
+    margin-top: 0.5rem;
   }
 
   .oa-table-box {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-radius: 6px;
     border: 1px solid var(--oa-border);
   }
@@ -249,6 +305,7 @@
 
   .oa-table th, .oa-table td {
     padding: 0.8rem;
+    vertical-align: middle;
   }
 
   .oa-table thead tr {
@@ -257,10 +314,15 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    background: rgba(255, 255, 255, 0.01);
   }
 
   .oa-table tbody tr {
     border-bottom: 1px solid var(--oa-border-light);
+  }
+
+  .oa-table tbody tr:last-child {
+    border-bottom: none;
   }
 
   .oa-mobile-cards-list {
@@ -277,13 +339,16 @@
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
+    box-sizing: border-box;
   }
 
   .oa-card-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
     font-size: 0.85rem;
+    flex-wrap: wrap;
   }
 
   .oa-btn {
@@ -300,6 +365,7 @@
     border: none;
     box-sizing: border-box;
     transition: opacity 0.2s;
+    white-space: nowrap;
   }
 
   .oa-btn-primary { background: var(--oa-accent); color: #000; }
@@ -344,7 +410,9 @@
     width: 100%;
     max-width: 580px;
     max-height: 85vh;
+    max-height: 85dvh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: clamp(1.2rem, 3vw, 2rem);
     box-sizing: border-box;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
@@ -381,9 +449,12 @@
     .oa-sidebar {
       position: fixed;
       top: 0; bottom: 0; left: 0;
+      width: min(280px, 85vw);
       transform: translateX(-100%);
       height: 100vh;
+      height: 100dvh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .oa-sidebar.open { transform: translateX(0); }
     .oa-sidebar-backdrop.open { display: block; }
@@ -393,6 +464,17 @@
     .oa-table-box { display: none; }
     .oa-mobile-cards-list { display: flex; }
     .notif-row { flex-direction: column; align-items: flex-start; }
+    .oa-filter-bar { flex-direction: column; align-items: stretch; }
+    .oa-filter-item, .oa-filter-select, .oa-filter-reset { width: 100%; flex: none; }
+    .oa-modal-overlay { align-items: flex-end; padding: 0; }
+    .oa-modal-sheet {
+      border-radius: 16px 16px 0 0;
+      max-width: 100% !important;
+      max-height: 92vh;
+      max-height: 92dvh;
+      padding: 1.35rem 1.1rem calc(1.35rem + env(safe-area-inset-bottom, 0px));
+    }
+    .oa-input, select.oa-input { font-size: 16px !important; }
   }
 </style>
 {% endblock %}
@@ -421,18 +503,11 @@
 
       <nav>
         <ul class="oa-nav-list">
-          <!-- SIDEBAR ITEMS -->
           <li>
             <button type="button" class="oa-nav-item active" onclick="activateSection('tab-overview')">
               <span>Overview</span>
             </button>
           </li>
-          <!-- <li>
-            <button type="button" class="oa-nav-item" onclick="activateSection('tab-approvals')">
-              <span>Plan Approvals</span>
-              <span class="oa-nav-badge warning">{{ pending_plan_memberships.count }}</span>
-            </button>
-          </li> -->
           <li>
             <button type="button" class="oa-nav-item" onclick="activateSection('tab-all-patients')">
               <span>Total Patients Directory</span>
@@ -464,7 +539,6 @@
               <span>Reports &amp; Exports</span>
             </button>
           </li>
-          
         </ul>
       </nav>
     </div>
@@ -476,7 +550,8 @@
 
   <!-- Main Stage -->
   <main class="oa-stage">
-   <!-- TAB: TOTAL PATIENTS DIRECTORY (Full Patient List for Org Admin) -->
+    
+   <!-- TAB: TOTAL PATIENTS DIRECTORY -->
     <div id="tab-all-patients" class="oa-tab-content">
       <section class="oa-panel">
         <div class="oa-panel-header">
@@ -487,6 +562,24 @@
           <a href="?org={{ tenant.slug }}&export=patients_csv" class="oa-btn oa-btn-outline" style="border-color: #38bdf8; color: #38bdf8;">
             Export CSV &darr;
           </a>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="oa-filter-bar">
+          <div class="oa-filter-item">
+            <input type="text" id="patients-search-input" oninput="filterTableList('patients-search-input', 'patients-status-filter', '.patient-row', 'patients-no-results')" placeholder="Search patient name, email..." class="oa-input">
+          </div>
+          <div class="oa-filter-select">
+            <select id="patients-status-filter" onchange="filterTableList('patients-search-input', 'patients-status-filter', '.patient-row', 'patients-no-results')" class="oa-input">
+              <option value="all">All Payment States</option>
+              <option value="active">Active</option>
+              <option value="awaiting approval">Awaiting Approval</option>
+              <option value="unpaid">Unpaid</option>
+            </select>
+          </div>
+          <button type="button" onclick="resetFilters('patients-search-input', 'patients-status-filter', filterTableList, 'patients-search-input', 'patients-status-filter', '.patient-row', 'patients-no-results')" class="oa-btn oa-btn-outline oa-filter-reset">
+            Reset
+          </button>
         </div>
 
         <div class="oa-table-box">
@@ -503,7 +596,7 @@
             </thead>
             <tbody>
               {% for p in all_patients %}
-              <tr>
+              <tr class="patient-row" data-status="{{ p.status|lower }}">
                 <td style="font-weight: 700; color: #fff;">{{ p.user.username }}</td>
                 <td style="color: var(--oa-muted);">{{ p.user.email|default:"No email registered" }}</td>
                 <td style="color: var(--oa-accent); font-weight: 600;">{{ p.plan.name|default:"General Patient" }}</td>
@@ -527,8 +620,34 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Cards List -->
+        <div class="oa-mobile-cards-list">
+          {% for p in all_patients %}
+          <div class="oa-mobile-card patient-row" data-status="{{ p.status|lower }}">
+            <div class="oa-card-line">
+              <strong style="color: #fff; font-size: 0.95rem;">{{ p.user.username }}</strong>
+              <span style="font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 4px; font-weight: 700; {% if p.status == 'active' %}background: rgba(16,185,129,0.15); color: #6ee7b7;{% elif p.status == 'pending_deposit' %}background: rgba(245,158,11,0.15); color: #fbbf24;{% else %}background: rgba(239,68,68,0.15); color: #fca5a5;{% endif %}">
+                {{ p.status|title }}
+              </span>
+            </div>
+            <div class="oa-subtext">{{ p.user.email|default:"No email registered" }}</div>
+            <div class="oa-card-line" style="font-size: 0.82rem;">
+              <span>Tier: <strong style="color: var(--oa-accent);">{{ p.plan.name|default:"General Patient" }}</strong></span>
+              <span>Credits: <strong style="color: {% if p.credit_balance > 0 %}var(--oa-success){% else %}var(--oa-danger){% endif %};">{{ p.credit_balance }} cr</strong></span>
+            </div>
+          </div>
+          {% empty %}
+          <p style="color: var(--oa-muted); text-align: center; padding: 1.5rem;">No patients registered in this clinic.</p>
+          {% endfor %}
+        </div>
+
+        <div id="patients-no-results" class="oa-empty-filter-msg">
+          No patients match your search criteria.
+        </div>
       </section>
     </div> 
+
     <!-- 1. TAB: OVERVIEW -->
     <div id="tab-overview" class="oa-tab-content active">
       <section class="oa-panel">
@@ -582,7 +701,6 @@
 
         <div>
           {% for notif in notifications %}
-          <!-- Interactive Notification Form Row -->
           <form method="POST" action="" class="notif-form-row">
             {% csrf_token %}
             <input type="hidden" name="action_type" value="mark_notification_read">
@@ -686,6 +804,16 @@
           </div>
         </div>
 
+        <!-- Filter Bar -->
+        <div class="oa-filter-bar">
+          <div class="oa-filter-item">
+            <input type="text" id="active-mem-search" oninput="filterTableList('active-mem-search', null, '.active-member-row', 'active-mem-no-results')" placeholder="Search active member username or email..." class="oa-input">
+          </div>
+          <button type="button" onclick="resetFilters('active-mem-search', null, filterTableList, 'active-mem-search', null, '.active-member-row', 'active-mem-no-results')" class="oa-btn oa-btn-outline oa-filter-reset">
+            Reset
+          </button>
+        </div>
+
         <div class="oa-table-box">
           <table class="oa-table">
             <thead>
@@ -700,7 +828,7 @@
             </thead>
             <tbody>
               {% for m in memberships %}
-              <tr>
+              <tr class="active-member-row">
                 <td style="font-weight: 700; color: #fff;">
                   {{ m.user.username }}
                   <div class="oa-subtext">{{ m.user.email|default:"no email" }}</div>
@@ -730,6 +858,29 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Cards -->
+        <div class="oa-mobile-cards-list">
+          {% for m in memberships %}
+          <div class="oa-mobile-card active-member-row">
+            <div class="oa-card-line">
+              <strong style="color: #fff; font-size: 0.95rem;">{{ m.user.username }}</strong>
+              <span style="color: var(--oa-accent); font-weight: 700; font-size: 0.85rem;">{{ m.plan.name }}</span>
+            </div>
+            <div class="oa-subtext">{{ m.user.email|default:"no email" }}</div>
+            <div class="oa-card-line" style="font-size: 0.82rem;">
+              <span>Balance: <strong style="color: {% if m.credit_balance > 0 %}var(--oa-success){% else %}var(--oa-danger){% endif %};">{{ m.credit_balance }} cr</strong></span>
+              <button type="button" onclick="openLedgerModal('ledger-{{ m.id }}')" class="oa-btn oa-btn-outline" style="min-height: 30px; font-size: 0.72rem; padding: 0.2rem 0.5rem;">Audit Log</button>
+            </div>
+          </div>
+          {% empty %}
+          <p style="color: var(--oa-muted); text-align: center; padding: 1.5rem;">No active members enrolled yet.</p>
+          {% endfor %}
+        </div>
+
+        <div id="active-mem-no-results" class="oa-empty-filter-msg">
+          No members match your search criteria.
+        </div>
       </section>
     </div>
 
@@ -741,6 +892,24 @@
             <h2 class="oa-panel-title">Appointments Roster ({{ bookings.count }})</h2>
             <p class="oa-subtext" style="margin-top: 0.2rem;">Review bookings, verify time slots, mark completed, or cancel and refund.</p>
           </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="oa-filter-bar">
+          <div class="oa-filter-item">
+            <input type="text" id="booking-search-input" oninput="filterTableList('booking-search-input', 'booking-status-filter', '.booking-row', 'booking-no-results')" placeholder="Search customer name or modality..." class="oa-input">
+          </div>
+          <div class="oa-filter-select">
+            <select id="booking-status-filter" onchange="filterTableList('booking-search-input', 'booking-status-filter', '.booking-row', 'booking-no-results')" class="oa-input">
+              <option value="all">All Booking Statuses</option>
+              <option value="pending service">Pending Service</option>
+              <option value="service completed">Service Completed</option>
+              <option value="canceled">Canceled</option>
+            </select>
+          </div>
+          <button type="button" onclick="resetFilters('booking-search-input', 'booking-status-filter', filterTableList, 'booking-search-input', 'booking-status-filter', '.booking-row', 'booking-no-results')" class="oa-btn oa-btn-outline oa-filter-reset">
+            Reset
+          </button>
         </div>
 
         <div class="oa-table-box">
@@ -757,24 +926,18 @@
             </thead>
             <tbody>
             {% for b in bookings %}
-            <tr>
+            <tr class="booking-row" data-status="{% if b.status == 'pending' %}pending service{% elif b.status == 'completed' %}service completed{% else %}canceled{% endif %}">
               <td style="font-weight: 700; color: #fff;">{{ b.membership.user.username }}</td>
               <td style="color: var(--oa-accent); font-weight: 700;">{{ b.resource.name }}</td>
               <td style="color: #cbd5e1;">{{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|date:"H:i" }}</td>
               <td style="font-weight: 700; color: #38bdf8;">{{ b.credits_used }} cr</td>
               <td>
                 {% if b.status == 'pending' %}
-                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">
-                    &#9679; Pending Service
-                  </span>
+                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">&#9679; Pending Service</span>
                 {% elif b.status == 'completed' %}
-                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4);">
-                    &#10003; Service Completed
-                  </span>
+                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4);">&#10003; Service Completed</span>
                 {% else %}
-                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">
-                    Canceled
-                  </span>
+                  <span style="padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">Canceled</span>
                 {% endif %}
               </td>
               <td style="text-align: right; white-space: nowrap;">
@@ -783,17 +946,13 @@
                     {% csrf_token %}
                     <input type="hidden" name="action_type" value="complete_service">
                     <input type="hidden" name="booking_id" value="{{ b.id }}">
-                    <button type="submit" class="oa-btn oa-btn-primary" style="min-height: 32px; font-size: 0.75rem; padding: 0.3rem 0.65rem;">
-                      Mark Completed &#10003;
-                    </button>
+                    <button type="submit" class="oa-btn oa-btn-primary" style="min-height: 32px; font-size: 0.75rem; padding: 0.3rem 0.65rem;">Mark Completed &#10003;</button>
                   </form>
                   <form method="POST" style="display:inline;" onsubmit="return confirm('Cancel appointment and refund credits?');">
                     {% csrf_token %}
                     <input type="hidden" name="action_type" value="admin_cancel_booking">
                     <input type="hidden" name="booking_id" value="{{ b.id }}">
-                    <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 32px; font-size: 0.75rem; padding: 0.3rem 0.65rem;">
-                      Cancel
-                    </button>
+                    <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 32px; font-size: 0.75rem; padding: 0.3rem 0.65rem;">Cancel</button>
                   </form>
                 {% elif b.status == 'completed' %}
                   <span style="color: #6ee7b7; font-size: 0.78rem; font-weight: 600;">Fulfilled</span>
@@ -807,6 +966,10 @@
             {% endfor %}
             </tbody>
           </table>
+        </div>
+
+        <div id="booking-no-results" class="oa-empty-filter-msg">
+          No appointments match your search criteria.
         </div>
       </section>
     </div>
@@ -824,6 +987,16 @@
           </button>
         </div>
 
+        <!-- Filter Bar -->
+        <div class="oa-filter-bar">
+          <div class="oa-filter-item">
+            <input type="text" id="service-search-input" oninput="filterTableList('service-search-input', null, '.service-row', 'service-no-results')" placeholder="Search service name..." class="oa-input">
+          </div>
+          <button type="button" onclick="resetFilters('service-search-input', null, filterTableList, 'service-search-input', null, '.service-row', 'service-no-results')" class="oa-btn oa-btn-outline oa-filter-reset">
+            Reset
+          </button>
+        </div>
+
         <div class="oa-table-box">
           <table class="oa-table">
             <thead>
@@ -837,7 +1010,7 @@
             </thead>
             <tbody>
               {% for r in resources %}
-              <tr>
+              <tr class="service-row">
                 <td style="font-weight: 700; color: #fff;">{{ r.name }}</td>
                 <td>{{ r.duration_minutes }}m</td>
                 <td style="color: var(--oa-accent); font-weight: 700;">{{ r.credit_cost }} cr</td>
@@ -851,9 +1024,15 @@
                   </form>
                 </td>
               </tr>
+              {% empty %}
+              <tr><td colspan="5" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No services found.</td></tr>
               {% endfor %}
             </tbody>
           </table>
+        </div>
+
+        <div id="service-no-results" class="oa-empty-filter-msg">
+          No services match your search criteria.
         </div>
       </section>
     </div>
@@ -871,6 +1050,16 @@
           </button>
         </div>
 
+        <!-- Filter Bar -->
+        <div class="oa-filter-bar">
+          <div class="oa-filter-item">
+            <input type="text" id="plan-search-input" oninput="filterTableList('plan-search-input', null, '.plan-row', 'plan-no-results')" placeholder="Search tier or plan name..." class="oa-input">
+          </div>
+          <button type="button" onclick="resetFilters('plan-search-input', null, filterTableList, 'plan-search-input', null, '.plan-row', 'plan-no-results')" class="oa-btn oa-btn-outline oa-filter-reset">
+            Reset
+          </button>
+        </div>
+
         <div class="oa-table-box">
           <table class="oa-table">
             <thead>
@@ -883,7 +1072,7 @@
             </thead>
             <tbody>
               {% for p in plans %}
-              <tr>
+              <tr class="plan-row">
                 <td style="font-weight: 700; color: var(--oa-accent);">{{ p.tier_label }} &mdash; {{ p.name }}</td>
                 <td>${{ p.rate_monthly }}/mo</td>
                 <td>{{ p.credits_per_period }} cr</td>
@@ -896,9 +1085,15 @@
                   </form>
                 </td>
               </tr>
+              {% empty %}
+              <tr><td colspan="4" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No plans found.</td></tr>
               {% endfor %}
             </tbody>
           </table>
+        </div>
+
+        <div id="plan-no-results" class="oa-empty-filter-msg">
+          No membership tiers match your search criteria.
         </div>
       </section>
     </div>
@@ -932,324 +1127,342 @@
         </form>
       </section>
     </div>
-<!-- TAB: MANAGE CLINIC STAFF -->
-<div id="tab-staff" class="oa-tab-content" >
-    <h2 style="color: #fff; margin-bottom: 1.5rem;">Clinic Staff Management</h2>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+
+    <!-- TAB: MANAGE CLINIC STAFF -->
+    <div id="tab-staff" class="oa-tab-content">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 1.5rem; align-items: start;">
         <!-- Add Staff Form -->
-        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); height: fit-content;">
-            <h3 style="margin-bottom: 1rem; color: #fff;">Add New Staff Member</h3>
-            <form method="POST" autocomplete="off">
-                {% csrf_token %}
-                <input type="hidden" name="action_type" value="create_staff">
-                
-                <div style="margin-bottom: 1rem;">
-                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Staff Role</label>
-                    <select name="staff_role" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                        <option value="doctor">Doctor</option>
-                        <option value="receptionist">Receptionist</option>
-                    </select>
-                </div>
-                
-                <div style="margin-bottom: 1rem;">
-                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Username</label>
-                    <input type="text" name="username" required autocomplete="off" placeholder="e.g. dr_ali" style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                </div>
-                
-                <div style="margin-bottom: 1rem;">
-                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Email (Credentials will be sent here)</label>
-                    <input type="email" name="email" required autocomplete="off" placeholder="staff@example.com" style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Temporary Password</label>
-                    <input type="password" name="password" required autocomplete="new-password" placeholder="Min 8 characters" style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                </div>
-                
-                <button type="submit" style="width: 100%; padding: 0.85rem; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
-                    Create & Send Login Details
-                </button>
-            </form>
-        </div>
-
-        <!-- Staff List (Doctors & Receptionists) -->
-        <div>
-            <!-- Doctors Section -->
-            <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                <h3 style="margin-bottom: 1rem; color: #38bdf8;">👨‍⚕️ Doctors ({{ doctors.count }})</h3>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    {% for doc in doctors %}
-                        <div style="padding: 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <strong style="color: #fff; display: block;">Dr. {{ doc.user.username }}</strong>
-                                <span style="color: var(--text-muted); font-size: 0.8rem;">{{ doc.user.email|default:"No email registered" }}</span>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button type="button" onclick="openEditStaffModal('{{ doc.user.id }}', '{{ doc.user.username }}', '{{ doc.user.email }}', 'doctor')" style="padding: 0.4rem 0.8rem; background: transparent; border: 1px solid #38bdf8; color: #38bdf8; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                    Edit
-                                </button>
-                                <form method="POST" onsubmit="return confirm('Dr. {{ doc.user.username }} ko delete karna chahte hain?');" style="margin: 0;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action_type" value="delete_staff">
-                                    <input type="hidden" name="user_id" value="{{ doc.user.id }}">
-                                    <button type="submit" style="padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    {% empty %}
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">No doctors registered.</p>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Receptionists Section -->
-            <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                <h3 style="margin-bottom: 1rem; color: #d8b4fe;">🧑‍💼 Receptionists ({{ receptionists.count }})</h3>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    {% for rec in receptionists %}
-                        <div style="padding: 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <strong style="color: #fff; display: block;">{{ rec.user.username }}</strong>
-                                <span style="color: var(--text-muted); font-size: 0.8rem;">{{ rec.user.email|default:"No email registered" }}</span>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button type="button" onclick="openEditStaffModal('{{ rec.user.id }}', '{{ rec.user.username }}', '{{ rec.user.email }}', 'receptionist')" style="padding: 0.4rem 0.8rem; background: transparent; border: 1px solid #d8b4fe; color: #d8b4fe; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                    Edit
-                                </button>
-                                <form method="POST" onsubmit="return confirm('Receptionist {{ rec.user.username }} ko delete karna chahte hain?');" style="margin: 0;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action_type" value="delete_staff">
-                                    <input type="hidden" name="user_id" value="{{ rec.user.id }}">
-                                    <button type="submit" style="padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    {% empty %}
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">No receptionists registered.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- TAB: DOCTOR SHIFTS TIMETABLE -->
-<div id="tab-shifts" class="oa-tab-content">
-    <h2 style="color: #fff; margin-bottom: 1.5rem;">Doctor Duty Shifts & Timing</h2>
-
-    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
-        <!-- Add Shift Form -->
-        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); height: fit-content;">
-            <h3 style="margin-bottom: 1rem; color: #fff;">Assign Shift Timing</h3>
-            
-            <!-- Explicit POST action target -->
-            <form method="POST" action="/dashboard/org-admin/?org={{ tenant.slug }}#tab-shifts" autocomplete="off">
-                {% csrf_token %}
-                <input type="hidden" name="action_type" value="save_doctor_shift">
-
-                <div style="margin-bottom: 1rem;">
-                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Select Doctor</label>
-                    <select name="doctor_id" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                        {% for doc in doctors %}
-                            <option value="{{ doc.user.id }}">Dr. {{ doc.user.username }}</option>
-                        {% empty %}
-                            <option disabled selected>Pehle 'Manage Staff' se Doctor add karein</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 1rem;">
-                    <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Day of Week</label>
-                    <select name="day_of_week" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                        <option value="0">Monday</option>
-                        <option value="1">Tuesday</option>
-                        <option value="2">Wednesday</option>
-                        <option value="3">Thursday</option>
-                        <option value="4">Friday</option>
-                        <option value="5">Saturday</option>
-                        <option value="6">Sunday</option>
-                    </select>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div>
-                        <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Duty Start</label>
-                        <input type="time" name="start_time" step="60" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted);">Duty End</label>
-                        <input type="time" name="end_time" step="60" required style="width: 100%; padding: 0.75rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                    </div>
-                </div>
-
-                <button type="submit" style="width: 100%; padding: 0.85rem; background: var(--accent-gold, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
-                    Save Shift Schedule
-                </button>
-            </form>
-        </div>
-
-        <!-- Weekly Roster Display -->
-        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
-            <h3 style="margin-bottom: 1rem; color: #fff;">Weekly Roster</h3>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                {% for sh in shifts %}
-                    <div style="padding: 0.75rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <strong style="color: #38bdf8;">Dr. {{ sh.doctor.username }}</strong>
-                            <div style="color: #cbd5e1; font-size: 0.85rem; margin-top: 0.2rem;">
-                                {{ sh.get_day_of_week_display }}: {{ sh.start_time|time:"g:i A" }} - {{ sh.end_time|time:"g:i A" }}
-                            </div>
-                        </div>
-                        <form method="POST" action="/dashboard/org-admin/?org={{ tenant.slug }}#tab-shifts" onsubmit="return confirm('Shift remove karni hai?');" style="margin: 0;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action_type" value="delete_doctor_shift">
-                            <input type="hidden" name="shift_id" value="{{ sh.id }}">
-                            <button type="submit" style="padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                Remove
-                            </button>
-                        </form>
-                    </div>
-                {% empty %}
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Abhi tak kisi doctor ki shifts configure nahi hui hain.</p>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-<!-- TAB: CLINIC REPORTS & EXPORT CENTER -->
-<div id="tab-reports" class="oa-tab-content">
-  <h2 style="color: #fff; margin-bottom: 0.5rem;">Clinic Reports &amp; Intelligence</h2>
-  <p class="oa-subtext" style="margin-bottom: 2rem;">Export verified records to CSV, audit data files, or generate downloadable management PDF summaries.</p>
-
-  <!-- Export Actions Grid -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-    <!-- Export Patients CSV -->
-    <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📄 Export Patients (CSV)</h3>
-        <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Download raw patient demographic records, memberships, credit balances, and enrollment dates.</p>
-      </div>
-      <a href="?org={{ tenant.slug }}&export=patients_csv" class="oa-btn oa-btn-outline" style="width: 100%; border-color: #38bdf8; color: #38bdf8;">
-        Export Patients CSV &darr;
-      </a>
-    </div>
-
-    <!-- Export Appointments CSV -->
-    <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📋 Export Appointments (CSV)</h3>
-        <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Download all historical and upcoming consultation logs with assigned doctors and credit costs.</p>
-      </div>
-      <a href="?org={{ tenant.slug }}&export=appointments_csv" class="oa-btn oa-btn-outline" style="width: 100%; border-color: #6ee7b7; color: #6ee7b7;">
-        Export Appointments CSV &darr;
-      </a>
-    </div>
-
-    <!-- Download Clinic Performance PDF -->
-    <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📑 Clinic Summary Report (PDF)</h3>
-        <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Print-ready A4 executive dossier containing revenue run-rates, patient counts, and doctor productivity.</p>
-      </div>
-      <a href="?org={{ tenant.slug }}&export=clinic_pdf" class="oa-btn oa-btn-primary" style="width: 100%;">
-        Download Executive PDF &darr;
-      </a>
-    </div>
-  </div>
-
-  <!-- Doctor Performance Matrix -->
-  <section class="oa-panel">
-    <div class="oa-panel-header">
-      <div>
-        <h3 class="oa-panel-title">👨‍⚕️ Doctor Productivity &amp; Caseload Matrix</h3>
-        <p class="oa-subtext" style="margin-top: 0.2rem;">Live breakdown of assigned appointments and fulfillment status per medical practitioner.</p>
-      </div>
-    </div>
-
-    <div class="oa-table-box">
-      <table class="oa-table">
-        <thead>
-          <tr>
-            <th>Practitioner</th>
-            <th>Email</th>
-            <th>Total Assigned</th>
-            <th>Currently In-Consultation</th>
-            <th>Completed Visits</th>
-            <th style="text-align: right;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for dp in doctor_performance %}
-          <tr>
-            <td style="font-weight: 700; color: #fff;">Dr. {{ dp.user.username }}</td>
-            <td style="color: var(--oa-muted);">{{ dp.user.email|default:"No email registered" }}</td>
-            <td style="font-weight: 700; color: #38bdf8;">{{ dp.total_assigned }} case(s)</td>
-            <td style="color: var(--oa-warning);">{{ dp.in_consult }} active</td>
-            <td style="font-weight: 700; color: var(--oa-success);">{{ dp.completed }} fulfilled</td>
-            <td style="text-align: right;">
-              <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">
-                Practicing
-              </span>
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No doctors registered in this clinic.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </section>
-</div>
-<!-- Modal: Edit Staff Member -->
-<div id="edit-staff-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: var(--bg-card); width: 100%; max-width: 440px; padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color); margin: auto; position: relative; top: 15%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-            <h3 style="margin: 0; color: #fff;">Edit Staff Member</h3>
-            <span onclick="closeEditStaffModal()" style="cursor: pointer; font-size: 1.5rem; color: var(--text-muted);">&times;</span>
-        </div>
-        <form method="POST" autocomplete="off">
+        <section class="oa-panel" style="margin-bottom: 0;">
+          <h3 style="margin-bottom: 1rem; color: #fff;">Add New Staff Member</h3>
+          <form method="POST" autocomplete="off">
             {% csrf_token %}
-            <input type="hidden" name="action_type" value="update_staff">
-            <input type="hidden" name="user_id" id="edit-staff-user-id">
+            <input type="hidden" name="action_type" value="create_staff">
             
-            <div style="margin-bottom: 1rem;">
-                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Username</label>
-                <input type="text" id="edit-staff-username" disabled style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-color); color: #888; border-radius: 4px;">
+            <div class="oa-form-group">
+              <label class="oa-form-label">Staff Role</label>
+              <select name="staff_role" required class="oa-input">
+                <option value="doctor">Doctor</option>
+                <option value="receptionist">Receptionist</option>
+              </select>
             </div>
             
-            <div style="margin-bottom: 1rem;">
-                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Role</label>
-                <select name="staff_role" id="edit-staff-role" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
-                    <option value="doctor">Doctor</option>
-                    <option value="receptionist">Receptionist</option>
-                </select>
+            <div class="oa-form-group">
+              <label class="oa-form-label">Username</label>
+              <input type="text" name="username" required autocomplete="off" placeholder="e.g. dr_ali" class="oa-input">
             </div>
             
-            <div style="margin-bottom: 1rem;">
-                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Email Address</label>
-                <input type="email" name="email" id="edit-staff-email" required style="width: 100%; padding: 0.65rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+            <div class="oa-form-group">
+              <label class="oa-form-label">Email (Credentials will be sent here)</label>
+              <input type="email" name="email" required autocomplete="off" placeholder="staff@example.com" class="oa-input">
             </div>
             
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">New Password (Khali chhor dein agar change nahi karna)</label>
-                <input type="password" name="password" autocomplete="new-password" placeholder="Leave blank to retain current" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); color: #fff; border: 1px solid var(--border-color); border-radius: 4px;">
+            <div class="oa-form-group">
+              <label class="oa-form-label">Temporary Password</label>
+              <input type="password" name="password" required autocomplete="new-password" placeholder="Min 8 characters" class="oa-input">
             </div>
             
-            <div style="display: flex; gap: 0.75rem;">
-                <button type="button" onclick="closeEditStaffModal()" style="flex: 1; padding: 0.75rem; background: transparent; border: 1px solid var(--border-color); color: #fff; border-radius: 4px; cursor: pointer;">Cancel</button>
-                <button type="submit" style="flex: 1; padding: 0.75rem; background: var(--accent-gold, #38bdf8); border: none; color: #000; font-weight: bold; border-radius: 4px; cursor: pointer;">Save Changes</button>
+            <button type="submit" class="oa-btn oa-btn-primary" style="width: 100%; margin-top: 0.5rem;">
+              Create &amp; Send Login Details
+            </button>
+          </form>
+        </section>
+
+        <!-- Staff List (Doctors & Receptionists) with Filter -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <!-- Doctors Section -->
+          <section class="oa-panel" style="margin-bottom: 0;">
+            <div class="oa-panel-header" style="margin-bottom: 0.85rem;">
+              <h3 style="margin: 0; color: #38bdf8; font-size: 1.1rem;">&#128138;&#8205;&#9877;&#65039; Doctors ({{ doctors.count }})</h3>
             </div>
-        </form>
+            <div class="oa-filter-bar" style="margin-bottom: 0.85rem;">
+              <div class="oa-filter-item" style="min-width: 100%;">
+                <input type="text" id="doctor-search-input" oninput="filterTableList('doctor-search-input', null, '.doctor-card', 'doctor-no-results')" placeholder="Search doctor username or email..." class="oa-input" style="min-height: 38px;">
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              {% for doc in doctors %}
+                <div class="oa-mobile-card doctor-card" style="padding: 0.85rem; flex-direction: row; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong style="color: #fff; display: block;">Dr. {{ doc.user.username }}</strong>
+                    <span style="color: var(--oa-muted); font-size: 0.8rem;">{{ doc.user.email|default:"No email registered" }}</span>
+                  </div>
+                  <div style="display: flex; gap: 0.4rem;">
+                    <button type="button" onclick="openEditStaffModal('{{ doc.user.id }}', '{{ doc.user.username }}', '{{ doc.user.email }}', 'doctor')" class="oa-btn oa-btn-outline" style="min-height: 32px; padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                      Edit
+                    </button>
+                    <form method="POST" onsubmit="return confirm('Dr. {{ doc.user.username }} ko delete karna chahte hain?');" style="margin: 0;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action_type" value="delete_staff">
+                      <input type="hidden" name="user_id" value="{{ doc.user.id }}">
+                      <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 32px; padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {% empty %}
+                <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0;">No doctors registered.</p>
+              {% endfor %}
+            </div>
+            <div id="doctor-no-results" class="oa-empty-filter-msg">No doctors match your search.</div>
+          </section>
+
+          <!-- Receptionists Section -->
+          <section class="oa-panel" style="margin-bottom: 0;">
+            <div class="oa-panel-header" style="margin-bottom: 0.85rem;">
+              <h3 style="margin: 0; color: #d8b4fe; font-size: 1.1rem;">&#128188; Receptionists ({{ receptionists.count }})</h3>
+            </div>
+            <div class="oa-filter-bar" style="margin-bottom: 0.85rem;">
+              <div class="oa-filter-item" style="min-width: 100%;">
+                <input type="text" id="receptionist-search-input" oninput="filterTableList('receptionist-search-input', null, '.receptionist-card', 'receptionist-no-results')" placeholder="Search receptionist username or email..." class="oa-input" style="min-height: 38px;">
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              {% for rec in receptionists %}
+                <div class="oa-mobile-card receptionist-card" style="padding: 0.85rem; flex-direction: row; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong style="color: #fff; display: block;">{{ rec.user.username }}</strong>
+                    <span style="color: var(--oa-muted); font-size: 0.8rem;">{{ rec.user.email|default:"No email registered" }}</span>
+                  </div>
+                  <div style="display: flex; gap: 0.4rem;">
+                    <button type="button" onclick="openEditStaffModal('{{ rec.user.id }}', '{{ rec.user.username }}', '{{ rec.user.email }}', 'receptionist')" class="oa-btn oa-btn-outline" style="min-height: 32px; padding: 0.3rem 0.65rem; font-size: 0.78rem; border-color: #d8b4fe; color: #d8b4fe;">
+                      Edit
+                    </button>
+                    <form method="POST" onsubmit="return confirm('Receptionist {{ rec.user.username }} ko delete karna chahte hain?');" style="margin: 0;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action_type" value="delete_staff">
+                      <input type="hidden" name="user_id" value="{{ rec.user.id }}">
+                      <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 32px; padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {% empty %}
+                <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0;">No receptionists registered.</p>
+              {% endfor %}
+            </div>
+            <div id="receptionist-no-results" class="oa-empty-filter-msg">No receptionists match your search.</div>
+          </section>
+        </div>
+      </div>
     </div>
-</div>
 
+    <!-- TAB: DOCTOR SHIFTS TIMETABLE -->
+    <div id="tab-shifts" class="oa-tab-content">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 1.5rem; align-items: start;">
+        <!-- Add Shift Form -->
+        <section class="oa-panel" style="margin-bottom: 0;">
+          <h3 style="margin-bottom: 1rem; color: #fff;">Assign Shift Timing</h3>
+          
+          <form method="POST" action="/dashboard/org-admin/?org={{ tenant.slug }}#tab-shifts" autocomplete="off">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="save_doctor_shift">
 
+            <div class="oa-form-group">
+              <label class="oa-form-label">Select Doctor</label>
+              <select name="doctor_id" required class="oa-input">
+                {% for doc in doctors %}
+                  <option value="{{ doc.user.id }}">Dr. {{ doc.user.username }}</option>
+                {% empty %}
+                  <option disabled selected>Pehle 'Manage Staff' se Doctor add karein</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="oa-form-group">
+              <label class="oa-form-label">Day of Week</label>
+              <select name="day_of_week" required class="oa-input">
+                <option value="0">Monday</option>
+                <option value="1">Tuesday</option>
+                <option value="2">Wednesday</option>
+                <option value="3">Thursday</option>
+                <option value="4">Friday</option>
+                <option value="5">Saturday</option>
+                <option value="6">Sunday</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;" class="oa-form-group">
+              <div>
+                <label class="oa-form-label">Duty Start</label>
+                <input type="time" name="start_time" step="60" required class="oa-input">
+              </div>
+              <div>
+                <label class="oa-form-label">Duty End</label>
+                <input type="time" name="end_time" step="60" required class="oa-input">
+              </div>
+            </div>
+
+            <button type="submit" class="oa-btn oa-btn-primary" style="width: 100%; margin-top: 0.5rem;">
+              Save Shift Schedule
+            </button>
+          </form>
+        </section>
+
+        <!-- Weekly Roster Display with Filter -->
+        <section class="oa-panel" style="margin-bottom: 0;">
+          <div class="oa-panel-header" style="margin-bottom: 0.85rem;">
+            <h3 style="margin: 0; color: #fff;">Weekly Roster</h3>
+          </div>
+          <div class="oa-filter-bar" style="margin-bottom: 0.85rem;">
+            <div class="oa-filter-item" style="min-width: 100%;">
+              <input type="text" id="shift-search-input" oninput="filterTableList('shift-search-input', null, '.shift-row', 'shift-no-results')" placeholder="Search doctor name or day..." class="oa-input" style="min-height: 38px;">
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for sh in shifts %}
+              <div class="oa-mobile-card shift-row" style="padding: 0.85rem; flex-direction: row; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong style="color: #38bdf8;">Dr. {{ sh.doctor.username }}</strong>
+                  <div style="color: #cbd5e1; font-size: 0.82rem; margin-top: 0.15rem;">
+                    {{ sh.get_day_of_week_display }}: {{ sh.start_time|time:"g:i A" }} &ndash; {{ sh.end_time|time:"g:i A" }}
+                  </div>
+                </div>
+                <form method="POST" action="/dashboard/org-admin/?org={{ tenant.slug }}#tab-shifts" onsubmit="return confirm('Shift remove karni hai?');" style="margin: 0;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action_type" value="delete_doctor_shift">
+                  <input type="hidden" name="shift_id" value="{{ sh.id }}">
+                  <button type="submit" class="oa-btn oa-btn-danger" style="min-height: 32px; padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                    Remove
+                  </button>
+                </form>
+              </div>
+            {% empty %}
+              <p style="color: var(--oa-muted); font-size: 0.85rem;">Abhi tak kisi doctor ki shifts configure nahi hui hain.</p>
+            {% endfor %}
+          </div>
+          <div id="shift-no-results" class="oa-empty-filter-msg">No shifts match your search criteria.</div>
+        </section>
+      </div>
+    </div>
+
+    <!-- TAB: CLINIC REPORTS & EXPORT CENTER -->
+    <div id="tab-reports" class="oa-tab-content">
+      <h2 style="color: #fff; margin-bottom: 0.5rem;">Clinic Reports &amp; Intelligence</h2>
+      <p class="oa-subtext" style="margin-bottom: 2rem;">Export verified records to CSV, audit data files, or generate downloadable management PDF summaries.</p>
+
+      <!-- Export Actions Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📄 Export Patients (CSV)</h3>
+            <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Download raw patient demographic records, memberships, credit balances, and enrollment dates.</p>
+          </div>
+          <a href="?org={{ tenant.slug }}&export=patients_csv" class="oa-btn oa-btn-outline" style="width: 100%; border-color: #38bdf8; color: #38bdf8;">
+            Export Patients CSV &darr;
+          </a>
+        </div>
+
+        <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📋 Export Appointments (CSV)</h3>
+            <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Download all historical and upcoming consultation logs with assigned doctors and credit costs.</p>
+          </div>
+          <a href="?org={{ tenant.slug }}&export=appointments_csv" class="oa-btn oa-btn-outline" style="width: 100%; border-color: #6ee7b7; color: #6ee7b7;">
+            Export Appointments CSV &darr;
+          </a>
+        </div>
+
+        <div style="background: var(--oa-card); border: 1px solid var(--oa-border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="color: #fff; margin: 0 0 0.5rem; font-size: 1.15rem;">📑 Clinic Summary Report (PDF)</h3>
+            <p style="color: var(--oa-muted); font-size: 0.85rem; margin: 0 0 1.25rem;">Print-ready A4 executive dossier containing revenue run-rates, patient counts, and doctor productivity.</p>
+          </div>
+          <a href="?org={{ tenant.slug }}&export=clinic_pdf" class="oa-btn oa-btn-primary" style="width: 100%;">
+            Download Executive PDF &darr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Doctor Performance Matrix -->
+      <section class="oa-panel">
+        <div class="oa-panel-header">
+          <div>
+            <h3 class="oa-panel-title">&#128138;&#8205;&#9877;&#65039; Doctor Productivity &amp; Caseload Matrix</h3>
+            <p class="oa-subtext" style="margin-top: 0.2rem;">Live breakdown of assigned appointments and fulfillment status per medical practitioner.</p>
+          </div>
+        </div>
+
+        <div class="oa-table-box">
+          <table class="oa-table">
+            <thead>
+              <tr>
+                <th>Practitioner</th>
+                <th>Email</th>
+                <th>Total Assigned</th>
+                <th>Currently In-Consultation</th>
+                <th>Completed Visits</th>
+                <th style="text-align: right;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for dp in doctor_performance %}
+              <tr>
+                <td style="font-weight: 700; color: #fff;">Dr. {{ dp.user.username }}</td>
+                <td style="color: var(--oa-muted);">{{ dp.user.email|default:"No email registered" }}</td>
+                <td style="font-weight: 700; color: #38bdf8;">{{ dp.total_assigned }} case(s)</td>
+                <td style="color: var(--oa-warning);">{{ dp.in_consult }} active</td>
+                <td style="font-weight: 700; color: var(--oa-success);">{{ dp.completed }} fulfilled</td>
+                <td style="text-align: right;">
+                  <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">
+                    Practicing
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" style="text-align: center; color: var(--oa-muted); padding: 1.5rem;">No doctors registered in this clinic.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
 
   </main>
+</div>
+
+<!-- Modal: Edit Staff Member -->
+<div id="edit-staff-modal" class="oa-modal-overlay">
+  <div class="oa-modal-sheet" style="max-width: 440px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--oa-border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+      <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Edit Staff Member</h3>
+      <span onclick="closeEditStaffModal()" style="cursor: pointer; font-size: 1.6rem; color: var(--oa-muted);">&times;</span>
+    </div>
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="update_staff">
+      <input type="hidden" name="user_id" id="edit-staff-user-id">
+      
+      <div class="oa-form-group">
+        <label class="oa-form-label">Username</label>
+        <input type="text" id="edit-staff-username" disabled class="oa-input" style="color: #888;">
+      </div>
+      
+      <div class="oa-form-group">
+        <label class="oa-form-label">Role</label>
+        <select name="staff_role" id="edit-staff-role" class="oa-input">
+          <option value="doctor">Doctor</option>
+          <option value="receptionist">Receptionist</option>
+        </select>
+      </div>
+      
+      <div class="oa-form-group">
+        <label class="oa-form-label">Email Address</label>
+        <input type="email" name="email" id="edit-staff-email" required class="oa-input">
+      </div>
+      
+      <div class="oa-form-group">
+        <label class="oa-form-label">New Password (Leave blank to retain current)</label>
+        <input type="password" name="password" autocomplete="new-password" placeholder="Leave blank to retain current" class="oa-input">
+      </div>
+      
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+        <button type="button" onclick="closeEditStaffModal()" class="oa-btn oa-btn-outline" style="flex: 1;">Cancel</button>
+        <button type="submit" class="oa-btn oa-btn-primary" style="flex: 1;">Save Changes</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Modals for Ledger, Services, Plans -->
@@ -1375,70 +1588,139 @@
 </div>
 
 <script>
-function toggleSidebar() {
-  const sidebar = document.getElementById('app-sidebar');
-  const backdrop = document.getElementById('sidebar-backdrop');
-  sidebar.classList.toggle('open');
-  backdrop.classList.toggle('open');
-}
-
-function activateSection(targetId) {
-  // Update nav buttons
-  document.querySelectorAll('.oa-nav-item').forEach(btn => btn.classList.remove('active'));
-  
-  // Find matching button or use event target
-  const clickedBtn = document.querySelector(`button[onclick*="'${targetId}'"]`);
-  if (clickedBtn) {
-    clickedBtn.classList.add('active');
+  function syncOaBodyScrollLock() {
+    const sidebarOpen = document.getElementById('app-sidebar')?.classList.contains('open');
+    const anyModalOpen = Array.from(document.querySelectorAll('.oa-modal-overlay, #edit-staff-modal')).some(
+      m => m.style.display === 'flex' || m.style.display === 'block'
+    );
+    document.body.classList.toggle('oa-no-scroll', Boolean(sidebarOpen || anyModalOpen));
   }
 
-  // Switch panels
-  document.querySelectorAll('.oa-tab-content').forEach(section => section.classList.remove('active'));
-  const target = document.getElementById(targetId);
-  if (target) {
-    target.classList.add('active');
-  }
-
-  // Update URL hash for direct bookmarking/navigation
-  window.location.hash = targetId;
-
-  if (window.innerWidth <= 1024) {
+  function toggleSidebar() {
     const sidebar = document.getElementById('app-sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
-    if (sidebar.classList.contains('open')) {
-      sidebar.classList.remove('open');
-      backdrop.classList.remove('open');
+    sidebar.classList.toggle('open');
+    backdrop.classList.toggle('open');
+    syncOaBodyScrollLock();
+  }
+
+  function activateSection(targetId) {
+    sessionStorage.setItem('oa_active_tab', targetId);
+
+    document.querySelectorAll('.oa-nav-item').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.querySelector(`button[onclick*="'${targetId}'"]`);
+    if (clickedBtn) {
+      clickedBtn.classList.add('active');
+    }
+
+    document.querySelectorAll('.oa-tab-content').forEach(section => section.classList.remove('active'));
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.classList.add('active');
+    }
+
+    window.location.hash = targetId;
+
+    if (window.innerWidth <= 1024) {
+      const sidebar = document.getElementById('app-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (sidebar && sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('open');
+      }
+    }
+    syncOaBodyScrollLock();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Auto-navigate to hash tab or session tab
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    const savedTab = sessionStorage.getItem('oa_active_tab');
+    const targetTab = hash || savedTab;
+    if (targetTab && document.getElementById(targetTab)) {
+      activateSection(targetTab);
+    }
+  });
+
+  /* ========================================================
+     UNIVERSAL TABLE LIST FILTER (SEARCH + SELECT)
+     ======================================================== */
+  function filterTableList(searchId, selectId, rowSelector, emptyMsgId) {
+    const query = (document.getElementById(searchId)?.value || '').toLowerCase().trim();
+    const selectVal = selectId ? (document.getElementById(selectId)?.value || 'all').toLowerCase().trim() : 'all';
+    const rows = document.querySelectorAll(rowSelector);
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const textMatch = row.innerText.toLowerCase().includes(query);
+      const rowStatus = (row.dataset.status || '').toLowerCase();
+      const selectMatch = selectVal === 'all' || rowStatus.includes(selectVal);
+
+      const isVisible = textMatch && selectMatch;
+      row.style.display = isVisible ? '' : 'none';
+      if (isVisible) visibleCount++;
+    });
+
+    const emptyMsg = document.getElementById(emptyMsgId);
+    if (emptyMsg) {
+      emptyMsg.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
     }
   }
-}
 
-// Auto-navigate to hash tab if present in URL (e.g. redirected from notification)
-window.addEventListener('DOMContentLoaded', () => {
-  const hash = window.location.hash.replace('#', '');
-  if (hash && document.getElementById(hash)) {
-    activateSection(hash);
+  function resetFilters(searchId, selectId, filterFn, ...args) {
+    const sInput = document.getElementById(searchId);
+    const selInput = selectId ? document.getElementById(selectId) : null;
+    if (sInput) sInput.value = '';
+    if (selInput) selInput.value = 'all';
+    filterFn(...args);
   }
-});
 
-function openLedgerModal(id) {
-  const m = document.getElementById(id);
-  if (m) m.style.display = 'flex';
-}
+  function openLedgerModal(id) {
+    const m = document.getElementById(id);
+    if (m) {
+      m.style.display = 'flex';
+      syncOaBodyScrollLock();
+    }
+  }
 
-function closeLedgerModal(id) {
-  const m = document.getElementById(id);
-  if (m) m.style.display = 'none';
-}
-function openEditStaffModal(id, username, email, role) {
+  function closeLedgerModal(id) {
+    const m = document.getElementById(id);
+    if (m) {
+      m.style.display = 'none';
+      syncOaBodyScrollLock();
+    }
+  }
+
+  function openEditStaffModal(id, username, email, role) {
     document.getElementById('edit-staff-user-id').value = id;
     document.getElementById('edit-staff-username').value = username;
     document.getElementById('edit-staff-email').value = email;
     document.getElementById('edit-staff-role').value = role;
-    document.getElementById('edit-staff-modal').style.display = 'block';
-}
+    const modal = document.getElementById('edit-staff-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+      syncOaBodyScrollLock();
+    }
+  }
 
-function closeEditStaffModal() {
-    document.getElementById('edit-staff-modal').style.display = 'none';
-}
+  function closeEditStaffModal() {
+    const modal = document.getElementById('edit-staff-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      syncOaBodyScrollLock();
+    }
+  }
+
+  // Close modals on backdrop click
+  document.querySelectorAll('.oa-modal-overlay, #edit-staff-modal').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        overlay.style.display = 'none';
+        syncOaBodyScrollLock();
+      }
+    });
+  });
 </script>
 {% endblock %}

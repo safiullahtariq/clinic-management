@@ -263,7 +263,8 @@
     color: #000;
     border-color: var(--mem-accent);
   }
-/* Slot Status Badges & Buttons */
+
+  /* Slot Status Badges & Buttons */
   .slot-btn {
     padding: 0.65rem 1rem;
     border-radius: 6px;
@@ -302,17 +303,107 @@
     opacity: 0.6;
     pointer-events: none;
   }
+
+  /* ================= RESPONSIVE LAYER ================= */
+  .mem-app-layout, .mem-app-layout * { box-sizing: border-box; }
+  .mem-app-layout { min-height: calc(100vh - 70px); min-height: calc(100dvh - 70px); }
+  .mem-stage { width: 100%; max-width: 1600px; margin-inline: auto; }
+
+  /* Membership cards grid (never overflows narrow screens) */
+  .mem-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+  }
+
+  /* Form fields: touch-friendly, 16px stops iOS zoom-on-focus */
+  .mem-field { width: 100%; min-height: 44px; font-size: 16px; }
+
+  /* Slots */
+  .mem-slots { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+  .slot-btn { min-height: 44px; max-width: 100%; }
+
+  /* Tables: scroll on tablets */
+  .mem-table-box { -webkit-overflow-scrolling: touch; }
+  .mem-table { min-width: 720px; }
+
+  /* Clinical history card header wraps instead of overflowing */
+  .mem-history-head { flex-wrap: wrap; gap: 0.4rem 1rem; }
+
+  /* ---------- Tablet & below ---------- */
   @media (max-width: 1024px) {
-    .mem-mobile-topbar { display: flex; }
+    .mem-mobile-topbar { display: flex; top: 0; padding-top: max(0.85rem, env(safe-area-inset-top)); }
     .mem-sidebar {
       position: fixed;
       top: 0; bottom: 0; left: 0;
+      width: min(var(--sidebar-w), 85vw);
       transform: translateX(-100%);
       height: 100vh;
+      height: 100dvh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .mem-sidebar.open { transform: translateX(0); }
     .mem-sidebar-backdrop.open { display: block; }
+    .mem-nav-item { min-height: 44px; }
+  }
+
+  /* ---------- Phones / small tablets ---------- */
+  @media (max-width: 768px) {
+    .mem-stage { padding: 0.85rem; }
+    .mem-panel { padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+    .mem-panel-header { flex-direction: column; align-items: stretch; }
+    .mem-panel-header .mem-btn { width: 100%; }
+    .mem-history-head { flex-direction: column; align-items: flex-start !important; }
+
+    /* Table -> stacked cards */
+    .mem-table-box { border: none; overflow-x: visible; }
+    .mem-table { min-width: 0; }
+    .mem-table thead { display: none; }
+    .mem-table, .mem-table tbody, .mem-table tr { display: block; width: 100%; }
+    .mem-table tbody tr {
+      padding: 0.75rem;
+      margin-bottom: 0.85rem;
+      border: 1px solid var(--mem-border);
+      border-radius: 8px;
+      background: var(--mem-surface);
+    }
+    .mem-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding: 0.4rem 0 !important;
+      text-align: right !important;
+    }
+    .mem-table td::before {
+      content: attr(data-label);
+      flex-shrink: 0;
+      color: var(--mem-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: left;
+    }
+    .mem-table td[colspan] { display: block; text-align: center !important; }
+    .mem-table td[colspan]::before { content: none; }
+    .mem-table td .mem-btn { min-height: 40px !important; width: 100%; }
+  }
+
+  /* ---------- Small phones ---------- */
+  @media (max-width: 480px) {
+    .mem-sidebar { padding: 1rem 0.85rem; }
+    .mem-slots { padding: 0.75rem !important; gap: 0.5rem; }
+    .slot-btn { flex: 1 1 calc(50% - 0.5rem); justify-content: center; padding: 0.6rem 0.5rem; font-size: 0.8rem; }
+    .mem-btn { white-space: normal; text-align: center; }
+  }
+
+  /* Large screens */
+  @media (min-width: 1600px) {
+    .mem-stage { padding: 3rem; }
   }
 </style>
 {% endblock %}
@@ -390,7 +481,7 @@
           </a>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+        <div class="mem-cards-grid">
           {% for mem in all_user_memberships %}
           <div style="background: var(--mem-surface); border: 1px solid {% if mem.status == 'active' %}var(--mem-accent){% elif mem.status == 'pending_deposit' %}var(--mem-warning){% else %}rgba(255, 255, 255, 0.2){% endif %}; padding: 1.5rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; position: relative;">
             <div>
@@ -494,7 +585,7 @@
               <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.4rem; font-weight: 700;">
                 1. Select Service / Modality
               </label>
-              <select id="book-resource" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px;">
+              <select id="book-resource" class="mem-field" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px;">
                 <option value="" disabled selected>-- Choose Service --</option>
                 {% for r in resources %}
                   <option value="{{ r.id }}" data-cost="{{ r.credit_cost }}" data-duration="{{ r.duration_minutes }}">
@@ -511,7 +602,7 @@
               <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.4rem; font-weight: 700;">
                 2. Select Doctor
               </label>
-              <select id="book-doctor" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px;">
+              <select id="book-doctor" class="mem-field" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px;">
                 <option value="" disabled selected>-- Choose Doctor --</option>
                 {% for d in doctors %}
                   <option value="{{ d.user.id }}">Dr. {{ d.user.username }}</option>
@@ -526,7 +617,7 @@
               <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.4rem; font-weight: 700;">
                 3. Choose Appointment Date
               </label>
-              <input type="date" id="book-date" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px; box-sizing: border-box;">
+              <input type="date" id="book-date" class="mem-field" required onchange="handleSchedulerFilterChange()" style="width: 100%; padding: 0.75rem; background: var(--mem-surface); color: #fff; border: 1px solid var(--mem-border); border-radius: 6px; box-sizing: border-box;">
             </div>
 
             <!-- Available Empty Slots Box -->
@@ -534,7 +625,7 @@
               <label style="display: block; font-size: 0.85rem; color: var(--mem-muted); margin-bottom: 0.6rem; font-weight: 700;">
                 Available Time Slots (Empty &amp; Unbooked)
               </label>
-              <div id="slots-container" style="display: flex; flex-wrap: wrap; gap: 0.65rem; min-height: 48px; align-items: center; background: var(--mem-surface); padding: 1rem; border-radius: 6px; border: 1px solid var(--mem-border);">
+              <div id="slots-container" class="mem-slots" style="display: flex; flex-wrap: wrap; gap: 0.65rem; min-height: 48px; align-items: center; background: var(--mem-surface); padding: 1rem; border-radius: 6px; border: 1px solid var(--mem-border);">
                 <span style="color: var(--mem-muted); font-size: 0.85rem;">Select doctor, service, and date above to load free slots.</span>
               </div>
             </div>
@@ -586,12 +677,12 @@
             <tbody>
               {% for b in bookings %}
               <tr>
-                <td style="font-weight: 700; color: #fff;">{{ b.resource.name }}</td>
-                <td style="color: var(--mem-accent);">Dr. {{ b.doctor.username|default:"Unassigned" }}</td>
-                <td style="color: #cbd5e1;">{{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}</td>
-                <td style="font-weight: 700; color: var(--mem-accent);">{{ b.credits_used }} cr</td>
+                <td data-label="Service" style="font-weight: 700; color: #fff;">{{ b.resource.name }}</td>
+                <td data-label="Doctor" style="color: var(--mem-accent);">Dr. {{ b.doctor.username|default:"Unassigned" }}</td>
+                <td data-label="When" style="color: #cbd5e1;">{{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}</td>
+                <td data-label="Credits" style="font-weight: 700; color: var(--mem-accent);">{{ b.credits_used }} cr</td>
                 <!-- Status Badge Column -->
-                <td>
+                <td data-label="Status">
                   {% if b.status == 'pending' %}
                     <span style="padding: 0.22rem 0.55rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem; background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3);">
                       &#9679; Scheduled
@@ -616,7 +707,7 @@
                 </td>
 
                 <!-- Action Column -->
-                <td style="text-align: right;">
+                <td data-label="Action" style="text-align: right;">
                   {% if b.status in 'pending,waiting' %}
                     <button onclick="cancelBooking('{{ b.id }}')" class="mem-btn mem-btn-danger" style="min-height: 30px; font-size: 0.75rem; padding: 0.25rem 0.6rem;">
                       Cancel &amp; Refund
@@ -659,7 +750,7 @@
           {% for b in bookings %}
             {% if b.clinical_note and b.clinical_note.patient_notes %}
             <div style="background: var(--mem-surface); border: 1px solid var(--mem-border); border-radius: 8px; padding: 1.25rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mem-border); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+              <div class="mem-history-head" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mem-border); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
                 <div>
                   <strong style="color: #fff; font-size: 1.05rem;">{{ b.resource.name }}</strong>
                   <span style="color: var(--mem-muted); font-size: 0.85rem; margin-left: 0.5rem;">Dr. {{ b.doctor.username }}</span>

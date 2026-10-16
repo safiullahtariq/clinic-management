@@ -24,11 +24,19 @@
     max-width: 100vw;
     overflow-x: hidden;
     background-color: var(--sa-bg);
+    margin: 0;
+    padding: 0;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.sa-no-scroll {
+    overflow: hidden;
   }
 
   .sa-app-layout {
     display: flex;
     min-height: calc(100vh - 70px);
+    min-height: calc(100dvh - 70px);
     position: relative;
     width: 100%;
   }
@@ -48,6 +56,27 @@
     z-index: 1050;
   }
 
+  .sa-sidebar-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .sa-sidebar-close-btn {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--sa-border);
+    color: var(--sa-muted);
+    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+  }
+
   .sa-sidebar-brand {
     padding-bottom: 1.25rem;
     border-bottom: 1px solid var(--sa-border);
@@ -63,7 +92,7 @@
   }
 
   .sa-sidebar-title {
-    font-size: 1.7rem;
+    font-size: clamp(1.35rem, 2vw, 1.7rem);
     font-weight: 800;
     color: var(--sa-text);
     margin: 0.2rem 0 0;
@@ -96,6 +125,7 @@
     text-align: left;
     transition: all 0.2s;
     box-sizing: border-box;
+    min-height: 44px;
   }
 
   .sa-nav-item:hover {
@@ -117,13 +147,25 @@
     padding: 0.15rem 0.5rem;
     border-radius: 10px;
     font-weight: 700;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+  }
+
+  .sa-sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--sa-border);
   }
 
   /* Right Stage */
   .sa-stage {
     flex-grow: 1;
     min-width: 0;
-    padding: clamp(1rem, 2.5vw, 2.5rem);
+    width: 100%;
+    padding: clamp(0.85rem, 2.5vw, 2.5rem);
     box-sizing: border-box;
   }
 
@@ -132,7 +174,7 @@
     display: none;
     align-items: center;
     justify-content: space-between;
-    padding: 0.85rem 1rem;
+    padding: 0.75rem 1rem;
     background: var(--sa-sidebar-bg);
     border-bottom: 1px solid var(--sa-border);
     position: sticky;
@@ -152,7 +194,7 @@
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 42px;
   }
 
   .sa-sidebar-backdrop {
@@ -176,10 +218,11 @@
     background: var(--sa-card);
     border: 1px solid var(--sa-border);
     border-radius: 8px;
-    padding: 1.25rem 1rem;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-width: 0;
   }
 
   .sa-stat-label {
@@ -191,46 +234,97 @@
   }
 
   .sa-stat-val {
-    font-size: clamp(1.6rem, 2.2vw, 2.2rem);
-    font-weight: 800;
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    font-weight: 900;
     line-height: 1.15;
-    margin: 0.35rem 0 0.15rem;
+    margin: 0.4rem 0 0.2rem;
+    word-break: break-word;
   }
 
   .sa-subtext {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--sa-muted);
+    line-height: 1.4;
   }
 
-  /* Panels */
+  /* Panels & Grids */
   .sa-panel {
     background: var(--sa-card);
     border: 1px solid var(--sa-border);
     border-radius: 8px;
     padding: clamp(1rem, 2vw, 1.75rem);
     margin-bottom: 1.5rem;
+    box-sizing: border-box;
   }
 
   .sa-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
-    gap: 0.75rem;
+    margin-bottom: 1.15rem;
+    gap: 0.85rem;
     flex-wrap: wrap;
   }
 
   .sa-panel-title {
-    font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+    font-size: clamp(1.1rem, 1.8vw, 1.35rem);
     font-weight: 700;
     color: #fff;
     margin: 0;
+    line-height: 1.3;
+  }
+
+  /* Universal Filter Bar */
+  .sa-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    background: var(--sa-surface);
+    border: 1px solid var(--sa-border);
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+  }
+
+  .sa-filter-item {
+    flex: 1;
+    min-width: 190px;
+  }
+
+  .sa-filter-select {
+    flex: 0 1 220px;
+    min-width: 170px;
+  }
+
+  .sa-filter-reset {
+    min-height: 40px !important;
+    padding: 0.4rem 0.85rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .sa-empty-filter-msg {
+    display: none;
+    text-align: center;
+    color: var(--sa-muted);
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+    border: 1px dashed var(--sa-border);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+  }
+
+  .sa-clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
   }
 
   /* Tables vs. Mobile Cards */
   .sa-table-box {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border-radius: 6px;
     border: 1px solid var(--sa-border);
   }
@@ -243,7 +337,8 @@
   }
 
   .sa-table th, .sa-table td {
-    padding: 0.8rem;
+    padding: 0.85rem;
+    vertical-align: middle;
   }
 
   .sa-table thead tr {
@@ -252,16 +347,21 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    background: rgba(255, 255, 255, 0.01);
   }
 
   .sa-table tbody tr {
     border-bottom: 1px solid var(--sa-border-light);
   }
 
+  .sa-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
   .sa-mobile-cards-list {
     display: none;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.85rem;
   }
 
   .sa-mobile-card {
@@ -272,13 +372,26 @@
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
+    box-sizing: border-box;
   }
 
   .sa-card-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
     font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .sa-card-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.65rem;
+    border-radius: 6px;
+    border: 1px solid var(--sa-border-light);
   }
 
   /* Buttons & Form Controls */
@@ -295,7 +408,8 @@
     text-decoration: none;
     border: none;
     box-sizing: border-box;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background 0.2s;
+    white-space: nowrap;
   }
 
   .sa-btn-primary {
@@ -335,14 +449,14 @@
 
   .sa-input {
     width: 100%;
-    background: var(--sa-surface);
+    background: var(--sa-bg);
     border: 1px solid var(--sa-border);
     color: #fff;
-    padding: 0.75rem;
+    padding: 0.65rem 0.75rem;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     box-sizing: border-box;
-    min-height: 44px;
+    min-height: 40px;
     outline: none;
   }
 
@@ -352,7 +466,7 @@
 
   .toggle-password-btn {
     position: absolute;
-    right: 12px;
+    right: 10px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -360,7 +474,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 0.35rem;
+    min-width: 34px;
+    min-height: 34px;
   }
 
   .toggle-password-btn:hover {
@@ -384,14 +500,36 @@
   .sa-modal-sheet {
     background: var(--sa-card);
     border: 1px solid var(--sa-border);
-    border-radius: 8px;
+    border-radius: 10px;
     width: 100%;
     max-width: 520px;
-    max-height: 85vh;
+    max-height: 88vh;
+    max-height: 88dvh;
     overflow-y: auto;
-    padding: clamp(1.2rem, 3vw, 2rem);
+    -webkit-overflow-scrolling: touch;
+    padding: clamp(1.15rem, 3vw, 2rem);
     box-sizing: border-box;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  }
+
+  .sa-modal-actions {
+    display: flex;
+    gap: 0.65rem;
+    margin-top: 0.5rem;
+  }
+
+  .sa-color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sa-font-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 
   /* Tab View Visibility */
@@ -404,7 +542,7 @@
   }
 
   /* ========================================================
-     BREAKPOINTS: RESPONSIVE BEHAVIOR
+     BREAKPOINTS: RESPONSIVE BEHAVIOR (ALL DEVICES)
      ======================================================== */
   @media (max-width: 1024px) {
     .sa-mobile-topbar {
@@ -416,13 +554,20 @@
       top: 0;
       bottom: 0;
       left: 0;
+      width: min(280px, 85vw);
       transform: translateX(-100%);
       height: 100vh;
+      height: 100dvh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .sa-sidebar.open {
       transform: translateX(0);
+    }
+
+    .sa-sidebar-close-btn {
+      display: inline-flex;
     }
 
     .sa-sidebar-backdrop.open {
@@ -431,12 +576,39 @@
   }
 
   @media (max-width: 768px) {
+    .sa-metrics-row {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
     .sa-table-box {
       display: none;
     }
 
     .sa-mobile-cards-list {
       display: flex;
+    }
+
+    .sa-panel-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .sa-panel-header .sa-btn {
+      width: 100%;
+    }
+
+    .sa-filter-bar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.6rem;
+    }
+
+    .sa-filter-item,
+    .sa-filter-select,
+    .sa-filter-reset {
+      width: 100%;
+      flex: none;
     }
 
     .sa-modal-overlay {
@@ -446,8 +618,45 @@
 
     .sa-modal-sheet {
       border-radius: 16px 16px 0 0;
-      max-height: 90vh;
-      padding: 1.5rem 1.15rem;
+      max-width: 100% !important;
+      max-height: 92vh;
+      max-height: 92dvh;
+      padding: 1.35rem 1.1rem calc(1.35rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Prevent iOS Safari zoom on input focus */
+    .sa-input, select.sa-input {
+      font-size: 16px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sa-metrics-row {
+      grid-template-columns: 1fr;
+    }
+
+    .sa-clubs-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sa-color-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sa-font-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sa-modal-actions {
+      flex-direction: column-reverse;
+    }
+
+    .sa-modal-actions .sa-btn {
+      width: 100%;
+    }
+
+    .sa-stat-card {
+      padding: 1rem;
     }
   }
 </style>
@@ -456,7 +665,7 @@
 {% block content %}
 <!-- Mobile Top Navigation Bar -->
 <div class="sa-mobile-topbar">
-  <button type="button" class="sa-hamburger-btn" onclick="toggleSidebar()">
+  <button type="button" class="sa-hamburger-btn" onclick="toggleSidebar()" aria-label="Open navigation menu">
     <span>&#9776;</span>
     <span>Menu</span>
   </button>
@@ -473,44 +682,48 @@
   <aside id="app-sidebar" class="sa-sidebar">
     <div>
       <div class="sa-sidebar-brand">
-        <div class="sa-sidebar-badge">Platform Governance</div>
-        <h2 class="sa-sidebar-title">Master Console</h2>
+        <div class="sa-sidebar-header-top">
+          <div>
+            <div class="sa-sidebar-badge">Platform Governance</div>
+            <h2 class="sa-sidebar-title">Master Console</h2>
+          </div>
+          <button type="button" class="sa-sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close sidebar">&times;</button>
+        </div>
       </div>
 
       <nav>
         <ul class="sa-nav-list">
           <li>
-            <button type="button" class="sa-nav-item active" onclick="activateSection('tab-overview')">
+            <button type="button" id="nav-btn-overview" class="sa-nav-item active" onclick="activateSection('tab-overview', this)">
               <span>Overview</span>
             </button>
           </li>
           <li>
-            <button type="button" class="sa-nav-item" onclick="activateSection('tab-clubs')">
+            <button type="button" id="nav-btn-clubs" class="sa-nav-item" onclick="activateSection('tab-clubs', this)">
               <span>Clinics</span>
               <span class="sa-nav-badge">{{ total_clubs }}</span>
             </button>
           </li>
           <li>
-            <button type="button" class="sa-nav-item" onclick="activateSection('tab-members')">
+            <button type="button" id="nav-btn-members" class="sa-nav-item" onclick="activateSection('tab-members', this)">
               <span>Members/patients</span>
               <span class="sa-nav-badge">{{ total_members }}</span>
             </button>
           </li>
           <li>
-            <button type="button" class="sa-nav-item" onclick="activateSection('tab-admins')">
+            <button type="button" id="nav-btn-admins" class="sa-nav-item" onclick="activateSection('tab-admins', this)">
               <span>Clinic's Admins</span>
               <span class="sa-nav-badge">{{ org_admins.count }}</span>
             </button>
           </li>
-          <!-- Super Admins Tab Button -->
           <li>
-            <button type="button" class="sa-nav-item" onclick="activateSection('tab-super-admins')">
+            <button type="button" id="nav-btn-super-admins" class="sa-nav-item" onclick="activateSection('tab-super-admins', this)">
               <span>Super Admins</span>
               <span class="sa-nav-badge" style="background: rgba(168, 85, 247, 0.2); color: #d8b4fe;">{{ total_super_admins }}</span>
             </button>
           </li>
           <li>
-            <button type="button" class="sa-nav-item" onclick="activateSection('tab-provision')">
+            <button type="button" id="nav-btn-provision" class="sa-nav-item" onclick="activateSection('tab-provision', this)">
               <span>Launch New Wellness Center</span>
             </button>
           </li>
@@ -518,13 +731,11 @@
       </nav>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.5rem; border-top: 1px solid var(--sa-border);">
-      <!-- Naya Super Admin Banane Ka Button -->
+    <div class="sa-sidebar-footer">
       <button type="button" onclick="openCreateSuperAdminModal()" class="sa-btn sa-btn-primary" style="width: 100%; font-size: 0.82rem;">
         + Add Super Admin
       </button>
 
-      <!-- Apni Credentials Edit Karne Ka Button -->
       <button type="button" onclick="openSuperCredentialsModal()" class="sa-btn sa-btn-outline" style="width: 100%;">
         Edit Login
       </button>
@@ -536,104 +747,119 @@
   <!-- Main Stage -->
   <main class="sa-stage">
     
-   <!-- SUPER ADMIN OVERVIEW: GLOBAL PLATFORM EARNINGS -->
+    <!-- ========================================================
+         1. TAB: OVERVIEW (WITH SEARCH & SORT FILTER)
+         ======================================================== -->
     <div id="tab-overview" class="sa-tab-content active">
       
       <!-- Top Metrics Row -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
-        
-        <!-- GLOBAL PLATFORM REVENUE CARD -->
-        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem; border-left: 4px solid #10b981;">
-          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
-            All Clinics Total Revenue
-          </span>
-          <div style="font-size: 2.3rem; font-weight: 900; color: #7bf199; margin: 0.4rem 0 0.2rem;">
+      <div class="sa-metrics-row">
+        <div class="sa-stat-card" style="border-left: 4px solid #10b981;">
+          <span class="sa-stat-label">All Clinics Total Revenue</span>
+          <div class="sa-stat-val" style="color: #7bf199;">
             ${{ total_platform_revenue|floatformat:2 }}
           </div>
-          <span style="font-size: 0.75rem; color: #8b949e;">Live gross earnings across all tenant clinics</span>
+          <span class="sa-subtext">Live gross earnings across all tenant clinics</span>
         </div>
 
-       <!-- ACTIVE TENANT CLINICS -->
-        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem;">
-          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
-            Active Tenant Clinics
-          </span>
-          <div style="font-size: 2.3rem; font-weight: 900; color: #38bdf8; margin: 0.4rem 0 0.2rem;">
+        <div class="sa-stat-card">
+          <span class="sa-stat-label">Active Tenant Clinics</span>
+          <div class="sa-stat-val" style="color: #38bdf8;">
             {{ total_clinics_count|default:total_clubs|default:organizations.count }}
           </div>
-          <span style="font-size: 0.75rem; color: #8b949e;">Configured medical organizations</span>
+          <span class="sa-subtext">Configured medical organizations</span>
         </div>
 
-        <!-- TOTAL ENROLLED PATIENTS -->
-        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem;">
-          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
-            Total Enrolled Patients
-          </span>
-          <div style="font-size: 2.3rem; font-weight: 900; color: #fff; margin: 0.4rem 0 0.2rem;">
+        <div class="sa-stat-card">
+          <span class="sa-stat-label">Total Enrolled Patients</span>
+          <div class="sa-stat-val" style="color: #fff;">
             {{ total_platform_patients|default:total_members|default:"0" }}
           </div>
-          <span style="font-size: 0.75rem; color: #8b949e;">Across all active membership tiers</span>
+          <span class="sa-subtext">Across all active membership tiers</span>
         </div>
 
-        <!-- SYSTEM CONSULTATIONS -->
-        <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.5rem;">
-          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted, #8b949e); font-weight: 700;">
-            System Consultations
-          </span>
-          <div style="font-size: 2.3rem; font-weight: 900; color: #d8b4fe; margin: 0.4rem 0 0.2rem;">
+        <div class="sa-stat-card">
+          <span class="sa-stat-label">System Consultations</span>
+          <div class="sa-stat-val" style="color: #d8b4fe;">
             {{ total_platform_bookings|default:total_bookings|default:"0" }}
           </div>
-          <span style="font-size: 0.75rem; color: #8b949e;">Total appointments scheduled</span>
+          <span class="sa-subtext">Total appointments scheduled</span>
         </div>
       </div>
 
-      <!-- INDIVIDUAL CLINIC BREAKDOWN MATRIX (LIVE SEPARATE REVENUES) -->
-      <div style="background: var(--bg-card, #161c26); border: 1px solid var(--border-color, #212936); border-radius: 8px; padding: 1.75rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <!-- INDIVIDUAL CLINIC BREAKDOWN MATRIX -->
+      <section class="sa-panel">
+        <div class="sa-panel-header">
           <div>
-            <h3 style="margin: 0; color: #fff; font-size: 1.2rem;">Clinic Performance &amp; Revenue Breakdown</h3>
-            <p style="color: #8b949e; font-size: 0.85rem; margin: 0.25rem 0 0;">
+            <h3 class="sa-panel-title">Clinic Performance &amp; Revenue Breakdown</h3>
+            <p class="sa-subtext" style="margin: 0.25rem 0 0;">
               Separate real-time earnings, patient headcount, and run-rates per clinic.
             </p>
           </div>
         </div>
 
-        <div style="width: 100%; overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+        <!-- Overview Filter Bar -->
+        <div class="sa-filter-bar">
+          <div class="sa-filter-item">
+            <input type="text" id="overview-search-input" oninput="filterOverview()" placeholder="Search clinic name or slug..." class="sa-input">
+          </div>
+          <div class="sa-filter-select">
+            <select id="overview-sort-select" onchange="filterOverview()" class="sa-input">
+              <option value="default">Sort by: Default</option>
+              <option value="earnings-desc">Revenue: High to Low</option>
+              <option value="earnings-asc">Revenue: Low to High</option>
+              <option value="patients-desc">Patients: High to Low</option>
+              <option value="bookings-desc">Bookings: High to Low</option>
+              <option value="name-asc">Clinic Name: A to Z</option>
+            </select>
+          </div>
+          <button type="button" onclick="resetOverviewFilters()" class="sa-btn sa-btn-outline sa-filter-reset">
+            Reset
+          </button>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="sa-table-box">
+          <table class="sa-table">
             <thead>
-              <tr style="border-bottom: 1px solid var(--border-color, #212936); color: #8b949e; text-transform: uppercase; font-size: 0.75rem;">
-                <th style="padding: 0.85rem;">Clinic Name</th>
-                <th style="padding: 0.85rem;">Tenant Slug</th>
-                <th style="padding: 0.85rem;">Active Patients</th>
-                <th style="padding: 0.85rem;">Total Bookings</th>
-                <th style="padding: 0.85rem;">Monthly Run-Rate</th>
-                <th style="padding: 0.85rem; text-align: right;">Total Gross Earnings</th>
-                <th style="padding: 0.85rem; text-align: right;">Action</th>
+              <tr>
+                <th>Clinic Name</th>
+                <th>Tenant Slug</th>
+                <th>Active Patients</th>
+                <th>Total Bookings</th>
+                <th>Monthly Run-Rate</th>
+                <th style="text-align: right;">Total Gross Earnings</th>
+                <th style="text-align: right;">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="overview-table-body">
               {% for c in club_stats %}
-              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding: 0.95rem 0.85rem; font-weight: 700; color: #fff;">
+              <tr class="overview-row"
+                  data-name="{{ c.org.name|lower }}"
+                  data-slug="{{ c.org.slug|lower }}"
+                  data-patients="{{ c.member_count|default:0 }}"
+                  data-bookings="{{ c.booking_count|default:0 }}"
+                  data-earnings="{{ c.total_earnings|default:0 }}">
+                <td style="font-weight: 700; color: #fff;">
                   {{ c.org.name }}
                 </td>
-                <td style="padding: 0.95rem 0.85rem; color: #38bdf8;">
+                <td style="color: #38bdf8;">
                   <code>{{ c.org.slug }}</code>
                 </td>
-                <td style="padding: 0.95rem 0.85rem; color: #cbd5e1;">
+                <td style="color: #cbd5e1;">
                   {{ c.member_count }}
                 </td>
-                <td style="padding: 0.95rem 0.85rem; color: #cbd5e1;">
+                <td style="color: #cbd5e1;">
                   {{ c.booking_count }}
                 </td>
-                <td style="padding: 0.95rem 0.85rem; color: #fbbf24; font-weight: 600;">
+                <td style="color: #fbbf24; font-weight: 600;">
                   ${{ c.monthly_recurring|floatformat:2 }}/mo
                 </td>
-                <td style="padding: 0.95rem 0.85rem; text-align: right; font-weight: 800; color: #7bf199; font-size: 1rem;">
+                <td style="text-align: right; font-weight: 800; color: #7bf199; font-size: 1rem;">
                   ${{ c.total_earnings|floatformat:2 }}
                 </td>
-                <td style="padding: 0.95rem 0.85rem; text-align: right;">
-                  <a href="/dashboard/org-admin/?org={{ c.org.slug }}" style="padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 700; border-radius: 4px; background: transparent; border: 1px solid #38bdf8; color: #38bdf8; text-decoration: none;">
+                <td style="text-align: right;">
+                  <a href="/dashboard/org-admin/?org={{ c.org.slug }}" class="sa-btn sa-btn-outline" style="min-height: 34px; padding: 0.35rem 0.75rem; font-size: 0.78rem;">
                     Inspect Clinic &rarr;
                   </a>
                 </td>
@@ -646,17 +872,64 @@
             </tbody>
           </table>
         </div>
-      </div>
 
+        <!-- Mobile Card View for Clinic Performance -->
+        <div class="sa-mobile-cards-list" id="overview-cards-list">
+          {% for c in club_stats %}
+          <div class="sa-mobile-card overview-card"
+               data-name="{{ c.org.name|lower }}"
+               data-slug="{{ c.org.slug|lower }}"
+               data-patients="{{ c.member_count|default:0 }}"
+               data-bookings="{{ c.booking_count|default:0 }}"
+               data-earnings="{{ c.total_earnings|default:0 }}">
+            <div class="sa-card-line">
+              <strong style="color: #fff; font-size: 1rem;">{{ c.org.name }}</strong>
+              <code style="color: var(--sa-accent); font-size: 0.78rem; background: rgba(56,189,248,0.1); padding: 0.15rem 0.45rem; border-radius: 4px;">{{ c.org.slug }}</code>
+            </div>
+
+            <div class="sa-card-grid-2">
+              <div>
+                <div class="sa-subtext">Active Patients</div>
+                <strong style="color: #fff; font-size: 0.95rem;">{{ c.member_count }}</strong>
+              </div>
+              <div>
+                <div class="sa-subtext">Total Bookings</div>
+                <strong style="color: #fff; font-size: 0.95rem;">{{ c.booking_count }}</strong>
+              </div>
+              <div>
+                <div class="sa-subtext">Monthly Run-Rate</div>
+                <strong style="color: #fbbf24; font-size: 0.9rem;">${{ c.monthly_recurring|floatformat:2 }}/mo</strong>
+              </div>
+              <div>
+                <div class="sa-subtext">Gross Earnings</div>
+                <strong style="color: #7bf199; font-size: 0.95rem;">${{ c.total_earnings|floatformat:2 }}</strong>
+              </div>
+            </div>
+
+            <a href="/dashboard/org-admin/?org={{ c.org.slug }}" class="sa-btn sa-btn-outline" style="width: 100%; margin-top: 0.25rem;">
+              Inspect Clinic &rarr;
+            </a>
+          </div>
+          {% empty %}
+          <p style="color: var(--sa-muted); text-align: center; padding: 1.5rem;">No tenant clinics registered yet.</p>
+          {% endfor %}
+        </div>
+
+        <div id="overview-no-results" class="sa-empty-filter-msg">
+          No clinics match your filter criteria.
+        </div>
+      </section>
     </div>
 
-    <!-- 2. TAB: CLUBS & DEDICATED MEMBERS -->
+    <!-- ========================================================
+         2. TAB: CLINICS & DEDICATED MEMBERS (WITH SEARCH & SORT)
+         ======================================================== -->
     <div id="tab-clubs" class="sa-tab-content">
       <section class="sa-panel">
         <div class="sa-panel-header">
           <div>
             <h2 class="sa-panel-title">Wellness Centers &amp; Dedicated Member Breakdown</h2>
-            <p class="sa-subtext" style="margin-top: 0.2rem;">Filter members or preview the live storefront for any center.</p>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">Search clinics, sort by member size, or customize storefront themes.</p>
           </div>
           {% if selected_club_slug %}
             <a href="/dashboard/super-admin/" class="sa-btn sa-btn-outline" style="min-height: 36px; font-size: 0.78rem;">
@@ -665,12 +938,34 @@
           {% endif %}
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+        <!-- Clinics Tab Filter Bar -->
+        <div class="sa-filter-bar">
+          <div class="sa-filter-item">
+            <input type="text" id="clubs-search-input" oninput="filterClubsTab()" placeholder="Search clinic by name or slug..." class="sa-input">
+          </div>
+          <div class="sa-filter-select">
+            <select id="clubs-sort-select" onchange="filterClubsTab()" class="sa-input">
+              <option value="default">Sort by: Default</option>
+              <option value="members-desc">Members: High to Low</option>
+              <option value="members-asc">Members: Low to High</option>
+              <option value="name-asc">Clinic Name: A to Z</option>
+            </select>
+          </div>
+          <button type="button" onclick="resetClubsFilters()" class="sa-btn sa-btn-outline sa-filter-reset">
+            Reset
+          </button>
+        </div>
+
+        <div class="sa-clubs-grid" id="clubs-grid-container">
           {% for item in club_stats %}
-            <div style="background: {% if item.is_selected %}#1e293b{% else %}var(--sa-surface){% endif %}; border: 1px solid {% if item.is_selected %}var(--sa-accent){% else %}var(--sa-border){% endif %}; padding: 1.15rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem;">
+            <div class="club-card-item"
+                 data-name="{{ item.org.name|lower }}"
+                 data-slug="{{ item.org.slug|lower }}"
+                 data-members="{{ item.member_count|default:0 }}"
+                 style="background: {% if item.is_selected %}#1e293b{% else %}var(--sa-surface){% endif %}; border: 1px solid {% if item.is_selected %}var(--sa-accent){% else %}var(--sa-border){% endif %}; padding: 1.15rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem;">
               <div>
                 <div style="font-size: 0.72rem; color: var(--sa-muted); font-weight: 700; text-transform: uppercase;">{{ item.org.slug }}</div>
-                <div style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0.25rem 0;">{{ item.org.name }}</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0.25rem 0; word-break: break-word;">{{ item.org.name }}</div>
                 <div style="font-size: 1.35rem; font-weight: 800; color: var(--sa-accent);">
                   {{ item.member_count }} <span style="font-size: 0.75rem; color: var(--sa-muted); font-weight: 400;">members</span>
                 </div>
@@ -678,17 +973,20 @@
 
               <!-- Action Buttons -->
               <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                <!-- <a href="/dashboard/super-admin/?club={{ item.org.slug }}" class="sa-btn sa-btn-outline" style="flex: 1; min-height: 34px; font-size: 0.75rem; padding: 0.35rem 0.6rem; text-align: center;">
-                  Filter Roster
-                </a> -->
-                <a href="/?org={{ item.org.slug }}" target="_blank" class="sa-btn sa-btn-primary" style="flex: 1; min-height: 34px; font-size: 0.75rem; padding: 0.35rem 0.6rem; text-decoration: none; text-align: center;">
+                <button type="button"
+                        onclick="jumpToClinicMembers('{{ item.org.name|escapejs }}')"
+                        class="sa-btn sa-btn-outline"
+                        style="flex: 1; min-height: 38px; font-size: 0.76rem; padding: 0.35rem 0.6rem;">
+                  Filter Roster ({{ item.member_count }})
+                </button>
+                <a href="/?org={{ item.org.slug }}" target="_blank" class="sa-btn sa-btn-primary" style="flex: 1; min-height: 38px; font-size: 0.76rem; padding: 0.35rem 0.6rem; text-decoration: none; text-align: center;">
                   View Live Page &#8599;
                 </a>
                 
                 <!-- Bulletproof Data-Attribute Based Customizer Button -->
                 <button type="button" 
                         class="sa-btn sa-btn-outline btn-customize-theme" 
-                        style="width: 100%; min-height: 34px; font-size: 0.75rem; border-color: #a855f7; color: #d8b4fe;"
+                        style="width: 100%; min-height: 38px; font-size: 0.78rem; border-color: #a855f7; color: #d8b4fe;"
                         data-id="{{ item.org.id }}"
                         data-name="{{ item.org.name|escape }}"
                         data-accent="{{ item.org.branding.accent_color|default:'#38bdf8' }}"
@@ -707,10 +1005,16 @@
             </div>
           {% endfor %}
         </div>
+
+        <div id="clubs-no-results" class="sa-empty-filter-msg">
+          No clinics match your search criteria.
+        </div>
       </section>
     </div>
 
-    <!-- 3. TAB: MEMBERS TABLE -->
+    <!-- ========================================================
+         3. TAB: MEMBERS TABLE (SEARCH + CLINIC DROPDOWN FILTER)
+         ======================================================== -->
     <div id="tab-members" class="sa-tab-content">
       <section class="sa-panel">
         <div class="sa-panel-header">
@@ -722,11 +1026,26 @@
                 All Platform Members ({{ all_members.count }})
               {% endif %}
             </h2>
-            <p class="sa-subtext" style="margin-top: 0.2rem;">Real-time search across usernames, emails, and Wellness Center assignments.</p>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">Filter by assigned Wellness Center or search by name, phone, username, or email.</p>
           </div>
-          <div style="width: 100%; max-width: 260px;">
-            <input type="text" id="member-search-input" onkeyup="filterMemberTable()" placeholder="Search members..." class="sa-input" style="min-height: 40px; font-size: 0.85rem;">
+        </div>
+
+        <!-- Members Filter Bar -->
+        <div class="sa-filter-bar">
+          <div class="sa-filter-item">
+            <input type="text" id="member-search-input" oninput="filterMemberTable()" placeholder="Search name, phone, username, email..." class="sa-input">
           </div>
+          <div class="sa-filter-select">
+            <select id="member-org-filter" onchange="filterMemberTable()" class="sa-input">
+              <option value="">All Clinics (All Centers)</option>
+              {% for o in organizations %}
+                <option value="{{ o.name|lower }}">{{ o.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="button" onclick="resetMemberFilters()" class="sa-btn sa-btn-outline sa-filter-reset">
+            Reset
+          </button>
         </div>
 
         <!-- Desktop Table View -->
@@ -734,7 +1053,6 @@
           <table class="sa-table" id="members-table">
             <thead>
               <tr>
-
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Phone Number</th>
@@ -746,7 +1064,7 @@
             </thead>
             <tbody>
               {% for m in all_members %}
-              <tr class="member-row">
+              <tr class="member-row" data-org="{{ m.organization.name|lower }}">
                 <td style="font-weight: 700; color: #fff;">{{ m.user.first_name|default:"—" }}</td>
                 <td style="font-weight: 700; color: #fff;">{{ m.user.last_name|default:"—" }}</td>
                 <td style="font-weight: 700; color: #fff;">{{ m.phone_number|default:"—" }}</td>
@@ -763,7 +1081,7 @@
                 </td>
               </tr>
               {% empty %}
-              <tr><td colspan="4" style="text-align: center; color: var(--sa-muted); padding: 1.5rem;">No members found for this view.</td></tr>
+              <tr><td colspan="7" style="text-align: center; color: var(--sa-muted); padding: 1.5rem;">No members found for this view.</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -772,15 +1090,27 @@
         <!-- Mobile Card-based List -->
         <div class="sa-mobile-cards-list" id="members-card-list">
           {% for m in all_members %}
-          <div class="sa-mobile-card member-row">
+          <div class="sa-mobile-card member-row" data-org="{{ m.organization.name|lower }}">
             <div class="sa-card-line">
               <strong style="color: #fff; font-size: 0.95rem;">{{ m.user.username }}</strong>
               <span style="font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 4px; background: rgba(56,189,248,0.1); color: var(--sa-accent); font-weight: 700;">
                 {{ m.organization.name }}
               </span>
             </div>
-            <div class="sa-subtext">{{ m.user.email|default:"No email recorded" }}</div>
-            <form method="POST" onsubmit="return confirm('Remove user {{ m.user.username }}?');" style="margin-top: 0.35rem;">
+
+            <div class="sa-card-grid-2">
+              <div>
+                <div class="sa-subtext">Full Name</div>
+                <strong style="color: #fff; font-size: 0.85rem;">{{ m.user.first_name|default:"—" }} {{ m.user.last_name|default:"" }}</strong>
+              </div>
+              <div>
+                <div class="sa-subtext">Phone</div>
+                <strong style="color: #fff; font-size: 0.85rem;">{{ m.phone_number|default:"—" }}</strong>
+              </div>
+            </div>
+
+            <div class="sa-subtext" style="word-break: break-all;">{{ m.user.email|default:"No email recorded" }}</div>
+            <form method="POST" onsubmit="return confirm('Remove user {{ m.user.username }}?');" style="margin-top: 0.25rem;">
               {% csrf_token %}
               <input type="hidden" name="action_type" value="delete_user">
               <input type="hidden" name="user_id" value="{{ m.user.id }}">
@@ -791,10 +1121,16 @@
           <p style="color: var(--sa-muted); text-align: center; padding: 1rem;">No members found for this view.</p>
           {% endfor %}
         </div>
+
+        <div id="members-no-results" class="sa-empty-filter-msg">
+          No members match your search or clinic filter.
+        </div>
       </section>
     </div>
 
-    <!-- 4. TAB: CLUB ADMINS ROSTER -->
+    <!-- ========================================================
+         4. TAB: CLUB ADMINS ROSTER (SEARCH + CLINIC FILTER)
+         ======================================================== -->
     <div id="tab-admins" class="sa-tab-content">
       <section class="sa-panel">
         <div class="sa-panel-header">
@@ -804,6 +1140,24 @@
           </div>
           <button type="button" onclick="openCreateAdminModal()" class="sa-btn sa-btn-primary">
             + Add Wellness Center Admin
+          </button>
+        </div>
+
+        <!-- Admins Filter Bar -->
+        <div class="sa-filter-bar">
+          <div class="sa-filter-item">
+            <input type="text" id="admin-search-input" oninput="filterAdminsTab()" placeholder="Search admin username or email..." class="sa-input">
+          </div>
+          <div class="sa-filter-select">
+            <select id="admin-org-filter" onchange="filterAdminsTab()" class="sa-input">
+              <option value="">All Managed Clinics</option>
+              {% for o in organizations %}
+                <option value="{{ o.name|lower }}">{{ o.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="button" onclick="resetAdminFilters()" class="sa-btn sa-btn-outline sa-filter-reset">
+            Reset
           </button>
         </div>
 
@@ -820,7 +1174,7 @@
             </thead>
             <tbody>
               {% for a in org_admins %}
-              <tr>
+              <tr class="admin-row" data-org="{{ a.organization.name|lower }}">
                 <td style="font-weight: 700; color: var(--sa-accent);">{{ a.user.username }}</td>
                 <td style="color: var(--sa-muted);">{{ a.user.email|default:"No email configured" }}</td>
                 <td style="color: #fff;">{{ a.organization.name }}</td>
@@ -846,12 +1200,12 @@
         <!-- Mobile Cards -->
         <div class="sa-mobile-cards-list">
           {% for a in org_admins %}
-          <div class="sa-mobile-card">
+          <div class="sa-mobile-card admin-row" data-org="{{ a.organization.name|lower }}">
             <div class="sa-card-line">
               <strong style="color: var(--sa-accent); font-size: 0.95rem;">{{ a.user.username }}</strong>
-              <span class="sa-subtext">{{ a.organization.name }}</span>
+              <span class="sa-subtext" style="color: #fff; font-weight: 600;">{{ a.organization.name }}</span>
             </div>
-            <div class="sa-subtext" style="color: var(--sa-muted);">
+            <div class="sa-subtext" style="color: var(--sa-muted); word-break: break-all;">
               {{ a.user.email|default:"No email registered" }}
             </div>
             <div style="display: flex; gap: 0.5rem; margin-top: 0.35rem;">
@@ -870,11 +1224,16 @@
           <p style="color: var(--sa-muted); text-align: center; padding: 1rem;">No club administrators found.</p>
           {% endfor %}
         </div>
+
+        <div id="admins-no-results" class="sa-empty-filter-msg">
+          No clinic administrators match your filter criteria.
+        </div>
       </section>
     </div>
 
-    
-   <!-- TAB: PROVISION NEW CLUB -->
+    <!-- ========================================================
+         5. TAB: PROVISION NEW CLUB
+         ======================================================== -->
     <div id="tab-provision" class="sa-tab-content">
       <section class="sa-panel" style="max-width: 600px;">
         <h2 class="sa-panel-title" style="margin-bottom: 0.25rem;">Provision New Organization</h2>
@@ -904,13 +1263,16 @@
         </form>
       </section>
     </div>
-    <!-- TAB: SUPER ADMINS LIST & GOVERNANCE -->
+
+    <!-- ========================================================
+         6. TAB: SUPER ADMINS LIST & GOVERNANCE (WITH FILTER)
+         ======================================================== -->
     <div id="tab-super-admins" class="sa-tab-content">
       <section class="sa-panel">
         <div class="sa-panel-header">
           <div>
             <h2 class="sa-panel-title">Platform Super Administrators ({{ total_super_admins }})</h2>
-            <p class="sa-subtext" style="margin-top: 0.2rem;">List of Administrators with Full Master Console Access The last remaining Super Admin cannot be deleted.</p>
+            <p class="sa-subtext" style="margin-top: 0.2rem;">List of Administrators with Full Master Console Access. The last remaining Super Admin cannot be deleted.</p>
           </div>
           <button type="button" onclick="openCreateSuperAdminModal()" class="sa-btn sa-btn-primary">
             + Add Super Admin
@@ -924,6 +1286,23 @@
             </div>
           {% endfor %}
         {% endif %}
+
+        <!-- Super Admins Filter Bar -->
+        <div class="sa-filter-bar">
+          <div class="sa-filter-item">
+            <input type="text" id="sa-search-input" oninput="filterSuperAdminsTab()" placeholder="Search super admin username or email..." class="sa-input">
+          </div>
+          <div class="sa-filter-select">
+            <select id="sa-role-filter" onchange="filterSuperAdminsTab()" class="sa-input">
+              <option value="all">Show: All Super Admins</option>
+              <option value="me">Show: My Account Only</option>
+              <option value="others">Show: Other Super Admins</option>
+            </select>
+          </div>
+          <button type="button" onclick="resetSuperAdminFilters()" class="sa-btn sa-btn-outline sa-filter-reset">
+            Reset
+          </button>
+        </div>
 
         <!-- Desktop Table View -->
         <div class="sa-table-box">
@@ -939,7 +1318,7 @@
             </thead>
             <tbody>
               {% for sa in super_admins %}
-              <tr>
+              <tr class="super-admin-row" data-is-me="{% if sa.id == request.user.id %}true{% else %}false{% endif %}">
                 <td style="font-weight: 700; color: #fff;">
                   {{ sa.username }}
                   {% if sa.id == request.user.id %}
@@ -955,7 +1334,6 @@
                 <td style="color: #cbd5e1; font-size: 0.82rem;">{{ sa.date_joined|date:"M d, Y" }}</td>
                 <td style="text-align: right;">
                   {% if total_super_admins <= 1 %}
-                    <!-- Last Super Admin Protection -->
                     <button type="button" class="sa-btn sa-btn-outline" style="min-height: 32px; font-size: 0.75rem; opacity: 0.45; cursor: not-allowed;" title="Cannot delete the only remaining Super Admin" disabled>
                       Protected (Sole Admin)
                     </button>
@@ -981,17 +1359,17 @@
         <!-- Mobile Cards View -->
         <div class="sa-mobile-cards-list">
           {% for sa in super_admins %}
-          <div class="sa-mobile-card">
+          <div class="sa-mobile-card super-admin-row" data-is-me="{% if sa.id == request.user.id %}true{% else %}false{% endif %}">
             <div class="sa-card-line">
               <strong style="color: #fff; font-size: 0.95rem;">
                 {{ sa.username }}
-                {% if sa.id == request.user.id %}(You){% endif %}
+                {% if sa.id == request.user.id %}<span style="color: var(--sa-accent);">(You)</span>{% endif %}
               </strong>
               <span style="font-size: 0.7rem; background: rgba(168, 85, 247, 0.15); color: #d8b4fe; padding: 0.15rem 0.45rem; border-radius: 4px; font-weight: 700;">
                 Super Admin
               </span>
             </div>
-            <div class="sa-subtext">{{ sa.email|default:"No email registered" }}</div>
+            <div class="sa-subtext" style="word-break: break-all;">{{ sa.email|default:"No email registered" }}</div>
             <div class="sa-subtext">Joined: {{ sa.date_joined|date:"M d, Y" }}</div>
             
             <div style="margin-top: 0.4rem;">
@@ -1013,6 +1391,10 @@
           </div>
           {% endfor %}
         </div>
+
+        <div id="sa-no-results" class="sa-empty-filter-msg">
+          No super administrators match your filter criteria.
+        </div>
       </section>
     </div>
 
@@ -1023,19 +1405,18 @@
      MODALS
      ======================================================== -->
 
-<!-- Modal 1: Edit Super Admin Own Credentials (Username, Email, Password) -->
+<!-- Modal 1: Edit Super Admin Own Credentials -->
 <div id="super-credentials-modal" class="sa-modal-overlay">
   <div class="sa-modal-sheet">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
       <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Edit Super Admin Credentials</h3>
-      <span onclick="closeModal('super-credentials-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+      <span onclick="closeModal('super-credentials-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted); padding: 0 0.25rem;">&times;</span>
     </div>
 
     <form method="POST" autocomplete="off">
       {% csrf_token %}
       <input type="hidden" name="action_type" value="update_own_credentials">
 
-      <!-- Fake Decoy Inputs to absorb browser autofill -->
       <input type="text" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
       <input type="password" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
 
@@ -1045,7 +1426,7 @@
       </div>
 
       <div class="sa-form-group">
-        <label class="sa-form-label">Platform Host Email (For alerts & notifications)</label>
+        <label class="sa-form-label">Platform Host Email (For alerts &amp; notifications)</label>
         <input type="email" name="new_email" id="sa-edit-email" value="{{ request.user.email }}" class="sa-input" placeholder="admin@domain.com" required autocomplete="off">
       </div>
 
@@ -1058,7 +1439,7 @@
                  placeholder="Enter new password to change" 
                  class="sa-input" 
                  autocomplete="new-password" 
-                 style="padding-right: 40px;">
+                 style="padding-right: 44px;">
           <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('super-admin-pass', this)" aria-label="Toggle password view">
             <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -1066,7 +1447,7 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 0.65rem;">
+      <div class="sa-modal-actions">
         <button type="button" onclick="closeModal('super-credentials-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
         <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Save Changes</button>
       </div>
@@ -1074,8 +1455,7 @@
   </div>
 </div>
 
-
-<!-- Modal 2: Create Org Admin (Wellness Center Admin) -->
+<!-- Modal 2: Create Org Admin -->
 <div id="create-admin-modal" class="sa-modal-overlay">
   <div class="sa-modal-sheet">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
@@ -1083,15 +1463,13 @@
         <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Create Wellness Center Admin</h3>
         <p class="sa-subtext" style="margin: 0.25rem 0 0;">An automated welcome email with login details will be dispatched immediately.</p>
       </div>
-      <span onclick="closeModal('create-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+      <span onclick="closeModal('create-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted); padding: 0 0.25rem;">&times;</span>
     </div>
 
-    <!-- autocomplete="off" enforced -->
     <form method="POST" autocomplete="off">
       {% csrf_token %}
       <input type="hidden" name="action_type" value="create_org_admin">
 
-      <!-- Fake Decoy Inputs: Browser ka autofill in par trap ho jayega -->
       <input type="text" name="fake_username_trap" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
       <input type="password" name="fake_password_trap" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" tabindex="-1">
 
@@ -1139,7 +1517,7 @@
                  value="" 
                  autocomplete="new-password" 
                  required 
-                 style="padding-right: 40px;">
+                 style="padding-right: 44px;">
           <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('new-admin-pass-field', this)" aria-label="Toggle password view">
             <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -1147,7 +1525,7 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 0.65rem;">
+      <div class="sa-modal-actions">
         <button type="button" onclick="closeModal('create-admin-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
         <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Create Admin &amp; Send Email</button>
       </div>
@@ -1160,7 +1538,7 @@
   <div class="sa-modal-sheet">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
       <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Edit Admin Credentials</h3>
-      <span onclick="closeModal('edit-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+      <span onclick="closeModal('edit-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted); padding: 0 0.25rem;">&times;</span>
     </div>
 
     <form method="POST" autocomplete="off">
@@ -1183,7 +1561,7 @@
       </div>
 
       <div class="sa-form-group">
-        <label class="sa-form-label"> Email Address</label>
+        <label class="sa-form-label">Email Address</label>
         <input type="email" name="updated_email" id="edit-admin-email" class="sa-input" placeholder="admin@domain.com" required autocomplete="off">
       </div>
 
@@ -1196,7 +1574,7 @@
                  placeholder="Enter new password to change" 
                  class="sa-input" 
                  autocomplete="new-password" 
-                 style="padding-right: 40px;">
+                 style="padding-right: 44px;">
           <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('edit-admin-pass', this)" aria-label="Toggle password view">
             <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -1204,7 +1582,7 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 0.65rem;">
+      <div class="sa-modal-actions">
         <button type="button" onclick="closeModal('edit-admin-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
         <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Update Credentials</button>
       </div>
@@ -1220,7 +1598,7 @@
         <h3 style="margin: 0; color: #fff; font-size: 1.25rem;">Live Theme &amp; Typography Engine</h3>
         <p style="color: var(--sa-muted); font-size: 0.78rem; margin: 0.2rem 0 0;" id="theme-modal-org-name">Customizing Club Theme</p>
       </div>
-      <span onclick="closeModal('theme-customizer-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted); line-height: 1;">&times;</span>
+      <span onclick="closeModal('theme-customizer-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted); line-height: 1; padding: 0 0.25rem;">&times;</span>
     </div>
 
     <form method="POST">
@@ -1228,32 +1606,29 @@
       <input type="hidden" name="action_type" value="update_club_theme">
       <input type="hidden" name="theme_org_id" id="theme-org-id">
 
-      <!-- Colors Section -->
       <h4 style="color: var(--sa-accent); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem; letter-spacing: 0.05em;">Color Palette</h4>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
-        <div class="sa-form-group">
+      <div class="sa-color-grid">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">Accent / Buttons</label>
-          <input type="color" name="accent_color" id="theme-accent" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+          <input type="color" name="accent_color" id="theme-accent" style="width: 100%; height: 42px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
         </div>
-        <div class="sa-form-group">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">Background Color</label>
-          <input type="color" name="bg_color" id="theme-bg" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+          <input type="color" name="bg_color" id="theme-bg" style="width: 100%; height: 42px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
         </div>
-        <div class="sa-form-group">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">Card Surface</label>
-          <input type="color" name="card_bg" id="theme-card" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+          <input type="color" name="card_bg" id="theme-card" style="width: 100%; height: 42px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
         </div>
-        <div class="sa-form-group">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">Text Color</label>
-          <input type="color" name="text_color" id="theme-text" style="width: 100%; height: 40px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
+          <input type="color" name="text_color" id="theme-text" style="width: 100%; height: 42px; background: transparent; border: 1px solid var(--sa-border); border-radius: 6px; cursor: pointer;">
         </div>
       </div>
 
-      <!-- Typography Section -->
       <h4 style="color: var(--sa-accent); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem; letter-spacing: 0.05em;">Typography &amp; Fonts</h4>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
-        
-        <div class="sa-form-group">
+      <div class="sa-font-grid">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">H1 (Hero Headings)</label>
           <select name="font_h1" id="theme-font-h1" class="sa-input">
             <option value="Inter">Inter</option>
@@ -1265,7 +1640,7 @@
           </select>
         </div>
 
-        <div class="sa-form-group">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">H2 (Section Titles)</label>
           <select name="font_h2" id="theme-font-h2" class="sa-input">
             <option value="Inter">Inter</option>
@@ -1277,7 +1652,7 @@
           </select>
         </div>
 
-        <div class="sa-form-group">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">H3 (Card Pass Names)</label>
           <select name="font_h3" id="theme-font-h3" class="sa-input">
             <option value="Inter">Inter</option>
@@ -1288,7 +1663,7 @@
           </select>
         </div>
 
-        <div class="sa-form-group">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">P (Body &amp; Inclusions)</label>
           <select name="font_p" id="theme-font-p" class="sa-input">
             <option value="Inter">Inter</option>
@@ -1299,7 +1674,7 @@
           </select>
         </div>
 
-        <div class="sa-form-group">
+        <div class="sa-form-group" style="margin-bottom: 0;">
           <label class="sa-form-label">Pricing Rate Numbers ($)</label>
           <select name="font_price" id="theme-font-price" class="sa-input">
             <option value="Inter">Inter (Clean Numerals)</option>
@@ -1308,17 +1683,17 @@
             <option value="'Chivo', sans-serif">Chivo (High Contrast)</option>
           </select>
         </div>
-
       </div>
 
-      <div style="display: flex; gap: 0.65rem;">
+      <div class="sa-modal-actions">
         <button type="button" onclick="closeModal('theme-customizer-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
         <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Save &amp; Apply Theme</button>
       </div>
     </form>
   </div>
 </div>
-<!-- Modal: Provision Additional Super Admin -->
+
+<!-- Modal 5: Provision Additional Super Admin -->
 <div id="create-super-admin-modal" class="sa-modal-overlay">
   <div class="sa-modal-sheet">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sa-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
@@ -1326,7 +1701,7 @@
         <h3 style="margin: 0; color: #fff; font-size: 1.15rem;">Add Super Admin</h3>
         <p class="sa-subtext" style="margin: 0.25rem 0 0;">Grants full master console governance over all Clinics.</p>
       </div>
-      <span onclick="closeModal('create-super-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted);">&times;</span>
+      <span onclick="closeModal('create-super-admin-modal')" style="cursor: pointer; font-size: 1.6rem; color: var(--sa-muted); padding: 0 0.25rem;">&times;</span>
     </div>
 
     <form method="POST" autocomplete="off">
@@ -1353,7 +1728,7 @@
                  class="sa-input" 
                  required 
                  autocomplete="new-password" 
-                 style="padding-right: 40px;">
+                 style="padding-right: 44px;">
           <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('new-sa-pass', this)" aria-label="Toggle password view">
             <svg class="eye-open" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             <svg class="eye-closed" style="display:none;" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -1361,7 +1736,7 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 0.65rem;">
+      <div class="sa-modal-actions">
         <button type="button" onclick="closeModal('create-super-admin-modal')" class="sa-btn sa-btn-outline" style="flex: 1;">Cancel</button>
         <button type="submit" class="sa-btn sa-btn-primary" style="flex: 1;">Create Super Admin</button>
       </div>
@@ -1370,155 +1745,360 @@
 </div>
 
 <script>
-  // Dedicated function to open Create Admin Modal with forced empty fields
-function openCreateAdminModal() {
-  const uField = document.getElementById('new-admin-username-field');
-  const eField = document.getElementById('new-admin-email-field');
-  const pField = document.getElementById('new-admin-pass-field');
-
-  // Clear any browser autofill on modal open
-  if (uField) uField.value = '';
-  if (eField) eField.value = '';
-  if (pField) {
-    pField.value = '';
-    pField.type = 'password';
+  function syncBodyScrollLock() {
+    const sidebarOpen = document.getElementById('app-sidebar')?.classList.contains('open');
+    const anyModalOpen = Array.from(document.querySelectorAll('.sa-modal-overlay')).some(
+      m => m.style.display === 'flex'
+    );
+    document.body.classList.toggle('sa-no-scroll', Boolean(sidebarOpen || anyModalOpen));
   }
 
-  openModal('create-admin-modal');
-}
-// Toggle Slide-over Drawer for Mobile
-function toggleSidebar() {
-  const sidebar = document.getElementById('app-sidebar');
-  const backdrop = document.getElementById('sidebar-backdrop');
-  sidebar.classList.toggle('open');
-  backdrop.classList.toggle('open');
-}
-
-// Switch Active Section Tab
-function activateSection(targetId) {
-  document.querySelectorAll('.sa-nav-item').forEach(btn => btn.classList.remove('active'));
-  if (window.event && window.event.currentTarget) {
-    window.event.currentTarget.classList.add('active');
+  function closeMobileSidebarIfNeeded() {
+    if (window.innerWidth <= 1024) {
+      const sidebar = document.getElementById('app-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (sidebar && sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('open');
+      }
+    }
   }
 
-  document.querySelectorAll('.sa-tab-content').forEach(section => section.classList.remove('active'));
-  const target = document.getElementById(targetId);
-  if (target) {
-    target.classList.add('active');
-  }
-
-  // Auto-close drawer on mobile upon selection
-  if (window.innerWidth <= 1024) {
+  function toggleSidebar() {
     const sidebar = document.getElementById('app-sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
-    if (sidebar.classList.contains('open')) {
-      sidebar.classList.remove('open');
-      backdrop.classList.remove('open');
+    sidebar.classList.toggle('open');
+    backdrop.classList.toggle('open');
+    syncBodyScrollLock();
+  }
+
+  function activateSection(targetId, btnEl) {
+    document.querySelectorAll('.sa-nav-item').forEach(btn => btn.classList.remove('active'));
+    if (btnEl) {
+      btnEl.classList.add('active');
+    }
+
+    document.querySelectorAll('.sa-tab-content').forEach(section => section.classList.remove('active'));
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.classList.add('active');
+    }
+
+    closeMobileSidebarIfNeeded();
+    syncBodyScrollLock();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ========================================================
+     1. OVERVIEW TAB FILTER & SORT
+     ======================================================== */
+  function filterOverview() {
+    const query = (document.getElementById('overview-search-input')?.value || '').toLowerCase().trim();
+    const sortBy = document.getElementById('overview-sort-select')?.value || 'default';
+
+    const tBody = document.getElementById('overview-table-body');
+    const cardsList = document.getElementById('overview-cards-list');
+    const tRows = Array.from(document.querySelectorAll('.overview-row'));
+    const mCards = Array.from(document.querySelectorAll('.overview-card'));
+
+    let visibleCount = 0;
+
+    tRows.forEach(row => {
+      const match = row.dataset.name.includes(query) || row.dataset.slug.includes(query);
+      row.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+
+    mCards.forEach(card => {
+      const match = card.dataset.name.includes(query) || card.dataset.slug.includes(query);
+      card.style.display = match ? '' : 'none';
+    });
+
+    const sortFn = (a, b) => {
+      if (sortBy === 'earnings-desc') return parseFloat(b.dataset.earnings) - parseFloat(a.dataset.earnings);
+      if (sortBy === 'earnings-asc') return parseFloat(a.dataset.earnings) - parseFloat(b.dataset.earnings);
+      if (sortBy === 'patients-desc') return parseInt(b.dataset.patients) - parseInt(a.dataset.patients);
+      if (sortBy === 'bookings-desc') return parseInt(b.dataset.bookings) - parseInt(a.dataset.bookings);
+      if (sortBy === 'name-asc') return a.dataset.name.localeCompare(b.dataset.name);
+      return 0;
+    };
+
+    if (sortBy !== 'default') {
+      tRows.sort(sortFn).forEach(r => tBody.appendChild(r));
+      mCards.sort(sortFn).forEach(c => cardsList.appendChild(c));
+    }
+
+    const emptyMsg = document.getElementById('overview-no-results');
+    if (emptyMsg) emptyMsg.style.display = (visibleCount === 0 && tRows.length > 0) ? 'block' : 'none';
+  }
+
+  function resetOverviewFilters() {
+    document.getElementById('overview-search-input').value = '';
+    document.getElementById('overview-sort-select').value = 'default';
+    filterOverview();
+  }
+
+  /* ========================================================
+     2. CLINICS TAB FILTER & SORT + QUICK JUMP TO MEMBERS
+     ======================================================== */
+  function filterClubsTab() {
+    const query = (document.getElementById('clubs-search-input')?.value || '').toLowerCase().trim();
+    const sortBy = document.getElementById('clubs-sort-select')?.value || 'default';
+    const container = document.getElementById('clubs-grid-container');
+    const cards = Array.from(document.querySelectorAll('.club-card-item'));
+
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const match = card.dataset.name.includes(query) || card.dataset.slug.includes(query);
+      card.style.display = match ? 'flex' : 'none';
+      if (match) visibleCount++;
+    });
+
+    if (sortBy !== 'default') {
+      cards.sort((a, b) => {
+        if (sortBy === 'members-desc') return parseInt(b.dataset.members) - parseInt(a.dataset.members);
+        if (sortBy === 'members-asc') return parseInt(a.dataset.members) - parseInt(b.dataset.members);
+        if (sortBy === 'name-asc') return a.dataset.name.localeCompare(b.dataset.name);
+        return 0;
+      }).forEach(c => container.appendChild(c));
+    }
+
+    const emptyMsg = document.getElementById('clubs-no-results');
+    if (emptyMsg) emptyMsg.style.display = (visibleCount === 0 && cards.length > 0) ? 'block' : 'none';
+  }
+
+  function resetClubsFilters() {
+    document.getElementById('clubs-search-input').value = '';
+    document.getElementById('clubs-sort-select').value = 'default';
+    filterClubsTab();
+  }
+
+  function jumpToClinicMembers(clinicName) {
+    const memberBtn = document.getElementById('nav-btn-members');
+    activateSection('tab-members', memberBtn);
+    const orgSelect = document.getElementById('member-org-filter');
+    if (orgSelect) {
+      orgSelect.value = clinicName.toLowerCase();
+      filterMemberTable();
     }
   }
-}
 
-// Real-time Search Filter for Members (Table & Mobile Cards)
-function filterMemberTable() {
-  const input = document.getElementById("member-search-input").value.toLowerCase();
-  const rows = document.querySelectorAll(".member-row");
+  /* ========================================================
+     3. MEMBERS TAB FILTER (SEARCH + CLINIC DROPDOWN)
+     ======================================================== */
+  function filterMemberTable() {
+    const query = (document.getElementById('member-search-input')?.value || '').toLowerCase().trim();
+    const orgFilter = (document.getElementById('member-org-filter')?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('.member-row');
 
-  rows.forEach(row => {
-    const text = row.innerText.toLowerCase();
-    row.style.display = text.includes(input) ? "" : "none";
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const textMatch = row.innerText.toLowerCase().includes(query);
+      const rowOrg = (row.dataset.org || '').toLowerCase();
+      const orgMatch = !orgFilter || rowOrg === orgFilter;
+
+      const isVisible = textMatch && orgMatch;
+      row.style.display = isVisible ? '' : 'none';
+      if (isVisible) visibleCount++;
+    });
+
+    const emptyMsg = document.getElementById('members-no-results');
+    if (emptyMsg) emptyMsg.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
+  }
+
+  function resetMemberFilters() {
+    document.getElementById('member-search-input').value = '';
+    document.getElementById('member-org-filter').value = '';
+    filterMemberTable();
+  }
+
+  /* ========================================================
+     4. CLINIC ADMINS TAB FILTER (SEARCH + CLINIC DROPDOWN)
+     ======================================================== */
+  function filterAdminsTab() {
+    const query = (document.getElementById('admin-search-input')?.value || '').toLowerCase().trim();
+    const orgFilter = (document.getElementById('admin-org-filter')?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('.admin-row');
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const textMatch = row.innerText.toLowerCase().includes(query);
+      const rowOrg = (row.dataset.org || '').toLowerCase();
+      const orgMatch = !orgFilter || rowOrg === orgFilter;
+
+      const isVisible = textMatch && orgMatch;
+      row.style.display = isVisible ? '' : 'none';
+      if (isVisible) visibleCount++;
+    });
+
+    const emptyMsg = document.getElementById('admins-no-results');
+    if (emptyMsg) emptyMsg.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
+  }
+
+  function resetAdminFilters() {
+    document.getElementById('admin-search-input').value = '';
+    document.getElementById('admin-org-filter').value = '';
+    filterAdminsTab();
+  }
+
+  /* ========================================================
+     5. SUPER ADMINS TAB FILTER (SEARCH + ROLE DROPDOWN)
+     ======================================================== */
+  function filterSuperAdminsTab() {
+    const query = (document.getElementById('sa-search-input')?.value || '').toLowerCase().trim();
+    const roleFilter = document.getElementById('sa-role-filter')?.value || 'all';
+    const rows = document.querySelectorAll('.super-admin-row');
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const textMatch = row.innerText.toLowerCase().includes(query);
+      const isMe = row.dataset.isMe === 'true';
+      const roleMatch =
+        roleFilter === 'all' ||
+        (roleFilter === 'me' && isMe) ||
+        (roleFilter === 'others' && !isMe);
+
+      const isVisible = textMatch && roleMatch;
+      row.style.display = isVisible ? '' : 'none';
+      if (isVisible) visibleCount++;
+    });
+
+    const emptyMsg = document.getElementById('sa-no-results');
+    if (emptyMsg) emptyMsg.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
+  }
+
+  function resetSuperAdminFilters() {
+    document.getElementById('sa-search-input').value = '';
+    document.getElementById('sa-role-filter').value = 'all';
+    filterSuperAdminsTab();
+  }
+
+  /* ========================================================
+     MODALS & CREDENTIAL HELPERS
+     ======================================================== */
+  function openCreateAdminModal() {
+    const uField = document.getElementById('new-admin-username-field');
+    const eField = document.getElementById('new-admin-email-field');
+    const pField = document.getElementById('new-admin-pass-field');
+
+    if (uField) uField.value = '';
+    if (eField) eField.value = '';
+    if (pField) {
+      pField.value = '';
+      pField.type = 'password';
+    }
+
+    closeMobileSidebarIfNeeded();
+    openModal('create-admin-modal');
+  }
+
+  function openModal(id) {
+    const m = document.getElementById(id);
+    if (m) {
+      m.style.display = 'flex';
+      syncBodyScrollLock();
+    }
+  }
+
+  function closeModal(id) {
+    const m = document.getElementById(id);
+    if (m) {
+      m.style.display = 'none';
+      syncBodyScrollLock();
+    }
+  }
+
+  document.querySelectorAll('.sa-modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        closeModal(overlay.id);
+      }
+    });
   });
-}
 
-// Universal Modal Controls
-function openModal(id) {
-  const m = document.getElementById(id);
-  if (m) m.style.display = 'flex';
-}
-
-function closeModal(id) {
-  const m = document.getElementById(id);
-  if (m) m.style.display = 'none';
-}
-
-function togglePasswordVisibility(fieldId, btn) {
-  const input = document.getElementById(fieldId);
-  if (!input) return;
-  const eyeOpen = btn.querySelector('.eye-open');
-  const eyeClosed = btn.querySelector('.eye-closed');
-  if (input.type === 'password') {
-    input.type = 'text';
-    eyeOpen.style.display = 'none';
-    eyeClosed.style.display = 'inline-block';
-  } else {
-    input.type = 'password';
-    eyeOpen.style.display = 'inline-block';
-    eyeClosed.style.display = 'none';
-  }
-}
-
-function openEditAdmin(id, username, email, orgId) {
-  document.getElementById('edit-admin-id').value = id;
-  document.getElementById('edit-admin-user').value = username;
-  document.getElementById('edit-admin-email').value = email || '';
-  document.getElementById('edit-admin-org').value = orgId;
-  const pwdField = document.getElementById('edit-admin-pass');
-  if (pwdField) {
-    pwdField.value = '';
-    pwdField.type = 'password';
-  }
-  openModal('edit-admin-modal');
-}
-
-function handleThemeClick(btn) {
-  const d = btn.dataset;
-  document.getElementById('theme-org-id').value = d.id;
-  document.getElementById('theme-modal-org-name').innerText = "Customizing theme for: " + d.name;
-  
-  // Safe Color assignment
-  document.getElementById('theme-accent').value = d.accent || "#38bdf8";
-  document.getElementById('theme-bg').value = d.bg || "#07090e";
-  document.getElementById('theme-card').value = d.card || "#111622";
-  document.getElementById('theme-text').value = d.text || "#ffffff";
-
-  // Safe Select Dropdown matching
-  setSelectValue('theme-font-h1', d.h1);
-  setSelectValue('theme-font-h2', d.h2);
-  setSelectValue('theme-font-h3', d.h3);
-  setSelectValue('theme-font-p', d.p);
-  setSelectValue('theme-font-price', d.price);
-
-  openModal('theme-customizer-modal');
-}
-
-function setSelectValue(selectId, val) {
-  const el = document.getElementById(selectId);
-  if (!el || !val) return;
-  const cleanVal = val.replace(/['"]/g, '');
-  for (let i = 0; i < el.options.length; i++) {
-    const optVal = el.options[i].value.replace(/['"]/g, '');
-    if (optVal.toLowerCase().includes(cleanVal.toLowerCase()) || cleanVal.toLowerCase().includes(optVal.toLowerCase())) {
-      el.selectedIndex = i;
-      return;
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+    if (input.type === 'password') {
+      input.type = 'text';
+      eyeOpen.style.display = 'none';
+      eyeClosed.style.display = 'inline-block';
+    } else {
+      input.type = 'password';
+      eyeOpen.style.display = 'inline-block';
+      eyeClosed.style.display = 'none';
     }
   }
-}
-function openSuperCredentialsModal() {
-  // Clear the password field so browser saved passwords don't pre-fill
-  const pField = document.getElementById('super-admin-pass');
-  if (pField) {
-    pField.value = '';
-    pField.type = 'password';
-  }
-  openModal('super-credentials-modal');
-}
 
-function openCreateSuperAdminModal() {
-  const pField = document.getElementById('new-sa-pass');
-  if (pField) {
-    pField.value = '';
-    pField.type = 'password';
+  function openEditAdmin(id, username, email, orgId) {
+    document.getElementById('edit-admin-id').value = id;
+    document.getElementById('edit-admin-user').value = username;
+    document.getElementById('edit-admin-email').value = email || '';
+    document.getElementById('edit-admin-org').value = orgId;
+    const pwdField = document.getElementById('edit-admin-pass');
+    if (pwdField) {
+      pwdField.value = '';
+      pwdField.type = 'password';
+    }
+    openModal('edit-admin-modal');
   }
-  openModal('create-super-admin-modal');
-}
+
+  function handleThemeClick(btn) {
+    const d = btn.dataset;
+    document.getElementById('theme-org-id').value = d.id;
+    document.getElementById('theme-modal-org-name').innerText = "Customizing theme for: " + d.name;
+    
+    document.getElementById('theme-accent').value = d.accent || "#38bdf8";
+    document.getElementById('theme-bg').value = d.bg || "#07090e";
+    document.getElementById('theme-card').value = d.card || "#111622";
+    document.getElementById('theme-text').value = d.text || "#ffffff";
+
+    setSelectValue('theme-font-h1', d.h1);
+    setSelectValue('theme-font-h2', d.h2);
+    setSelectValue('theme-font-h3', d.h3);
+    setSelectValue('theme-font-p', d.p);
+    setSelectValue('theme-font-price', d.price);
+
+    openModal('theme-customizer-modal');
+  }
+
+  function setSelectValue(selectId, val) {
+    const el = document.getElementById(selectId);
+    if (!el || !val) return;
+    const cleanVal = val.replace(/['"]/g, '');
+    for (let i = 0; i < el.options.length; i++) {
+      const optVal = el.options[i].value.replace(/['"]/g, '');
+      if (optVal.toLowerCase().includes(cleanVal.toLowerCase()) || cleanVal.toLowerCase().includes(optVal.toLowerCase())) {
+        el.selectedIndex = i;
+        return;
+      }
+    }
+  }
+
+  function openSuperCredentialsModal() {
+    const pField = document.getElementById('super-admin-pass');
+    if (pField) {
+      pField.value = '';
+      pField.type = 'password';
+    }
+    closeMobileSidebarIfNeeded();
+    openModal('super-credentials-modal');
+  }
+
+  function openCreateSuperAdminModal() {
+    const pField = document.getElementById('new-sa-pass');
+    if (pField) {
+      pField.value = '';
+      pField.type = 'password';
+    }
+    closeMobileSidebarIfNeeded();
+    openModal('create-super-admin-modal');
+  }
 </script>
 {% endblock %}

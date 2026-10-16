@@ -19,9 +19,10 @@
     --sidebar-w: 260px;
   }
 
+  html, body { max-width: 100vw; overflow-x: hidden; }
   body { background-color: var(--rec-bg); color: var(--rec-text); margin: 0; font-family: Inter, sans-serif; }
-  .rec-layout { display: flex; min-height: 100vh; }
-  .rec-sidebar { width: var(--sidebar-w); background: var(--rec-sidebar-bg); border-right: 1px solid var(--rec-border); padding: 1.5rem 1rem; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+  .rec-layout { display: flex; min-height: 100vh; width: 100%; position: relative; }
+  .rec-sidebar { width: var(--sidebar-w); background: var(--rec-sidebar-bg); border-right: 1px solid var(--rec-border); padding: 1.5rem 1rem; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1050; }
   .rec-nav-item { width: 100%; padding: 0.75rem 1rem; background: transparent; border: 1px solid transparent; color: var(--rec-muted); border-radius: 6px; text-align: left; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; }
   .rec-nav-item.active { background: var(--rec-card); color: var(--rec-accent); border-color: var(--rec-border); }
   .rec-stage { flex-grow: 1; padding: 2rem; overflow-y: auto; }
@@ -56,17 +57,185 @@
 
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
   .modal-sheet { background: var(--rec-card); border: 1px solid var(--rec-border); border-radius: 8px; width: 100%; max-width: 500px; padding: 2rem; max-height: 90vh; overflow-y: auto; }
+
+  /* ================= RESPONSIVE LAYER ================= */
+  .rec-layout, .rec-layout * { box-sizing: border-box; }
+  .rec-layout { min-height: 100vh; min-height: 100dvh; }
+  .rec-stage { min-width: 0; width: 100%; max-width: 1600px; margin-inline: auto; }
+
+  /* Mobile top bar + backdrop (hidden on desktop) */
+  .rec-mobile-topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--rec-sidebar-bg);
+    border-bottom: 1px solid var(--rec-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .rec-hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--rec-surface);
+    border: 1px solid var(--rec-border);
+    color: var(--rec-text);
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .rec-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 1040;
+  }
+
+  /* Metrics: never overflow narrow screens */
+  .rec-metrics { grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); }
+
+  /* Tables: scroll inside their own box on tablets */
+  .rec-table-box { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .rec-table { min-width: 820px; }
+  .rec-table td { word-break: break-word; }
+  .rec-table td[style*="nowrap"], .rec-table td:last-child { word-break: normal; }
+
+  /* Header row of patients card + search wrapper */
+  .rec-head { flex-wrap: wrap; gap: 0.75rem; }
+  .rec-search-wrap { min-width: 0; }
+
+  /* ---------- Tablet & below ---------- */
+  @media (max-width: 1024px) {
+    .rec-mobile-topbar { display: flex; top: 0; padding-top: max(0.85rem, env(safe-area-inset-top)); }
+    .rec-sidebar-backdrop.open { display: block; }
+    .rec-sidebar {
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      width: min(var(--sidebar-w), 85vw);
+      transform: translateX(-100%);
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .rec-sidebar.open { transform: translateX(0); }
+    .rec-nav-item { min-height: 44px; }
+    .rec-stage { padding: 1.5rem; }
+    .filter-toolbar { flex-direction: column; align-items: stretch; }
+    .filter-pill-group { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+    .filter-pill { white-space: nowrap; flex-shrink: 0; min-height: 36px; }
+    .rec-search-wrap { width: 100%; }
+    .rec-search-wrap input { width: 100% !important; min-height: 44px; font-size: 16px !important; }
+  }
+
+  /* ---------- Phones / small tablets ---------- */
+  @media (max-width: 768px) {
+    .rec-stage { padding: 0.85rem; }
+    .rec-card { padding: 1rem; }
+    .rec-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .rec-head { flex-direction: column; align-items: stretch !important; }
+    .rec-head .rec-btn { width: 100%; min-height: 44px; }
+
+    /* Tables -> stacked cards */
+    .rec-table-box { overflow-x: visible; }
+    .rec-table { min-width: 0; }
+    .rec-table thead { display: none; }
+    .rec-table, .rec-table tbody, .rec-table tr { display: block; width: 100%; }
+    .rec-table tbody tr {
+      padding: 0.75rem;
+      margin-bottom: 0.85rem;
+      border: 1px solid var(--rec-border);
+      border-radius: 8px;
+      background: var(--rec-surface);
+    }
+    .rec-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding: 0.45rem 0 !important;
+      text-align: right !important;
+      border-bottom: none;
+      white-space: normal !important;
+    }
+    .rec-table td::before {
+      content: attr(data-label);
+      flex-shrink: 0;
+      color: var(--rec-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: left;
+    }
+    .rec-table td[colspan] { display: block; text-align: center !important; }
+    .rec-table td[colspan]::before { content: none; }
+
+    /* Action cells: label on top, buttons fill the row */
+    .rec-table td.rec-actions { flex-wrap: wrap; justify-content: flex-start; }
+    .rec-table td.rec-actions::before { flex-basis: 100%; }
+    .rec-table td.rec-actions form { display: flex !important; flex-wrap: wrap; gap: 0.5rem; flex: 1 1 100%; width: 100%; }
+    .rec-table td.rec-actions .rec-btn { flex: 1 1 auto; min-height: 44px; margin-left: 0 !important; }
+    .rec-table td.rec-actions > .rec-btn { flex: 1 1 100%; }
+    .rec-table td.rec-actions > span { flex: 1 1 100%; text-align: left; }
+    .rec-table td .rec-btn { min-height: 44px; }
+
+    /* Modals */
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .modal-sheet {
+      max-width: 100%;
+      max-height: 92vh;
+      max-height: 92dvh;
+      padding: 1.25rem;
+      border-radius: 14px 14px 0 0;
+    }
+    .modal-sheet input, .modal-sheet select { min-height: 44px; font-size: 16px !important; }
+  }
+
+  /* ---------- Small phones ---------- */
+  @media (max-width: 480px) {
+    .rec-sidebar { padding: 1rem 0.85rem; }
+    .rec-metrics { gap: 0.6rem; }
+    .rec-metrics .rec-card { padding: 0.85rem; }
+    .rec-btn { white-space: normal; text-align: center; }
+  }
+
+  /* Large screens */
+  @media (min-width: 1600px) {
+    .rec-stage { padding: 3rem; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Mobile top bar (visible only on tablets/phones) -->
+<div class="rec-mobile-topbar">
+  <button type="button" class="rec-hamburger-btn" onclick="toggleSidebar()">
+    <span>&#9776;</span>
+    <span>Menu</span>
+  </button>
+  <div style="text-align: right;">
+    <strong style="font-size: 0.95rem; color: #fff;">{{ request.user.username }}</strong>
+  </div>
+</div>
+
+<div id="sidebar-backdrop" class="rec-sidebar-backdrop" onclick="toggleSidebar()"></div>
+
 <div class="rec-layout">
   <!-- Sidebar -->
-  <aside class="rec-sidebar">
+  <aside id="app-sidebar" class="rec-sidebar">
     <div>
       <div style="border-bottom: 1px solid var(--rec-border); padding-bottom: 1rem; margin-bottom: 1.5rem;">
         <span style="font-size: 0.7rem; color: var(--rec-accent); font-weight: 800; text-transform: uppercase;">Front Desk Operations</span>
-        <h2 style="font-size: 1.25rem; margin: 0.2rem 0 0; color: #fff;">{{ request.user.username }}</h2>
+        <h2 style="font-size: 1.25rem; margin: 0.2rem 0 0; color: #fff; word-break: break-word;">{{ request.user.username }}</h2>
         <span style="font-size: 0.8rem; color: var(--rec-muted);">{{ tenant.name }}</span>
       </div>
 
@@ -131,135 +300,139 @@
           </div>
 
           <!-- Live Search Input -->
-          <div style="display: flex; gap: 0.5rem;">
+          <div class="rec-search-wrap" style="display: flex; gap: 0.5rem;">
             <input type="text" id="booking-search" onkeyup="searchBookingsTable()" placeholder="Search patient, service, doctor..." style="padding: 0.55rem 0.85rem; background: var(--rec-surface); border: 1px solid var(--rec-border); color: #fff; border-radius: 6px; font-size: 0.85rem; width: 240px;">
           </div>
         </div>
 
-        <table class="rec-table" id="bookings-table">
-          <thead>
-            <tr>
-              <th>Scheduled Window</th>
-              <th>Patient</th>
-              <th>Service</th>
-              <th>Assigned Doctor</th>
-              <th>Status</th>
-              <th style="text-align: right;">Reception Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for b in all_bookings %}
-            <tr class="booking-row" data-status="{{ b.status }}">
-              <td style="color: #cbd5e1; font-weight: 600; white-space: nowrap;">
-                {{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}
-              </td>
-              <td>
-                <strong style="color: #fff; display: block;">{{ b.membership.user.username }}</strong>
-                <span style="font-size: 0.75rem; color: var(--rec-muted);">{{ b.membership.user.email }}</span>
-              </td>
-              <td style="color: var(--rec-accent); font-weight: 600;">{{ b.resource.name }}</td>
-              <td>Dr. {{ b.doctor.username|default:"Unassigned" }}</td>
-              <td>
-                {% if b.status == 'waiting' %}
-                  <span class="badge b-wait">&#9679; In Lobby (Waiting)</span>
-                {% elif b.status == 'in_consultation' %}
-                  <span class="badge b-consult">&#9679; In Consultation</span>
-                {% elif b.status == 'completed' %}
-                  <span class="badge b-done">&#10003; Completed</span>
-                {% elif b.status == 'canceled' %}
-                  <span class="badge b-canceled">Canceled</span>
-                {% else %}
-                  <span class="badge b-pending">&#9679; Scheduled</span>
-                {% endif %}
-              </td>
-             <td style="text-align: right; white-space: nowrap;">
-                <form method="POST" style="display: inline;">
-                  {% csrf_token %}
-                  <input type="hidden" name="action_type" value="update_booking_status">
-                  <input type="hidden" name="booking_id" value="{{ b.id }}">
-
-                  {% if b.status == 'pending' %}
-                    <button type="submit" name="status" value="waiting" class="rec-btn" style="background: var(--rec-warning); color: #000;">
-                      Mark Arrived &rarr;
-                    </button>
-                    <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel appointment and refund credits?');">
-                      Cancel
-                    </button>
-                  {% elif b.status == 'waiting' %}
-                    <button type="submit" name="status" value="in_consultation" class="rec-btn" style="background: #38bdf8; color: #000;">
-                      Send to Doctor &rarr;
-                    </button>
-                    <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel appointment and refund credits?');">
-                      Cancel
-                    </button>
+        <div class="rec-table-box">
+          <table class="rec-table" id="bookings-table">
+            <thead>
+              <tr>
+                <th>Scheduled Window</th>
+                <th>Patient</th>
+                <th>Service</th>
+                <th>Assigned Doctor</th>
+                <th>Status</th>
+                <th style="text-align: right;">Reception Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in all_bookings %}
+              <tr class="booking-row" data-status="{{ b.status }}">
+                <td data-label="When" style="color: #cbd5e1; font-weight: 600; white-space: nowrap;">
+                  {{ b.start_time|date:"M d, Y" }} &bull; {{ b.start_time|time:"g:i A" }}
+                </td>
+                <td data-label="Patient">
+                  <strong style="color: #fff; display: block;">{{ b.membership.user.username }}</strong>
+                  <span style="font-size: 0.75rem; color: var(--rec-muted);">{{ b.membership.user.email }}</span>
+                </td>
+                <td data-label="Service" style="color: var(--rec-accent); font-weight: 600;">{{ b.resource.name }}</td>
+                <td data-label="Doctor">Dr. {{ b.doctor.username|default:"Unassigned" }}</td>
+                <td data-label="Status">
+                  {% if b.status == 'waiting' %}
+                    <span class="badge b-wait">&#9679; In Lobby (Waiting)</span>
                   {% elif b.status == 'in_consultation' %}
-                    <button type="submit" name="status" value="completed" class="rec-btn" style="background: var(--rec-success); color: #000;">
-                      Check Out (Fulfill) &#10003;
-                    </button>
-                    <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel session and refund credits?');">
-                      Cancel
-                    </button>
+                    <span class="badge b-consult">&#9679; In Consultation</span>
                   {% elif b.status == 'completed' %}
-                    <span style="color: var(--rec-success); font-size: 0.8rem; font-weight: 700;">&#10003; Fulfilled</span>
+                    <span class="badge b-done">&#10003; Completed</span>
                   {% elif b.status == 'canceled' %}
-                    <span style="color: var(--rec-danger); font-size: 0.8rem;">Refunded &amp; Closed</span>
+                    <span class="badge b-canceled">Canceled</span>
+                  {% else %}
+                    <span class="badge b-pending">&#9679; Scheduled</span>
                   {% endif %}
-                </form>
-              </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6" style="text-align: center; color: var(--rec-muted); padding: 3rem;">No booking requests found in system.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                </td>
+               <td data-label="Action" class="rec-actions" style="text-align: right; white-space: nowrap;">
+                  <form method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="update_booking_status">
+                    <input type="hidden" name="booking_id" value="{{ b.id }}">
+
+                    {% if b.status == 'pending' %}
+                      <button type="submit" name="status" value="waiting" class="rec-btn" style="background: var(--rec-warning); color: #000;">
+                        Mark Arrived &rarr;
+                      </button>
+                      <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel appointment and refund credits?');">
+                        Cancel
+                      </button>
+                    {% elif b.status == 'waiting' %}
+                      <button type="submit" name="status" value="in_consultation" class="rec-btn" style="background: #38bdf8; color: #000;">
+                        Send to Doctor &rarr;
+                      </button>
+                      <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel appointment and refund credits?');">
+                        Cancel
+                      </button>
+                    {% elif b.status == 'in_consultation' %}
+                      <button type="submit" name="status" value="completed" class="rec-btn" style="background: var(--rec-success); color: #000;">
+                        Check Out (Fulfill) &#10003;
+                      </button>
+                      <button type="submit" name="status" value="canceled" class="rec-btn rec-btn-danger" style="margin-left: 0.3rem;" onclick="return confirm('Cancel session and refund credits?');">
+                        Cancel
+                      </button>
+                    {% elif b.status == 'completed' %}
+                      <span style="color: var(--rec-success); font-size: 0.8rem; font-weight: 700;">&#10003; Fulfilled</span>
+                    {% elif b.status == 'canceled' %}
+                      <span style="color: var(--rec-danger); font-size: 0.8rem;">Refunded &amp; Closed</span>
+                    {% endif %}
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" style="text-align: center; color: var(--rec-muted); padding: 3rem;">No booking requests found in system.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <!-- TAB 2: MANAGE PATIENTS (CRUD & PDF) -->
     <div id="tab-patients" class="tab-content">
       <div class="rec-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div class="rec-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
           <h3 style="margin: 0; color: #fff;">Patient Records Directory ({{ all_patients.count }})</h3>
           <button type="button" class="rec-btn rec-btn-primary">+ Register Walk-In Patient</button>
           <!-- onclick="openNewPatientModal()" -->
         </div>
 
-        <table class="rec-table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Enrolled Date</th>
-              <th style="text-align: center;">Clinical Dossier</th>
-              <th style="text-align: right;">Manage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for p in all_patients %}
-            <tr>
-              <td style="font-weight: 700; color: #fff;">{{ p.user.username }}</td>
-              <td style="color: var(--rec-muted);">{{ p.user.email|default:"No email registered" }}</td>
-              <td style="color: #cbd5e1;">{{ p.user.date_joined|date:"M d, Y" }}</td>
-              <td style="text-align: center;">
-                <a href="?org={{ tenant.slug }}&export_pdf={{ p.user.id }}" class="rec-btn rec-btn-outline" style="border-color: #38bdf8; color: #38bdf8; font-size: 0.75rem;">
-                  📄 Download PDF
-                </a>
-              </td>
-              <td style="text-align: right; white-space: nowrap;">
-                <button type="button" class="rec-btn rec-btn-outline" onclick="openEditPatientModal('{{ p.user.id }}', '{{ p.user.username }}', '{{ p.user.email }}')">Edit</button>
-                <form method="POST" onsubmit="return confirm('Delete patient {{ p.user.username }}?');" style="display: inline;">
-                  {% csrf_token %}
-                  <input type="hidden" name="action_type" value="delete_patient">
-                  <input type="hidden" name="user_id" value="{{ p.user.id }}">
-                  <button type="submit" class="rec-btn rec-btn-danger">Delete</button>
-                </form>
-              </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" style="text-align: center; color: var(--rec-muted); padding: 2rem;">No registered patients found.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <div class="rec-table-box">
+          <table class="rec-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Enrolled Date</th>
+                <th style="text-align: center;">Clinical Dossier</th>
+                <th style="text-align: right;">Manage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in all_patients %}
+              <tr>
+                <td data-label="Username" style="font-weight: 700; color: #fff;">{{ p.user.username }}</td>
+                <td data-label="Email" style="color: var(--rec-muted);">{{ p.user.email|default:"No email registered" }}</td>
+                <td data-label="Enrolled" style="color: #cbd5e1;">{{ p.user.date_joined|date:"M d, Y" }}</td>
+                <td data-label="Dossier" style="text-align: center;">
+                  <a href="?org={{ tenant.slug }}&export_pdf={{ p.user.id }}" class="rec-btn rec-btn-outline" style="border-color: #38bdf8; color: #38bdf8; font-size: 0.75rem;">
+                    📄 Download PDF
+                  </a>
+                </td>
+                <td data-label="Manage" class="rec-actions" style="text-align: right; white-space: nowrap;">
+                  <button type="button" class="rec-btn rec-btn-outline" onclick="openEditPatientModal('{{ p.user.id }}', '{{ p.user.username }}', '{{ p.user.email }}')">Edit</button>
+                  <form method="POST" onsubmit="return confirm('Delete patient {{ p.user.username }}?');" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="delete_patient">
+                    <input type="hidden" name="user_id" value="{{ p.user.id }}">
+                    <button type="submit" class="rec-btn rec-btn-danger">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" style="text-align: center; color: var(--rec-muted); padding: 2rem;">No registered patients found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -347,7 +520,22 @@ window.addEventListener('DOMContentLoaded', () => {
   if (hash && document.getElementById(hash)) {
     switchRecTab(hash);
   }
+
+  // Responsive: close the mobile drawer after choosing a section
+  document.querySelectorAll('.rec-nav-item').forEach(b => {
+    b.addEventListener('click', closeSidebar);
+  });
 });
+
+// Responsive: mobile sidebar drawer helpers
+function toggleSidebar() {
+  document.getElementById('app-sidebar').classList.toggle('open');
+  document.getElementById('sidebar-backdrop').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('app-sidebar').classList.remove('open');
+  document.getElementById('sidebar-backdrop').classList.remove('open');
+}
 
 // Dynamic Filter Pills (All, Scheduled, Waiting, In-Consultation, Completed, Canceled)
 function filterBookings(status, btn) {
